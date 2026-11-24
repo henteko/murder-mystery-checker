@@ -1,6 +1,6 @@
 # Lean による形式化と証明の状況
 
-仕様 0.3.1 (docs/spec.md) の Lean 4 による形式化。`lake build`(lean/)で全証明が検査される。
+仕様 0.4.0 (docs/spec.md) の Lean 4 による形式化。`lake build`(lean/)で全証明が検査される。
 
 ## 構成
 
@@ -21,7 +21,7 @@
 | 1 | 健全性・完全性: 判定器が error を出さない ⇔ `Valid s` | **証明済み** | `check_valid` |
 | 2 | G の網羅判定の正しさ: G001/G002 が出ない ⇔ 全パターンでエンディングがちょうど1つ | **証明済み** | `checkG_exactly_one`, `g_exactly_one`, `mem_enumerate` |
 | 3 | 出力の決定性(狭義に整列・重複なし・`events` 配列の並べ替えに不変) | **証明済み** | `check_sorted`, `check_nodup`, `check_perm_events`, `diagLt_total` |
-| 4 | 同時刻イベントの交換可能性 | **証明済み**(前提を追加) | `reorder_same_time`, `step_comm`, `runAux_swap` |
+| 4 | 同時刻イベントの交換可能性 | **証明済み**(前提を追加。前提は T012 が出ないことと同値) | `reorder_of_check`, `reorder_same_time`, `checkT012_nil_iff`, `step_comm` |
 | 5 | 知識の単調性 | **証明済み** | `step_knows_mono`, `final_knows_of_initial`, `trace_knows_final` |
 | 6 | 仕様の無矛盾性(正しいシナリオが存在) | **証明済み**(`native_decide` 使用) | `exists_valid` |
 | 7 | 導出制約の正しさ | **証明済み** | `realizable_iff`, `derived_iff` |
@@ -48,7 +48,7 @@
 - 2つのイベントが **独立**(参加者が重ならない、アイテムが重ならない、一方の observe の対象を他方が move させない)なら、状態遷移は可換(`step_comm`)で、隣り合う2つを入れ替えても終了状態は同じ、イベントごとの検出結果は並べ替えを除いて等しい(`runAux_swap`)。
 - これを繰り返して、時刻順を保つどの並べ方で処理しても、終了状態は同じで、検出結果は `checkEvents` の並べ替え(`reorder_same_time`)。
 - 前提の「参加者・アイテムが重ならない」は T005 / I004 の違反がないこと(`NoSameTimeConflict`。`Valid` から導ける)。
-- **見つかった問題 3(定理の前提を追加)**: observe の `targets` は参加者ではないので T005 の対象外だが、場所の条件(T007)は課される。「x が 10:00 に移動し、c が 10:00 に x を観察する」と、ID の順で observe が先なら違反なし、move が先なら T007(transit)になる(オラクルで確認)。0.3.1 では定理の前提に「同時刻に observe の対象が move しない」(`NoSameTimeObservedMove`)を加えた。これを検査規則(例: warning)にするかは未決定。
+- **見つかった問題 3(定理の前提を追加し、0.4.0 で検査規則 T012 にした)**: observe の `targets` は参加者ではないので T005 の対象外だが、場所の条件(T007)は課される。「x が 10:00 に移動し、c が 10:00 に x を観察する」と、ID の順で observe が先なら違反なし、move が先なら T007(transit)になる(オラクルで確認)。0.3.1 で定理の前提に「同時刻に observe の対象が move しない」(`NoSameTimeObservedMove`)を加え、0.4.0 でこの状況を warning T012 として検出するようにした。T012 が出ない ⇔ この前提(`checkT012_nil_iff`)。したがって「`Valid s` で、出力に T012 がない」なら定理 4 が成り立つ(`reorder_of_check`)。荒木サンプルでは、転落と遺体発見が同じ 18:00 で T012 が出る(examples/araki-konomi/README.md)。
 
 ### 定理 8: 区間の整合 (`Proofs/Segments.lean`)
 

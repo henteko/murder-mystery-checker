@@ -31,6 +31,16 @@ def EventKind.actors : EventKind → List Id
   | .transfer a .. | .tell a .. => [a]
   | k => k.participants
 
+/-- move で位置が変わるキャラクター。 -/
+def EventKind.moved : EventKind → List Id
+  | .move c .. => [c]
+  | _ => []
+
+/-- observe の対象(参加者ではないが、場所の条件を課される)。 -/
+def EventKind.observed : EventKind → List Id
+  | .observe _ _ _ ts _ => ts
+  | _ => []
+
 def EventKind.item? : EventKind → Option Id
   | .transfer _ _ i | .pickup _ i | .drop _ i | .use _ i | .consume _ i => some i
   | _ => none

@@ -1,6 +1,6 @@
 # mmcheck 仕様書
 
-- 仕様バージョン: **0.3.1**
+- 仕様バージョン: **0.4.0**
 - 本書が唯一の正(single source of truth)。Lean モデル (`lean/`) は本書を形式化し、Go 実装 (`go/`) は Lean モデルと差分テストで一致させる。
 - 本書を変更した場合は仕様バージョンを上げ、Lean → オラクル → Go の順に追従させる。
 - 変更履歴は §10。
@@ -54,7 +54,7 @@ Lean オラクルと Go 実装が共通に受け付ける入力形式。作者�
 
 ```jsonc
 {
-  "spec_version": "0.3.1",
+  "spec_version": "0.4.0",
   "start_time": 1080,            // Time
   "end_time": 1440,              // Time
   "claim_tolerance": 5,          // Minutes。証言の時刻の許容誤差の既定値(省略時 0)
@@ -377,6 +377,7 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
 | T009 | warning | 遭遇を認知していない(下記) | — | [c₁, c₂, location, from, to] |
 | T010 | error | 参加者 c が死亡している(`S.dead(c) = d ≠ none`) | e | [character, d] |
 | T011 | error | observe: `perceives(location, target_location)` が成り立たない(その場所からは見えない・聞こえない) | e | [character, location, target_location] |
+| T012 | warning | observe: targets の x が、同じ時刻 t に始まる move m で移動している(下記) | e | [x, m.id] |
 
 - T005 は、e より前の同時刻のイベントのうち正規順序で**最後**のもの1つについてだけ、参加者ごとに出す。
 - T007 の「実際の居場所」は、移動中なら `"transit"`、そうでなければ `S.pos(c).dest`。
@@ -386,6 +387,7 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
   - 一方が character で、もう一方が targets に含まれ、`location = target_location = l` の observe
 
   args は [c₁, c₂, l, lo, hi]。区間の組ごとに1件。
+- **T012 観察と同時の出発**: observe e の targets の x について、`m.at = e.at` で x が移動する move m(m の character が x)があれば、(x, m) の組ごとに1件出す。同時刻のイベントは ID の順に処理するので、このとき e の T007 の結果(x がまだ元の場所にいるか、もう移動中か)は e と m の ID の順で決まってしまう。観察か出発の時刻を1分ずらすなどして、どちらが先かを明示する。T012 は T007 の有無にかかわらず出す。
 
 ### 4.3 I: 所持品
 
@@ -489,7 +491,7 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
 
 ```jsonc
 {
-  "spec_version": "0.3.1",
+  "spec_version": "0.4.0",
   "diagnostics": [
     {
       "code": "T003",
@@ -552,7 +554,7 @@ Go CLI の `--strict` を付けると warning も 1 として扱う(Go の表示
 1. **健全性・完全性**: `(check s).all (·.severity = .warning) ↔ Valid s`。さらに規則ごとに「その規則の検出結果が出る ↔ その規則の `Prop` が成り立つ」。
 2. **G の網羅判定の正しさ**: 有限の数え上げによる判定が `∀ σ ∈ P, |match σ| = 1` と同値。
 3. **出力の決定性**: `check s` は §6.3 の順序で狭義に整列しており、重複がない。`events` 配列の並べ替えに対して `check` は不変(R 群の違反があっても)。
-4. **同時刻イベントの交換可能性**: T005 と I004 の違反がなく、かつ同時刻に observe の `targets` のキャラクターが move していなければ、時刻順を保つどの並べ方でイベントを処理しても、終了状態とイベントごとの検出結果(T / I / K 群)は変わらない。observe の対象は参加者ではないため T005 の対象外で、この条件がないと「x が 10:00 に移動し、c が 10:00 に x を観察する」で ID の順によって T007 が出たり出なかったりする。
+4. **同時刻イベントの交換可能性**: T005 と I004 の違反がなく、T012 も出ていなければ、時刻順を保つどの並べ方でイベントを処理しても、終了状態とイベントごとの検出結果(T / I / K 群)は変わらない。observe の対象は参加者ではないため T005 の対象外で、T012 の状況(「x が 10:00 に移動し、c が 10:00 に x を観察する」)では、ID の順によって T007 が出たり出なかったりする。
 5. **知識の単調性**: どのキャラクターについても、時刻が進んで知識が減ることはない。
 6. **仕様の無矛盾性**: 正しいシナリオが少なくとも1つ存在する(具体例を `decide` で示す)。
 7. **導出制約の正しさ**: owner の異なるゴールの集合について、「終了時の保持者の割り当てで、全ゴールの requires_items を同時に満たすものが存在する」⇔「消費済みのアイテムを要求しておらず、各組の requires_items が交わらない」。
@@ -575,7 +577,7 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 
 ```jsonc
 {
-  "spec_version": "0.3.1",
+  "spec_version": "0.4.0",
   "start_time": 1260, "end_time": 1320,
   "characters": [{"id": "alice"}, {"id": "bob"}],
   "areas": [{"id": "house", "internal_minutes": 5}],
@@ -602,7 +604,7 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 
 ```json
 {
-  "spec_version": "0.3.1",
+  "spec_version": "0.4.0",
   "diagnostics": [
     {"code": "A001", "severity": "error", "args": ["a1", "alice", "absent", "study"]},
     {"code": "G001", "severity": "error", "args": [], "witness": {"c_vote": "alice", "g_alice": false, "g_bob": false}},
@@ -623,6 +625,9 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 - T009 は出ない: alice と bob は 1272〜1320 に study に一緒にいるが、その間の e2(transfer)が2人を参加者に含むので、遭遇は認知されている。
 
 ## 10. 変更履歴
+
+- **0.4.0**
+  - T012(warning): observe の対象が同じ時刻に move を始めている。このとき結果がイベント ID の順で決まってしまうため。定理 4 の前提を「T012 が出ていない」とした
 
 - **0.3.1**(定理 3, 4, 8 の証明に伴う修正)
   - §6.3: 正規順序を全順序にした。`event` がないものを最小とし、同じキーなら severity、witness の値で比べる

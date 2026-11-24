@@ -1,9 +1,9 @@
 {
-  "spec_version": "0.3.1",
+  "spec_version": "0.4.0",
   "diagnostics": [
     {
-      "code": "K008",
       "severity": "error",
+      "code": "K008",
       "args": [
         "f_s_table_1750_vending",
         "1070",
@@ -11,12 +11,21 @@
       ]
     },
     {
-      "code": "K008",
       "severity": "error",
+      "code": "K008",
       "args": [
         "f_tom_table_1810",
         "1090",
         "1081"
+      ]
+    },
+    {
+      "severity": "warning",
+      "event": "tsumugi_05",
+      "code": "T012",
+      "args": [
+        "konomi",
+        "konomi_05"
       ]
     }
   ]

@@ -13,16 +13,6 @@ observe の対象についての条件は T005 / I004 からは出ない(対象�
 -/
 namespace MurderMystery
 
-/-- move で位置が変わるキャラクター。 -/
-def EventKind.moved : EventKind → List Id
-  | .move c .. => [c]
-  | _ => []
-
-/-- observe の対象(参加者ではないが、場所の条件を課される)。 -/
-def EventKind.observed : EventKind → List Id
-  | .observe _ _ _ ts _ => ts
-  | _ => []
-
 /-- 2つのイベントが独立。 -/
 structure Independent (e₁ e₂ : Event) : Prop where
   chars : ∀ c ∈ e₁.kind.participants, c ∉ e₂.kind.participants
@@ -525,5 +515,45 @@ theorem reorder_same_time (s : Scenario) (h₁ : NoSameTimeConflict s) (h₂ : N
   have h := runAux_reorder s s.sortedEvents l s.initState [] hp (pairwise_timeLe_sortedEvents s) hl
     (independent_of_noConflict s h₁ h₂)
   exact ⟨h.1.symm, h.2.symm⟩
+
+/-! ## T012 と定理 4 の前提 -/
+
+/-- T012 が出ない ⇔ 同時刻に observe の対象が move していない。 -/
+theorem checkT012_nil_iff (s : Scenario) : checkT012 s = [] ↔ NoSameTimeObservedMove s := by
+  unfold NoSameTimeObservedMove checkT012 Scenario.sortedEvents
+  simp only [List.flatMap_eq_nil_iff, List.map_eq_nil_iff, List.filter_eq_nil_iff, List.mem_mergeSort,
+    Bool.and_eq_true, beq_iff_eq, List.contains_iff_mem, decide_eq_true_eq, not_and]
+  constructor
+  · intro h a ha b hb ht c hc hcb
+    exact h a ha c hc b hb ht.symm hcb
+  · intro h o ho x hx m hm ht hxm
+    exact h o ho m hm ht.symm x hx hxm
+
+theorem mem_check_of_checkT012 (s : Scenario) (hR : checkR s = []) (d : Diag) (hd : d ∈ checkT012 s) :
+    d ∈ check s := by
+  rw [check, mem_normalize]
+  unfold checkRaw checkPost
+  simp only [hR, List.isEmpty_nil, ite_true, List.mem_append]
+  exact Or.inl (Or.inr (Or.inr hd))
+
+/-- 出力に T012 がなければ(R 群の違反がないとき)、定理 4 の observe についての前提が成り立つ。 -/
+theorem noSameTimeObservedMove_of_check (s : Scenario) (hR : checkR s = [])
+    (h : ∀ d ∈ check s, d.code ≠ "T012") : NoSameTimeObservedMove s := by
+  rw [← checkT012_nil_iff]
+  apply List.eq_nil_iff_forall_not_mem.mpr
+  intro d hd
+  have hcode : d.code = "T012" := by
+    simp only [checkT012, List.mem_flatMap, List.mem_map] at hd
+    obtain ⟨_, _, _, _, _, _, rfl⟩ := hd
+    rfl
+  exact h d (mem_check_of_checkT012 s hR d hd) hcode
+
+/-- **定理 4**(判定器の出力から): 正しいシナリオで T012 が出ていなければ、時刻順を保つどんな並べ方で
+イベントを処理しても、終了状態は同じで、イベントごとの検出結果は(並べ替えを除いて)等しい。 -/
+theorem reorder_of_check (s : Scenario) (hv : Valid s) (h12 : ∀ d ∈ check s, d.code ≠ "T012")
+    (l : List Event) (hp : s.sortedEvents.Perm l) (hl : l.Pairwise (fun a b => a.time ≤ b.time)) :
+    (runAux s.initState [] l).2 = s.final ∧
+      ((runAux s.initState [] l).1.flatMap (stepDiags s)).Perm (checkEvents s) :=
+  reorder_same_time s (NoSameTimeConflict.of_valid hv) (noSameTimeObservedMove_of_check s hv.1 h12) l hp hl
 
 end MurderMystery

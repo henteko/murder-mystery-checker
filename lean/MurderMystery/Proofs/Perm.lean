@@ -233,7 +233,7 @@ theorem checkRaw_perm_of_R (hR : checkR s = []) :
     unfold checkEvents; rw [htrace]; rfl
   have hP : checkPost { s with events := l' } = checkPost s := by
     simp only [checkPost, postErrors, postWarnings, warningsT009, issuesK003, issuesK004K005, issuesK006,
-      issuesK007, issuesK008, issuesH, warningsH, issuesA, hfinal, hfind, hseg, hwhere, hobt, hobtF, hheld, hack]
+      issuesK007, issuesK008, issuesH, warningsH, issuesA, checkT012, hfinal, hfind, hseg, hwhere, hobt, hobtF, hheld, hack, hsorted]
     rfl
   have hG : checkG { s with events := l' } = checkG s := by
     have hd : Scenario.derivedConstraints { s with events := l' } = s.derivedConstraints := by

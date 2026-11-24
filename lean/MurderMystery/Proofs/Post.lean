@@ -129,6 +129,12 @@ theorem postErrors_nil (s : Scenario) : postErrors s = [] ↔ PostValid s := by
   simp only [List.append_eq_nil_iff, issuesK003_nil, issuesK004K005_nil, issuesK006_nil,
     issuesK007_nil, issuesK008_nil, issuesH_nil, issuesA_nil, and_assoc]
 
+theorem sev_checkT012 (s : Scenario) : ∀ d ∈ checkT012 s, d.sev = .warning := by
+  intro d hd
+  simp only [checkT012, List.mem_flatMap, List.mem_map] at hd
+  obtain ⟨_, _, _, _, _, _, rfl⟩ := hd
+  rfl
+
 /-- 終了状態に対する検査が error を出さない ⇔ `PostValid`。 -/
 theorem checkPost_valid (s : Scenario) :
     (∀ d ∈ checkPost s, d.sev = .warning) ↔ PostValid s := by
@@ -139,11 +145,12 @@ theorem checkPost_valid (s : Scenario) :
   · intro h
     apply List.eq_nil_iff_forall_not_mem.mpr
     intro x hx
-    have := h _ (Or.inl ⟨x, hx, rfl⟩)
+    have := h _ (Or.inl (Or.inl ⟨x, hx, rfl⟩))
     simp [err] at this
   · intro h d hd
-    rcases hd with ⟨x, hx, _⟩ | ⟨x, _, rfl⟩
+    rcases hd with (⟨x, hx, _⟩ | ⟨x, _, rfl⟩) | hd
     · simp [h] at hx
     · simp [warn]
+    · exact sev_checkT012 s d hd
 
 end MurderMystery

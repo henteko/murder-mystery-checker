@@ -131,12 +131,21 @@ def issuesA (s : Scenario) : List Issue :=
       let w := s.whereAt c a.time
       if a.kind.violated w a.location then some ("A001", [a.id, c, a.kind.render, w]) else none
 
+/-! ## T012 (warning) -/
+
+/-- observe の対象 x が、同じ時刻に始まる move で移動している。 -/
+def checkT012 (s : Scenario) : List Diag :=
+  s.sortedEvents.flatMap fun o =>
+    o.kind.observed.flatMap fun x =>
+      (s.sortedEvents.filter fun m => m.time == o.time && m.kind.moved.contains x).map fun m =>
+        warn "T012" [x, m.id] (some o.id)
+
 def postErrors (s : Scenario) : List Issue :=
   issuesK003 s ++ issuesK004K005 s ++ issuesK006 s ++ issuesK007 s ++ issuesK008 s ++ issuesH s ++ issuesA s
 
 def postWarnings (s : Scenario) : List Issue := warningsT009 s ++ warningsH s
 
 def checkPost (s : Scenario) : List Diag :=
-  (postErrors s).map (fun (c, a) => err c a) ++ (postWarnings s).map (fun (c, a) => warn c a)
+  (postErrors s).map (fun (c, a) => err c a) ++ (postWarnings s).map (fun (c, a) => warn c a) ++ checkT012 s
 
 end MurderMystery
