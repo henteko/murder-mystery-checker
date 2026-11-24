@@ -152,6 +152,7 @@ svg .area-all { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1
     <a href="#proved"><span class="k">第1部</span><strong>証明された11の約束</strong></a>
     <a href="#counter"><span class="k">第2部</span><strong>見つかった5つの反例</strong></a>
     <a href="#how"><span class="k">補足</span><strong>反例が見つかった経緯</strong></a>
+    <a href="#oracle"><span class="k">仕組み</span><strong>オラクルと Go の検証</strong></a>
     <a href="#limits"><span class="k">第3部</span><strong>まだ保証していないこと</strong></a>
   </nav>
 </section>
@@ -616,6 +617,82 @@ svg .area-all { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1
     </div>
     <p>5 件とも、見つけた後はオラクル(Lean の判定器)で具体例を作り、本当に起きることを確かめてから直しています。今後はこれらの具体例を回帰テストとして固定し、テストでも守ります。</p>
     <p class="fix"><b>まとめ:</b> Lean で証明しようとした結果、証明に必要な条件を全部洗い出すことになり、そこで抜けが見つかりました。</p>
+  </article>
+</section>
+
+<section id="oracle" aria-labelledby="s-oracle">
+  <div class="section-head">
+    <span class="eyebrow">仕組み</span>
+    <h2 id="s-oracle">オラクルと Go の検証</h2>
+    <p>オラクルは「正解として扱う判定器」です。このリポジトリでは、<b>証明した Lean の判定器をそのまま実行ファイルにしたもの</b>がオラクルです。作者が使う Go の CLI(mmcheck)は、オラクルと同じ出力を返すかどうかで検証しています。</p>
+  </div>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 640 330" role="img" aria-label="仕様書をLeanで形式化し、Leanの判定器が仕様を満たすことを証明する。その判定器を実行ファイルにしたオラクルの出力と、Goの判定器の出力を比べる">
+      <defs><marker id="a10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="fill-fg"/></marker></defs>
+      <rect class="box-soft" x="20" y="16" width="250" height="46" rx="6"/>
+      <text class="tb" x="145" y="36" text-anchor="middle">仕様書 docs/spec.md</text>
+      <text class="ts" x="145" y="53" text-anchor="middle">日本語の規則</text>
+      <line class="ln" x1="145" y1="64" x2="145" y2="96" marker-end="url(#a10)"/>
+      <text class="ts" x="155" y="84">形式化(レビューと試作判定器で確認)</text>
+      <rect class="box" x="20" y="100" width="250" height="46" rx="6"/>
+      <text class="tb" x="145" y="120" text-anchor="middle">Lean の仕様</text>
+      <text class="ts" x="145" y="137" text-anchor="middle">正しさの定義・規則ごとの違反条件</text>
+      <rect class="box-ac" x="20" y="196" width="250" height="46" rx="6"/>
+      <text class="tac" x="145" y="216" text-anchor="middle">Lean の判定器 check</text>
+      <text class="ts" x="145" y="233" text-anchor="middle">全規則・出力の並べ替え</text>
+      <line class="ln-ac" x1="145" y1="192" x2="145" y2="150" marker-end="url(#a10)"/>
+      <text class="tac" x="155" y="176">証明(定理 1〜11)</text>
+      <line class="ln" x1="272" y1="219" x2="346" y2="219" marker-end="url(#a10)"/>
+      <text class="ts" x="309" y="209" text-anchor="middle">そのまま</text>
+      <text class="ts" x="309" y="236" text-anchor="middle">実行可能に</text>
+      <rect class="box-ac" x="350" y="196" width="270" height="46" rx="6"/>
+      <text class="tac" x="485" y="216" text-anchor="middle">オラクル</text>
+      <text class="ts" x="485" y="233" text-anchor="middle">lake exe oracle(JSON を読んで JSON を出す)</text>
+      <line class="ln" x1="420" y1="244" x2="420" y2="276" marker-end="url(#a10)"/>
+      <text class="ts" x="412" y="264" text-anchor="end">期待出力・その場で比較</text>
+      <rect class="box-ok" x="350" y="280" width="270" height="46" rx="6"/>
+      <text class="tok" x="485" y="300" text-anchor="middle">Go の判定器(mmcheck)</text>
+      <text class="ts" x="485" y="317" text-anchor="middle">出力が完全に一致すること</text>
+      <rect class="box-soft" x="350" y="16" width="270" height="130" rx="6"/>
+      <text class="tb" x="366" y="38">オラクルの入出力</text>
+      <text class="t" x="366" y="62">入力: 標準入力に正規化 JSON</text>
+      <text class="t" x="366" y="84">出力: 検出結果の JSON(終了コード 0)</text>
+      <text class="t" x="366" y="106">入力エラー: 終了コード 2</text>
+      <text class="ts mono" x="366" y="130">lean/Oracle/Main.lean</text>
+    </svg>
+    </div>
+    <figcaption>オラクルは「証明した関数をそのまま実行している」ので、第1部の約束を満たします。Go はオラクルとの出力の一致で、その約束を受け継ぎます。</figcaption>
+  </figure>
+
+  <article class="item">
+    <h3>オラクルの使われ方</h3>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>使い方</th><th>内容</th><th>いつ</th></tr></thead>
+      <tbody>
+        <tr><td>期待出力(ゴールデン)を作る</td><td>テストケース 300 件とサンプル 3 件の正解をオラクルで作る(<code>make oracle</code>)。作り直しても差分がないことも確かめる(<code>make diff-check</code>)</td><td>仕様や Lean を変えたとき、CI</td></tr>
+        <tr><td>ゴールデン差分テスト</td><td>Go の出力を、上の期待出力と比べる。Lean がなくても動く(<code>make test</code>)</td><td>Go を変えたとき、CI</td></tr>
+        <tr><td>ライブ差分テスト</td><td>その場で作ったシナリオをオラクルと Go の両方に通して比べる(<code>make live-diff</code>)</td><td>CI で毎回 1,000 件、毎日 10,000 件</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </article>
+
+  <article class="item">
+    <h3>オラクルのどこが証明済みか</h3>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>部分</th><th>保証のしかた</th></tr></thead>
+      <tbody>
+        <tr><td>判定器 <code>check</code>(error の規則、出力の並び順)</td><td><b>証明済み</b>(第1部の定理 1〜11)</td></tr>
+        <tr><td>意味論の定義(状態の変化・居場所の区間など)が仕様書の日本語どおりであること</td><td>証明できない。仕様書のレビュー、別に書いた Python の試作判定器との比較(数千件)、仕様書 §9 の例との照合で確かめる</td></tr>
+        <tr><td>JSON の読み込みと書き出し(入力エラーの判定を含む)</td><td>証明の対象外。Go との差分テストと、入力エラーの境界のテストで確かめる</td></tr>
+        <tr><td>warning と R 群の規則ごとの正しさ</td><td>差分テストだけで確かめる(第3部)</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="meaning"><b>差分テストで見つかったもの:</b> Go 実装の不具合(変数もエンディングもないシナリオで G001 を出さない)と、オラクルの JSON の読み込みの癖(<code>1.26e3</code> は受け付け、<code>1260.0</code> は入力エラー)。どちらも証明の対象外の部分で、直して回帰テストを足しました。</p>
   </article>
 </section>
 
