@@ -1,0 +1,1349 @@
+{
+  "spec_version": "0.2.0",
+  "note": "荒木コノミの真相 (araki-konomi-no-shinsou) のモデル化サンプル。移動時間は推定値。",
+  "start_time": 960,
+  "end_time": 1110,
+  "characters": [
+    {
+      "id": "tsumugi"
+    },
+    {
+      "id": "sousuke"
+    },
+    {
+      "id": "tom"
+    },
+    {
+      "id": "konomi",
+      "npc": true,
+      "note": "故人 NPC"
+    }
+  ],
+  "areas": [
+    {
+      "id": "building",
+      "internal_minutes": 1,
+      "note": "校舎"
+    },
+    {
+      "id": "rooftop"
+    },
+    {
+      "id": "outside"
+    },
+    {
+      "id": "meta",
+      "note": "探索カードの山札(場所ではない)"
+    }
+  ],
+  "locations": [
+    {
+      "id": "practice_room",
+      "area": "building",
+      "note": "コノミが1人で練習する空き教室"
+    },
+    {
+      "id": "library",
+      "area": "building",
+      "public": true
+    },
+    {
+      "id": "clubroom",
+      "area": "building",
+      "note": "ゲーム部部室。窓の下が落下地点"
+    },
+    {
+      "id": "corridor",
+      "area": "building",
+      "public": true
+    },
+    {
+      "id": "vending",
+      "area": "building",
+      "public": true,
+      "note": "一階の自販機"
+    },
+    {
+      "id": "roof",
+      "area": "rooftop"
+    },
+    {
+      "id": "courtyard",
+      "area": "outside",
+      "public": true,
+      "note": "校舎の外。落下地点"
+    },
+    {
+      "id": "investigation_deck",
+      "area": "meta",
+      "note": "探索カード用の仮の場所"
+    }
+  ],
+  "travel": [
+    {
+      "from": "roof",
+      "to": "courtyard",
+      "minutes": 0,
+      "note": "落下(徒歩では通れない)"
+    }
+  ],
+  "area_travel": [
+    {
+      "from": "building",
+      "to": "rooftop",
+      "minutes": 2,
+      "bidirectional": true
+    },
+    {
+      "from": "building",
+      "to": "outside",
+      "minutes": 1,
+      "bidirectional": true
+    },
+    {
+      "from": "rooftop",
+      "to": "outside",
+      "minutes": 3,
+      "bidirectional": true
+    }
+  ],
+  "placements": [
+    {
+      "character": "konomi",
+      "location": "practice_room"
+    },
+    {
+      "character": "tsumugi",
+      "location": "corridor"
+    },
+    {
+      "character": "sousuke",
+      "location": "corridor"
+    },
+    {
+      "character": "tom",
+      "location": "clubroom"
+    }
+  ],
+  "items": [
+    {
+      "id": "drink",
+      "initial": {
+        "location": "vending"
+      },
+      "note": "ソウスケが買った飲み物"
+    }
+  ],
+  "facts": [
+    {
+      "id": "f_fence_broken_fell",
+      "note": "屋上は柵が一箇所壊れておりそこからコノミが落下した"
+    },
+    {
+      "id": "f_roof_unmaintained",
+      "note": "屋上は普段使われておらず柵も定期メンテナンスされていなかった"
+    },
+    {
+      "id": "f_s_1700_practice",
+      "note": "17:00過ぎにコノミが練習する教室に行き練習に付き合う"
+    },
+    {
+      "id": "f_s_1750_roof",
+      "note": "17:50に屋上に行くコノミに付き合い屋上に向かう"
+    },
+    {
+      "id": "f_s_1800_vending",
+      "note": "18:00にコノミのために自動販売機で飲み物を買うため一階に向かう"
+    },
+    {
+      "id": "f_s_1810_found_body",
+      "note": "18:10に屋上に戻ると柵が欠けておりコノミの遺体が下にあった"
+    },
+    {
+      "id": "f_s_dating",
+      "note": "「コノミとは1年前に俺から告白して付き合ってたんだ」(ソウスケの思い込み)"
+    },
+    {
+      "id": "f_s_wait_until_summer_con",
+      "note": "「部活に熱心なコノミの意思を尊重するため夏コンが終わるまで見守ろうと決めていた」"
+    },
+    {
+      "id": "f_s_konomi_scared",
+      "note": "「半年前のコノミは何かに怯えるような様子を見せていて心配だった」"
+    },
+    {
+      "id": "f_s_kidnapper",
+      "note": "自分が2人を拉致監禁した"
+    },
+    {
+      "id": "f_t_1630_talk",
+      "note": "16:30にコノミと教室で会話する"
+    },
+    {
+      "id": "f_t_1700_library",
+      "note": "17:00にコノミと別れ図書室で勉強する"
+    },
+    {
+      "id": "f_t_1800_found_body",
+      "note": "18:00に帰宅しようとしたところ外にてコノミの死体を発見する"
+    },
+    {
+      "id": "f_t_konomi_confidant",
+      "note": "「コノミとは勉強や家族のこと、恋愛相談まで何だって相談しましたわ」"
+    },
+    {
+      "id": "f_t_likes_sousuke",
+      "note": "「実はソウスケさんのことが気になっておりますの」"
+    },
+    {
+      "id": "f_t_konomi_felt_watched",
+      "note": "「半年前のコノミはしきりに誰かに見られている気がすると言ってましたわね」"
+    },
+    {
+      "id": "f_tom_1630_saw_talk",
+      "note": "16:30に教室でコノミとツムギが会話しているのを目撃する"
+    },
+    {
+      "id": "f_tom_1750_saw_konomi_roof",
+      "note": "17:50に屋上に向かうコノミを目撃する"
+    },
+    {
+      "id": "f_tom_1800_scream_body",
+      "note": "18:00に悲鳴を聞き窓の下を見るとコノミの死体があった"
+    },
+    {
+      "id": "f_tom_confessed_rejected",
+      "note": "「コノミ氏には1年前に僕から告白したでござるよ！まぁ撃沈したでござるが…」"
+    },
+    {
+      "id": "f_tom_anime_fan",
+      "note": "「拙者はアニメ「響け！トランペット」の大ファンでござる！」"
+    },
+    {
+      "id": "f_tom_support_from_shadow",
+      "note": "「告白を断られてからもコノミ氏のことは陰ながら応援しようと思っていたでござる」"
+    },
+    {
+      "id": "f_k_knew_tsumugi_likes_sousuke",
+      "note": "コノミはツムギがソウスケのことを好きなことを知っていた"
+    },
+    {
+      "id": "f_k_focus_on_club",
+      "note": "コノミは今は恋愛より部活に集中したいと思っていた"
+    },
+    {
+      "id": "f_k_trumpet_leader",
+      "note": "コノミは部活ではトランペットのパートリーダーを担当していた"
+    },
+    {
+      "id": "f_k_felt_gaze",
+      "note": "コノミは誰かの視線を感じていた"
+    }
+  ],
+  "initial_knowledge": [
+    {
+      "character": "sousuke",
+      "fact": "f_s_dating"
+    },
+    {
+      "character": "sousuke",
+      "fact": "f_s_wait_until_summer_con"
+    },
+    {
+      "character": "sousuke",
+      "fact": "f_s_konomi_scared"
+    },
+    {
+      "character": "sousuke",
+      "fact": "f_s_kidnapper"
+    },
+    {
+      "character": "tsumugi",
+      "fact": "f_t_konomi_confidant"
+    },
+    {
+      "character": "tsumugi",
+      "fact": "f_t_likes_sousuke"
+    },
+    {
+      "character": "tsumugi",
+      "fact": "f_t_konomi_felt_watched"
+    },
+    {
+      "character": "tom",
+      "fact": "f_tom_confessed_rejected"
+    },
+    {
+      "character": "tom",
+      "fact": "f_tom_anime_fan"
+    },
+    {
+      "character": "tom",
+      "fact": "f_tom_support_from_shadow"
+    },
+    {
+      "character": "konomi",
+      "fact": "f_k_knew_tsumugi_likes_sousuke"
+    },
+    {
+      "character": "konomi",
+      "fact": "f_k_focus_on_club"
+    },
+    {
+      "character": "konomi",
+      "fact": "f_k_trumpet_leader"
+    }
+  ],
+  "events": [
+    {
+      "id": "tsumugi_01",
+      "at": 988,
+      "kind": "move",
+      "character": "tsumugi",
+      "to": "practice_room",
+      "arrive": 989
+    },
+    {
+      "id": "konomi_01",
+      "at": 990,
+      "kind": "scene",
+      "location": "practice_room",
+      "participants": [
+        "konomi",
+        "tsumugi"
+      ],
+      "reveals": [
+        "f_t_1630_talk"
+      ],
+      "note": "たわいもない会話"
+    },
+    {
+      "id": "tom_01",
+      "at": 988,
+      "kind": "move",
+      "character": "tom",
+      "to": "practice_room",
+      "arrive": 989,
+      "note": "教室の前を通りかかる(教室内からの観察として近似)"
+    },
+    {
+      "id": "tom_02",
+      "at": 991,
+      "kind": "observe",
+      "character": "tom",
+      "location": "practice_room",
+      "facts": [
+        "f_tom_1630_saw_talk"
+      ],
+      "targets": [
+        "konomi",
+        "tsumugi"
+      ]
+    },
+    {
+      "id": "tom_03",
+      "at": 992,
+      "kind": "move",
+      "character": "tom",
+      "to": "clubroom",
+      "arrive": 993,
+      "note": "部室に戻る"
+    },
+    {
+      "id": "tsumugi_02",
+      "at": 1020,
+      "kind": "move",
+      "character": "tsumugi",
+      "to": "library",
+      "arrive": 1021
+    },
+    {
+      "id": "tsumugi_03",
+      "at": 1022,
+      "kind": "observe",
+      "character": "tsumugi",
+      "location": "library",
+      "facts": [
+        "f_t_1700_library"
+      ]
+    },
+    {
+      "id": "sousuke_01",
+      "at": 1020,
+      "kind": "move",
+      "character": "sousuke",
+      "to": "practice_room",
+      "arrive": 1021,
+      "note": "17:00過ぎにコノミが練習する教室へ"
+    },
+    {
+      "id": "sousuke_02",
+      "at": 1022,
+      "kind": "observe",
+      "character": "sousuke",
+      "location": "practice_room",
+      "facts": [
+        "f_s_1700_practice"
+      ],
+      "targets": [
+        "konomi"
+      ],
+      "note": "本人は一緒に練習したと認識。真相ではコノミは1人で練習し視線を感じていた"
+    },
+    {
+      "id": "konomi_02",
+      "at": 1023,
+      "kind": "learn",
+      "character": "konomi",
+      "facts": [
+        "f_k_felt_gaze"
+      ],
+      "note": "誰かの視線が気になる"
+    },
+    {
+      "id": "konomi_03",
+      "at": 1070,
+      "kind": "move",
+      "character": "konomi",
+      "to": "corridor",
+      "arrive": 1071
+    },
+    {
+      "id": "tom_04",
+      "at": 1069,
+      "kind": "move",
+      "character": "tom",
+      "to": "corridor",
+      "arrive": 1070,
+      "note": "ふと廊下に出る"
+    },
+    {
+      "id": "tom_05",
+      "at": 1071,
+      "kind": "observe",
+      "character": "tom",
+      "location": "corridor",
+      "facts": [
+        "f_tom_1750_saw_konomi_roof"
+      ],
+      "targets": [
+        "konomi"
+      ]
+    },
+    {
+      "id": "konomi_04",
+      "at": 1072,
+      "kind": "move",
+      "character": "konomi",
+      "to": "roof",
+      "arrive": 1074,
+      "note": "視線から逃げて屋上へ"
+    },
+    {
+      "id": "sousuke_03",
+      "at": 1072,
+      "kind": "move",
+      "character": "sousuke",
+      "to": "roof",
+      "arrive": 1074,
+      "note": "本人の認識では「屋上に行くコノミに付き合う」"
+    },
+    {
+      "id": "sousuke_04",
+      "at": 1075,
+      "kind": "observe",
+      "character": "sousuke",
+      "location": "roof",
+      "facts": [
+        "f_s_1750_roof"
+      ],
+      "targets": [
+        "konomi"
+      ]
+    },
+    {
+      "id": "tom_06",
+      "at": 1075,
+      "kind": "move",
+      "character": "tom",
+      "to": "clubroom",
+      "arrive": 1076
+    },
+    {
+      "id": "sousuke_05",
+      "at": 1080,
+      "kind": "move",
+      "character": "sousuke",
+      "to": "vending",
+      "arrive": 1082,
+      "note": "コノミのために一階の自販機へ"
+    },
+    {
+      "id": "konomi_05",
+      "at": 1080,
+      "kind": "move",
+      "character": "konomi",
+      "to": "courtyard",
+      "arrive": 1080,
+      "note": "老朽化した柵が外れ落下"
+    },
+    {
+      "id": "konomi_06",
+      "at": 1081,
+      "kind": "die",
+      "character": "konomi",
+      "note": "即死(同一分に move と die を置けないため1分後)"
+    },
+    {
+      "id": "sousuke_06",
+      "at": 1083,
+      "kind": "pickup",
+      "character": "sousuke",
+      "item": "drink",
+      "note": "飲み物を買う"
+    },
+    {
+      "id": "sousuke_07",
+      "at": 1084,
+      "kind": "learn",
+      "character": "sousuke",
+      "facts": [
+        "f_s_1800_vending"
+      ]
+    },
+    {
+      "id": "tsumugi_04",
+      "at": 1080,
+      "kind": "move",
+      "character": "tsumugi",
+      "to": "courtyard",
+      "arrive": 1081,
+      "note": "帰宅しようと校舎を出る"
+    },
+    {
+      "id": "tsumugi_05",
+      "at": 1082,
+      "kind": "observe",
+      "character": "tsumugi",
+      "location": "courtyard",
+      "facts": [
+        "f_t_1800_found_body"
+      ],
+      "targets": [
+        "konomi"
+      ],
+      "note": "悲鳴をあげ立ち尽くす"
+    },
+    {
+      "id": "tom_07",
+      "at": 1082,
+      "kind": "observe",
+      "character": "tom",
+      "location": "clubroom",
+      "facts": [
+        "f_tom_1800_scream_body"
+      ],
+      "note": "窓の下(courtyard)の遺体を部室から見る。別の場所の観察は表現できないため target なし"
+    },
+    {
+      "id": "sousuke_08",
+      "at": 1088,
+      "kind": "move",
+      "character": "sousuke",
+      "to": "roof",
+      "arrive": 1090
+    },
+    {
+      "id": "sousuke_09",
+      "at": 1091,
+      "kind": "observe",
+      "character": "sousuke",
+      "location": "roof",
+      "facts": [
+        "f_s_1810_found_body"
+      ],
+      "note": "柵が欠けておりコノミがいない。下を見ると遺体(別の場所の観察)"
+    },
+    {
+      "id": "tsumugi_06",
+      "at": 1110,
+      "kind": "learn",
+      "character": "tsumugi",
+      "facts": [
+        "f_fence_broken_fell",
+        "f_roof_unmaintained"
+      ],
+      "note": "警察の捜査結果(事前情報カード)"
+    },
+    {
+      "id": "sousuke_10",
+      "at": 1110,
+      "kind": "learn",
+      "character": "sousuke",
+      "facts": [
+        "f_fence_broken_fell",
+        "f_roof_unmaintained"
+      ],
+      "note": "警察の捜査結果(事前情報カード)"
+    },
+    {
+      "id": "tom_08",
+      "at": 1110,
+      "kind": "learn",
+      "character": "tom",
+      "facts": [
+        "f_fence_broken_fell",
+        "f_roof_unmaintained"
+      ],
+      "note": "警察の捜査結果(事前情報カード)"
+    }
+  ],
+  "clues": [
+    {
+      "id": "x_konomi_1",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_k_knew_tsumugi_likes_sousuke"
+      ],
+      "note": "コノミについて"
+    },
+    {
+      "id": "x_konomi_2",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_k_focus_on_club"
+      ],
+      "note": "コノミについて"
+    },
+    {
+      "id": "x_konomi_3",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_k_trumpet_leader"
+      ],
+      "note": "コノミについて"
+    },
+    {
+      "id": "x_sousuke_1",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_s_dating"
+      ],
+      "note": "ソウスケの心の声"
+    },
+    {
+      "id": "x_sousuke_2",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_s_wait_until_summer_con"
+      ],
+      "note": "ソウスケの心の声"
+    },
+    {
+      "id": "x_sousuke_3",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_s_konomi_scared"
+      ],
+      "note": "ソウスケの心の声"
+    },
+    {
+      "id": "x_tsumugi_1",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_t_konomi_confidant"
+      ],
+      "note": "ツムギの心の声"
+    },
+    {
+      "id": "x_tsumugi_2",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_t_likes_sousuke"
+      ],
+      "note": "ツムギの心の声"
+    },
+    {
+      "id": "x_tsumugi_3",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_t_konomi_felt_watched"
+      ],
+      "note": "ツムギの心の声"
+    },
+    {
+      "id": "x_tom_1",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_tom_confessed_rejected"
+      ],
+      "note": "トムの心の声"
+    },
+    {
+      "id": "x_tom_2",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_tom_anime_fan"
+      ],
+      "note": "トムの心の声"
+    },
+    {
+      "id": "x_tom_3",
+      "location": "investigation_deck",
+      "reveals": [
+        "f_tom_support_from_shadow"
+      ],
+      "note": "トムの心の声"
+    }
+  ],
+  "solution_facts": [
+    "f_s_dating",
+    "f_k_focus_on_club",
+    "f_t_konomi_confidant",
+    "f_k_knew_tsumugi_likes_sousuke",
+    "f_t_konomi_felt_watched",
+    "f_s_konomi_scared",
+    "f_tom_1750_saw_konomi_roof",
+    "f_fence_broken_fell"
+  ],
+  "handouts": [
+    {
+      "character": "tsumugi",
+      "knows": [
+        "f_t_1630_talk",
+        "f_t_1700_library",
+        "f_t_1800_found_body",
+        "f_t_konomi_confidant",
+        "f_t_likes_sousuke",
+        "f_t_konomi_felt_watched",
+        "f_fence_broken_fell",
+        "f_roof_unmaintained"
+      ]
+    },
+    {
+      "character": "sousuke",
+      "knows": [
+        "f_s_1700_practice",
+        "f_s_1750_roof",
+        "f_s_1800_vending",
+        "f_s_1810_found_body",
+        "f_s_dating",
+        "f_s_wait_until_summer_con",
+        "f_s_konomi_scared",
+        "f_s_kidnapper",
+        "f_fence_broken_fell",
+        "f_roof_unmaintained"
+      ]
+    },
+    {
+      "character": "tom",
+      "knows": [
+        "f_tom_1630_saw_talk",
+        "f_tom_1750_saw_konomi_roof",
+        "f_tom_1800_scream_body",
+        "f_tom_confessed_rejected",
+        "f_tom_anime_fan",
+        "f_tom_support_from_shadow",
+        "f_fence_broken_fell",
+        "f_roof_unmaintained"
+      ]
+    }
+  ],
+  "goals": [
+    {
+      "id": "g_tsumugi_identify_cause",
+      "owner": "tsumugi"
+    },
+    {
+      "id": "g_sousuke_identify_cause",
+      "owner": "sousuke"
+    },
+    {
+      "id": "g_tom_identify_cause",
+      "owner": "tom"
+    }
+  ],
+  "choices": [
+    {
+      "id": "c_vote_tsumugi",
+      "owner": "tsumugi",
+      "values": [
+        "tsumugi",
+        "sousuke",
+        "tom",
+        "other"
+      ],
+      "note": "コノミの死の原因だと思う人への投票"
+    },
+    {
+      "id": "c_vote_sousuke",
+      "owner": "sousuke",
+      "values": [
+        "tsumugi",
+        "sousuke",
+        "tom",
+        "other"
+      ],
+      "note": "コノミの死の原因だと思う人への投票"
+    },
+    {
+      "id": "c_vote_tom",
+      "owner": "tom",
+      "values": [
+        "tsumugi",
+        "sousuke",
+        "tom",
+        "other"
+      ],
+      "note": "コノミの死の原因だと思う人への投票"
+    }
+  ],
+  "constraints": [
+    {
+      "or": [
+        {
+          "and": [
+            {
+              "var": "g_tsumugi_identify_cause"
+            },
+            {
+              "eq": {
+                "var": "c_vote_tsumugi",
+                "value": "sousuke"
+              }
+            }
+          ]
+        },
+        {
+          "and": [
+            {
+              "not": {
+                "var": "g_tsumugi_identify_cause"
+              }
+            },
+            {
+              "not": {
+                "eq": {
+                  "var": "c_vote_tsumugi",
+                  "value": "sousuke"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "or": [
+        {
+          "and": [
+            {
+              "var": "g_sousuke_identify_cause"
+            },
+            {
+              "eq": {
+                "var": "c_vote_sousuke",
+                "value": "sousuke"
+              }
+            }
+          ]
+        },
+        {
+          "and": [
+            {
+              "not": {
+                "var": "g_sousuke_identify_cause"
+              }
+            },
+            {
+              "not": {
+                "eq": {
+                  "var": "c_vote_sousuke",
+                  "value": "sousuke"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "or": [
+        {
+          "and": [
+            {
+              "var": "g_tom_identify_cause"
+            },
+            {
+              "eq": {
+                "var": "c_vote_tom",
+                "value": "sousuke"
+              }
+            }
+          ]
+        },
+        {
+          "and": [
+            {
+              "not": {
+                "var": "g_tom_identify_cause"
+              }
+            },
+            {
+              "not": {
+                "eq": {
+                  "var": "c_vote_tom",
+                  "value": "sousuke"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "endings": [
+    {
+      "id": "end1_tsumugi",
+      "condition": {
+        "or": [
+          {
+            "and": [
+              {
+                "eq": {
+                  "var": "c_vote_tsumugi",
+                  "value": "tsumugi"
+                }
+              },
+              {
+                "eq": {
+                  "var": "c_vote_sousuke",
+                  "value": "tsumugi"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "eq": {
+                  "var": "c_vote_tsumugi",
+                  "value": "tsumugi"
+                }
+              },
+              {
+                "eq": {
+                  "var": "c_vote_tom",
+                  "value": "tsumugi"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "eq": {
+                  "var": "c_vote_sousuke",
+                  "value": "tsumugi"
+                }
+              },
+              {
+                "eq": {
+                  "var": "c_vote_tom",
+                  "value": "tsumugi"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "note": "ツムギが最多得票"
+    },
+    {
+      "id": "end2_sousuke",
+      "condition": {
+        "or": [
+          {
+            "and": [
+              {
+                "eq": {
+                  "var": "c_vote_tsumugi",
+                  "value": "sousuke"
+                }
+              },
+              {
+                "eq": {
+                  "var": "c_vote_sousuke",
+                  "value": "sousuke"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "eq": {
+                  "var": "c_vote_tsumugi",
+                  "value": "sousuke"
+                }
+              },
+              {
+                "eq": {
+                  "var": "c_vote_tom",
+                  "value": "sousuke"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "eq": {
+                  "var": "c_vote_sousuke",
+                  "value": "sousuke"
+                }
+              },
+              {
+                "eq": {
+                  "var": "c_vote_tom",
+                  "value": "sousuke"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "note": "ソウスケが最多得票"
+    },
+    {
+      "id": "end3_tom",
+      "condition": {
+        "or": [
+          {
+            "and": [
+              {
+                "eq": {
+                  "var": "c_vote_tsumugi",
+                  "value": "tom"
+                }
+              },
+              {
+                "eq": {
+                  "var": "c_vote_sousuke",
+                  "value": "tom"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "eq": {
+                  "var": "c_vote_tsumugi",
+                  "value": "tom"
+                }
+              },
+              {
+                "eq": {
+                  "var": "c_vote_tom",
+                  "value": "tom"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "eq": {
+                  "var": "c_vote_sousuke",
+                  "value": "tom"
+                }
+              },
+              {
+                "eq": {
+                  "var": "c_vote_tom",
+                  "value": "tom"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "note": "トムが最多得票"
+    },
+    {
+      "id": "end4_other_or_tie",
+      "note": "その他キャラクターが最多得票、もしくは同数",
+      "condition": {
+        "or": [
+          {
+            "or": [
+              {
+                "and": [
+                  {
+                    "eq": {
+                      "var": "c_vote_tsumugi",
+                      "value": "other"
+                    }
+                  },
+                  {
+                    "eq": {
+                      "var": "c_vote_sousuke",
+                      "value": "other"
+                    }
+                  }
+                ]
+              },
+              {
+                "and": [
+                  {
+                    "eq": {
+                      "var": "c_vote_tsumugi",
+                      "value": "other"
+                    }
+                  },
+                  {
+                    "eq": {
+                      "var": "c_vote_tom",
+                      "value": "other"
+                    }
+                  }
+                ]
+              },
+              {
+                "and": [
+                  {
+                    "eq": {
+                      "var": "c_vote_sousuke",
+                      "value": "other"
+                    }
+                  },
+                  {
+                    "eq": {
+                      "var": "c_vote_tom",
+                      "value": "other"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "not": {
+              "or": [
+                {
+                  "or": [
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_tsumugi",
+                            "value": "tsumugi"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_sousuke",
+                            "value": "tsumugi"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_tsumugi",
+                            "value": "tsumugi"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_tom",
+                            "value": "tsumugi"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_sousuke",
+                            "value": "tsumugi"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_tom",
+                            "value": "tsumugi"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "or": [
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_tsumugi",
+                            "value": "sousuke"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_sousuke",
+                            "value": "sousuke"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_tsumugi",
+                            "value": "sousuke"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_tom",
+                            "value": "sousuke"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_sousuke",
+                            "value": "sousuke"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_tom",
+                            "value": "sousuke"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "or": [
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_tsumugi",
+                            "value": "tom"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_sousuke",
+                            "value": "tom"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_tsumugi",
+                            "value": "tom"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_tom",
+                            "value": "tom"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_sousuke",
+                            "value": "tom"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_tom",
+                            "value": "tom"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "or": [
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_tsumugi",
+                            "value": "other"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_sousuke",
+                            "value": "other"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_tsumugi",
+                            "value": "other"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_tom",
+                            "value": "other"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "and": [
+                        {
+                          "eq": {
+                            "var": "c_vote_sousuke",
+                            "value": "other"
+                          }
+                        },
+                        {
+                          "eq": {
+                            "var": "c_vote_tom",
+                            "value": "other"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
