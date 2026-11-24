@@ -1,3 +1,3 @@
-{"spec_version": "0.5.1",
+{"spec_version": "0.6.0",
  "diagnostics":
  [{"severity": "error", "code": "K008", "args": ["f_claim", "1260", "1270"]}]}

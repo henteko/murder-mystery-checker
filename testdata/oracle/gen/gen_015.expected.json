@@ -1,11 +1,6 @@
-{"spec_version": "0.5.1",
+{"spec_version": "0.6.0",
  "diagnostics":
- [{"severity": "error", "code": "G003", "args": ["end_tie"]},
-  {"severity": "error",
-   "event": "e01",
-   "code": "I001",
-   "args": ["c1", "i0", "character:c0"]},
-  {"severity": "error", "code": "K004", "args": ["cl0", "i0"]},
-  {"severity": "warning",
-   "code": "T009",
-   "args": ["c1", "c2", "l2", "1024", "1059"]}]}
+ [{"severity": "error",
+   "event": "e07",
+   "code": "R002",
+   "args": ["event:e07", "character", "ghost"]}]}

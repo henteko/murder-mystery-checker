@@ -1,11 +1,3 @@
-{"spec_version": "0.5.1",
+{"spec_version": "0.6.0",
  "diagnostics":
- [{"witness": {"v1": "p", "v0": "p", "g2": false, "g1": false, "g0": true},
-   "severity": "error",
-   "code": "G001",
-   "args": []},
-  {"severity": "error",
-   "event": "e02",
-   "code": "I001",
-   "args": ["c3", "i0", "character:c0"]},
-  {"severity": "error", "code": "K008", "args": ["f_claim", "677", "667"]}]}
+ [{"severity": "error", "code": "R009", "args": ["goal:g0", "v0", ""]}]}

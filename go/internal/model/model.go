@@ -174,9 +174,12 @@ type Board struct {
 
 // Goal はゴール。
 type Goal struct {
-	ID            string
-	Owner         string
-	RequiresItems []string
+	ID                string
+	Owner             string
+	RequiresItems     []string
+	RequiresKnowledge []string
+	// Condition は達成条件(ゴール ⇔ Condition)。nil なら条件なし
+	Condition *Formula
 }
 
 // Choice はプレイヤーの選択。Values が nil なら真偽値の選択。

@@ -1,0 +1,6 @@
+{"spec_version": "0.6.0",
+ "diagnostics":
+ [{"severity": "error", "code": "G004", "args": ["g_alice"]},
+  {"severity": "warning",
+   "code": "T009",
+   "args": ["bob", "victim", "study", "1260", "1270"]}]}

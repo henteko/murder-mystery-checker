@@ -264,6 +264,68 @@ func (n namer) args(d check.Diag) string {
 	return strings.Join(out, " / ")
 }
 
+// variable は変数(ゴールまたは選択)の表示名。
+func (n namer) variable(id string) string {
+	if l, ok := n.l["goal"][id]; ok && l.Name != "" {
+		return l.Name
+	}
+	return n.name("choice", id)
+}
+
+// formula は論理式を読める形にする。
+func (n namer) formula(f check.FormulaView) string {
+	join := func(sep string) string {
+		parts := make([]string, len(f.Subs))
+		for i, g := range f.Subs {
+			parts[i] = n.formula(g)
+			if len(g.Subs) > 1 {
+				parts[i] = "(" + parts[i] + ")"
+			}
+		}
+		return strings.Join(parts, sep)
+	}
+	votes := func() string {
+		out := make([]string, len(f.Votes))
+		for i, v := range f.Votes {
+			out[i] = n.variable(v)
+		}
+		return strings.Join(out, "・")
+	}
+	switch f.Kind {
+	case "const":
+		if f.Const {
+			return "常に真"
+		}
+		return "常に偽"
+	case "var":
+		return n.variable(f.Var)
+	case "eq":
+		return n.variable(f.Var) + " が「" + f.Value + "」"
+	case "plurality":
+		return votes() + " で「" + f.Value + "」が単独最多"
+	case "tie":
+		return votes() + " で最多が同数"
+	case "not":
+		if len(f.Subs) == 1 {
+			if g := f.Subs[0]; g.Kind == "eq" {
+				return n.variable(g.Var) + " が「" + g.Value + "」ではない"
+			}
+			return "「" + n.formula(f.Subs[0]) + "」ではない"
+		}
+	case "and":
+		if len(f.Subs) == 0 {
+			return "常に真"
+		}
+		return join(" かつ ")
+	case "or":
+		if len(f.Subs) == 0 {
+			return "常に偽"
+		}
+		return join(" または ")
+	}
+	return f.Kind
+}
+
 func funcs(labels check.Labels) template.FuncMap {
 	n := namer{labels}
 	return template.FuncMap{
@@ -280,6 +342,8 @@ func funcs(labels check.Labels) template.FuncMap {
 		"holder":   n.holder,
 		"sentence": n.sentence,
 		"args":     n.args,
+		"formula":  n.formula,
+		"variable": n.variable,
 		"deref": func(p *string) string {
 			if p == nil {
 				return ""
@@ -442,6 +506,21 @@ ul.facts li.solution { font-weight: 700; }
     <tr><th>知識</th><th>対象のイベント</th><th>主張</th><th>実際</th><th>許容誤差</th><th></th></tr>
     {{range .Claims}}<tr><td>{{fact .Fact}}{{if not .Truth}} (偽){{end}}<div class="eid">{{.Fact}}</div></td><td class="mono">{{.Event}}{{if eq .Point "arrive"}}(到着){{end}}</td><td class="time">{{time .Claimed}}</td><td class="time">{{if .Found}}{{time .Actual}}{{else}}(イベントがない){{end}}</td><td>{{.Tolerance}} 分</td><td>{{if not .Truth}}<span class="pill">検査対象外</span>{{else if not .Found}}{{else if .OK}}<span class="pill ok">範囲内</span>{{else}}<span class="pill error">ずれ</span>{{end}}</td></tr>
     {{end}}
+  </table></div>
+</section>{{end}}
+
+{{if .Goals}}<section id="goals">
+  <h2>ゴール</h2>
+  <p class="note">達成に必要なもの(必要なアイテム・知識)と達成条件、制約のもとで達成される選び方の数。必要な知識は「入手可能」(終了時にプレイヤーの誰かが知っているか、手がかりで明かされる)でなければ達成できない。</p>
+  <div class="scroll"><table>
+    <tr><th>キャラクター</th><th>ゴール</th><th>必要なもの・達成条件</th><th>達成される選び方</th></tr>
+    {{range .Goals}}<tr><td>{{name "character" .Owner}}</td>
+    <td>{{variable .ID}}{{with note "goal" .ID}}<div class="memo">{{.}}</div>{{end}}<div class="eid">{{.ID}}</div></td>
+    <td>{{$lost := .ItemsLost}}{{if .Items}}<div>アイテム: {{range $i, $it := .Items}}{{if $i}}、{{end}}{{name "item" $it}}{{end}}{{if $lost}} <span class="pill error">使い切られている: {{range $i, $it := $lost}}{{if $i}}、{{end}}{{name "item" $it}}{{end}}</span>{{end}}</div>{{end}}
+      {{if .Knowledge}}<div>知識:<ul class="facts">{{range .Knowledge}}<li>{{fact .Fact.ID}} {{if .Obtainable}}<span class="pill ok">入手可能</span>{{else}}<span class="pill error">入手できない</span>{{end}} <span class="eid">{{.Fact.ID}}</span></li>{{end}}</ul></div>{{end}}
+      {{with .Condition}}<div>達成条件: {{formula .}}</div>{{end}}
+      {{if not (or .Items .Knowledge .Condition)}}<span class="eid">(書かれていない。どの選び方でも達成・未達成の両方がありうる)</span>{{end}}</td>
+    <td>{{if .Counted}}{{.TrueIn}} / {{.OfPatterns}}{{if and .OfPatterns (eq .TrueIn 0)}} <span class="pill error">達成できない</span>{{else if and .OfPatterns (eq .TrueIn .OfPatterns)}} <span class="pill warning">必ず達成</span>{{end}}{{else}}—{{end}}</td></tr>{{end}}
   </table></div>
 </section>{{end}}
 

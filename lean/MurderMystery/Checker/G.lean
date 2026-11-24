@@ -5,8 +5,11 @@ import MurderMystery.Checker.Post
 -/
 namespace MurderMystery
 
-/-- 導出制約 (§4.7)。 -/
-def Scenario.derivedConstraints (s : Scenario) : List Formula :=
+/-- a ⇔ b。 -/
+def Formula.iff (a b : Formula) : Formula := .or [.and [a, b], .and [.not a, .not b]]
+
+/-- 導出制約 1, 2: requires_items から (§4.7)。 -/
+def Scenario.itemConstraints (s : Scenario) : List Formula :=
   let E := s.final
   let lost := s.goals.filterMap fun g =>
     if g.requiresItems.any (fun i => E.holder i == .consumed) then some (Formula.not (.var g.id)) else none
@@ -16,6 +19,19 @@ def Scenario.derivedConstraints (s : Scenario) : List Formula :=
       some (Formula.not (.and [.var g₁.id, .var g₂.id]))
     else none
   lost ++ clash
+
+/-- 導出制約 3: requires_knowledge に入手可能でない知識があるゴールは達成できない (§4.7)。 -/
+def Scenario.knowledgeConstraints (s : Scenario) : List Formula :=
+  s.goals.filterMap fun g =>
+    if g.requiresKnowledge.any (fun f => !s.obtainable f) then some (Formula.not (.var g.id)) else none
+
+/-- 導出制約 4: ゴールが真 ⇔ condition (§4.7)。 -/
+def Scenario.conditionConstraints (s : Scenario) : List Formula :=
+  s.goals.filterMap fun g => g.condition.map (Formula.iff (.var g.id))
+
+/-- 導出制約 (§4.7)。 -/
+def Scenario.derivedConstraints (s : Scenario) : List Formula :=
+  s.itemConstraints ++ s.knowledgeConstraints ++ s.conditionConstraints
 
 def Scenario.effectiveConstraints (s : Scenario) : List Formula := s.constraints ++ s.derivedConstraints
 

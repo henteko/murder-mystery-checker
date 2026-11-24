@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.5.1",
+  "spec_version": "0.6.0",
   "note": "荒木コノミの真相 (araki-konomi-no-shinsou) のモデル化サンプル。移動時間は推定値。",
   "start_time": 960,
   "end_time": 1110,
@@ -881,20 +881,42 @@
   "goals": [
     {
       "id": "g_tsumugi_identify_cause",
-      "owner": "tsumugi"
+      "name": "ツムギ: コノミの死の原因を突き止める",
+      "owner": "tsumugi",
+      "condition": {
+        "eq": {
+          "var": "c_vote_tsumugi",
+          "value": "sousuke"
+        }
+      }
     },
     {
       "id": "g_sousuke_identify_cause",
-      "owner": "sousuke"
+      "name": "ソウスケ: コノミの死の原因を突き止める",
+      "owner": "sousuke",
+      "condition": {
+        "eq": {
+          "var": "c_vote_sousuke",
+          "value": "sousuke"
+        }
+      }
     },
     {
       "id": "g_tom_identify_cause",
-      "owner": "tom"
+      "name": "トム: コノミの死の原因を突き止める",
+      "owner": "tom",
+      "condition": {
+        "eq": {
+          "var": "c_vote_tom",
+          "value": "sousuke"
+        }
+      }
     }
   ],
   "choices": [
     {
       "id": "c_vote_tsumugi",
+      "name": "ツムギの投票",
       "owner": "tsumugi",
       "values": [
         "tsumugi",
@@ -906,6 +928,7 @@
     },
     {
       "id": "c_vote_sousuke",
+      "name": "ソウスケの投票",
       "owner": "sousuke",
       "values": [
         "tsumugi",
@@ -917,6 +940,7 @@
     },
     {
       "id": "c_vote_tom",
+      "name": "トムの投票",
       "owner": "tom",
       "values": [
         "tsumugi",
@@ -925,110 +949,6 @@
         "other"
       ],
       "note": "コノミの死の原因だと思う人への投票"
-    }
-  ],
-  "constraints": [
-    {
-      "or": [
-        {
-          "and": [
-            {
-              "var": "g_tsumugi_identify_cause"
-            },
-            {
-              "eq": {
-                "var": "c_vote_tsumugi",
-                "value": "sousuke"
-              }
-            }
-          ]
-        },
-        {
-          "and": [
-            {
-              "not": {
-                "var": "g_tsumugi_identify_cause"
-              }
-            },
-            {
-              "not": {
-                "eq": {
-                  "var": "c_vote_tsumugi",
-                  "value": "sousuke"
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "or": [
-        {
-          "and": [
-            {
-              "var": "g_sousuke_identify_cause"
-            },
-            {
-              "eq": {
-                "var": "c_vote_sousuke",
-                "value": "sousuke"
-              }
-            }
-          ]
-        },
-        {
-          "and": [
-            {
-              "not": {
-                "var": "g_sousuke_identify_cause"
-              }
-            },
-            {
-              "not": {
-                "eq": {
-                  "var": "c_vote_sousuke",
-                  "value": "sousuke"
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "or": [
-        {
-          "and": [
-            {
-              "var": "g_tom_identify_cause"
-            },
-            {
-              "eq": {
-                "var": "c_vote_tom",
-                "value": "sousuke"
-              }
-            }
-          ]
-        },
-        {
-          "and": [
-            {
-              "not": {
-                "var": "g_tom_identify_cause"
-              }
-            },
-            {
-              "not": {
-                "eq": {
-                  "var": "c_vote_tom",
-                  "value": "sousuke"
-                }
-              }
-            }
-          ]
-        }
-      ]
     }
   ],
   "endings": [

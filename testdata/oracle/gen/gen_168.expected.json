@@ -1,6 +1,2 @@
-{"spec_version": "0.5.1",
- "diagnostics":
- [{"severity": "error",
-   "event": "e08",
-   "code": "R002",
-   "args": ["event:e08", "character", "ghost"]}]}
+{"spec_version": "0.6.0",
+ "diagnostics": [{"severity": "error", "code": "R003", "args": ["c1"]}]}

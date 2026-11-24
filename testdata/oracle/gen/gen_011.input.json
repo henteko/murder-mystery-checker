@@ -1,24 +1,27 @@
 {
- "spec_version": "0.5.1",
+ "spec_version": "0.6.0",
  "_case": {
   "doc": "ランダム生成 (seed 20261124, #11)"
  },
- "start_time": 1153,
- "end_time": 1245,
+ "start_time": 950,
+ "end_time": 1060,
  "claim_tolerance": 0,
  "characters": [
   {
    "id": "c0"
   },
   {
-   "id": "c1",
+   "id": "c1"
+  },
+  {
+   "id": "c2",
    "npc": true
   }
  ],
  "areas": [
   {
    "id": "a0",
-   "internal_minutes": 4
+   "internal_minutes": 5
   },
   {
    "id": "a1",
@@ -32,43 +35,56 @@
   },
   {
    "id": "l1",
-   "area": "a1"
-  },
-  {
-   "id": "l2",
-   "area": "a1"
-  },
-  {
-   "id": "l3",
-   "area": "a1",
-   "public": true
-  },
-  {
-   "id": "l4",
    "area": "a0"
+  },
+  {
+   "id": "l2"
   }
  ],
- "travel": [],
- "perception": [
+ "travel": [
   {
-   "from": "l2",
-   "to": "l3",
+   "from": "l0",
+   "to": "l2",
+   "minutes": 7,
+   "bidirectional": false
+  },
+  {
+   "from": "l0",
+   "to": "l1",
+   "minutes": 3,
    "bidirectional": false
   },
   {
    "from": "l1",
-   "to": "l4",
+   "to": "l2",
+   "minutes": 6,
+   "bidirectional": true
+  }
+ ],
+ "perception": [
+  {
+   "from": "l1",
+   "to": "l2",
+   "bidirectional": false
+  },
+  {
+   "from": "l0",
+   "to": "l1",
    "bidirectional": true
   }
  ],
  "placements": [
   {
    "character": "c0",
-   "location": "l4"
+   "location": "l1"
   },
   {
    "character": "c1",
-   "location": "l2"
+   "location": "l0"
+  },
+  {
+   "character": "c2",
+   "location": "l1"
   }
  ],
  "items": [
@@ -87,85 +103,44 @@
    "id": "f1"
   },
   {
+   "id": "f2"
+  },
+  {
    "id": "f_claim",
    "about": {
-    "event": "e04",
+    "event": "e02",
     "point": "at"
    },
-   "claimed_at": 1165
+   "claimed_at": 968
   }
  ],
  "initial_knowledge": [
   {
-   "character": "c0",
-   "fact": "f0"
-  },
-  {
    "character": "c1",
-   "fact": "f0"
-  },
-  {
-   "character": "c0",
-   "fact": "f0"
+   "fact": "f2"
   }
  ],
  "events": [
   {
-   "id": "e04",
-   "at": 1164,
-   "kind": "die",
-   "character": "c0"
+   "id": "e00",
+   "at": 952,
+   "kind": "drop",
+   "character": "c1",
+   "item": "i0"
   },
   {
-   "id": "e05",
-   "at": 1169,
+   "id": "e01",
+   "at": 955,
    "kind": "consume",
    "character": "c0",
    "item": "i0"
   },
   {
-   "id": "e00",
-   "at": 1154,
-   "kind": "learn",
-   "character": "c0",
-   "facts": [
-    "f0"
-   ]
-  },
-  {
-   "id": "e03",
-   "at": 1162,
-   "kind": "scene",
-   "location": "l4",
-   "participants": [
-    "c0"
-   ]
-  },
-  {
-   "id": "e06",
-   "at": 1170,
-   "kind": "transfer",
-   "from": "c1",
-   "to": "c0",
-   "item": "i0"
-  },
-  {
-   "id": "e01",
-   "at": 1159,
-   "kind": "tell",
-   "from": "c0",
-   "to": "c1",
-   "facts": [
-    "f0"
-   ]
-  },
-  {
    "id": "e02",
-   "at": 1160,
-   "kind": "move",
+   "at": 958,
+   "kind": "use",
    "character": "c1",
-   "to": "l3",
-   "arrive": 1172
+   "item": "i0"
   }
  ],
  "clues": [
@@ -174,38 +149,60 @@
    "reveals": [
     "f0"
    ],
-   "deck": "deck"
+   "item": "i0",
+   "location": "l0"
   }
  ],
  "solution_facts": [
-  "f1"
+  "f1",
+  "f0"
  ],
  "assertions": [
   {
    "id": "as0",
    "kind": "present",
    "location": "l0",
-   "at": 1237,
+   "at": 1007,
    "characters": [
     "c0"
    ]
-  }
- ],
- "handouts": [],
- "board": [
-  {
-   "location": "l2",
-   "items": []
   },
   {
-   "location": "l3",
+   "id": "as1",
+   "kind": "present",
+   "location": "l2",
+   "at": 1002,
+   "characters": [
+    "c2"
+   ]
+  }
+ ],
+ "handouts": [
+  {
+   "character": "c1",
+   "items": []
+  }
+ ],
+ "board": [
+  {
+   "location": "l1",
    "items": []
   }
  ],
  "goals": [
   {
    "id": "g0",
-   "owner": "c0"
+   "owner": "c0",
+   "requires_knowledge": [
+    "f2"
+   ]
+  },
+  {
+   "id": "g1",
+   "owner": "c1",
+   "requires_items": [
+    "i0"
+   ]
   }
  ],
  "choices": [
@@ -214,8 +211,13 @@
    "owner": "c0",
    "values": [
     "p",
-    "q"
+    "q",
+    "r"
    ]
+  },
+  {
+   "id": "flag",
+   "owner": "c1"
   }
  ],
  "endings": [
@@ -238,6 +240,17 @@
       "v0"
      ],
      "value": "q"
+    }
+   }
+  },
+  {
+   "id": "end_r",
+   "condition": {
+    "plurality": {
+     "votes": [
+      "v0"
+     ],
+     "value": "r"
     }
    }
   },

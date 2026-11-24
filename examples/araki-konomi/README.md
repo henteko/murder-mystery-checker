@@ -1,9 +1,9 @@
 # サンプル: 荒木コノミの真相
 
-`riddory/docs/stories/araki-konomi-no-shinsou` のハンドアウト・エンディング・真相・カード(ルームデータ内 23 枚)を、**仕様 0.5.1** の正規化 JSON で表したもの(0.3.0 で作成)。
+`riddory/docs/stories/araki-konomi-no-shinsou` のハンドアウト・エンディング・真相・カード(ルームデータ内 23 枚)を、**仕様 0.6.0** の正規化 JSON で表したもの(0.3.0 で作成)。
 
 - `scenario.json`: モデル化したシナリオ(イベント 29 件、証言 10 件、偽の知識 3 件、断言 3 件)
-- `expected.json`: 仕様 0.5.1 の Lean オラクルの出力(Python の試作判定器の出力とも一致)。
+- `expected.json`: 仕様 0.6.0 の Lean オラクルの出力(Python の試作判定器の出力とも一致)。
 
 ## モデル化の方針
 

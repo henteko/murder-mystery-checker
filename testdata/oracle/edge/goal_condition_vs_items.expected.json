@@ -1,0 +1,6 @@
+{"spec_version": "0.6.0",
+ "diagnostics":
+ [{"severity": "error", "code": "G003", "args": ["end_a"]},
+  {"severity": "error", "code": "G004", "args": ["g_alice"]},
+  {"severity": "warning", "code": "G006", "args": ["c_vote"]},
+  {"severity": "warning", "code": "G009", "args": ["c_vote", "alice"]}]}

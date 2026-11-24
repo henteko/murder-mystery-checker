@@ -91,6 +91,15 @@ func TestExplainAgreesWithChecker(t *testing.T) {
 				}
 			}
 		}
+		// ゴール: 達成される選び方が 0 ⇔ G004、すべて ⇔ G006(パターンがあるときだけ数える)
+		for _, g := range r.Goals {
+			if !g.Counted || g.OfPatterns == 0 || r.RGated {
+				continue
+			}
+			if (g.TrueIn == 0) != has(ds, "G004", g.ID) || (g.TrueIn == g.OfPatterns) != has(ds, "G006", g.ID) {
+				t.Errorf("%s: goal %s true in %d/%d disagrees with G004/G006", p, g.ID, g.TrueIn, g.OfPatterns)
+			}
+		}
 		// エンディング: 選び方 0 通り ⇔ G005、エンディングなしがある ⇔ G001、2つ以上がある ⇔ G002
 		if e := r.Endings; e.Skipped == "" {
 			if (e.Total == 0) != has(ds, "G005") || (e.NoEnding > 0) != has(ds, "G001") || (e.Multiple > 0) != has(ds, "G002") {

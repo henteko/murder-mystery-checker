@@ -31,6 +31,7 @@ type Report struct {
 	Assertions         []AssertionCheck
 	Claims             []ClaimCheck
 	Endings            EndingTable
+	Goals              []GoalView
 }
 
 // GridRow は1人分の居場所の帯。
@@ -143,6 +144,43 @@ type ClaimCheck struct {
 	Truth, Found, OK   bool
 }
 
+// FormulaView は論理式。Kind は "const" / "var" / "eq" / "plurality" / "tie" / "not" / "and" / "or"。
+type FormulaView struct {
+	Kind  string
+	Const bool
+	Var   string
+	Value string
+	Votes []string
+	Subs  []FormulaView
+}
+
+func formulaView(f m.Formula) FormulaView {
+	v := FormulaView{Kind: [...]string{"const", "var", "eq", "plurality", "tie", "not", "and", "or"}[f.Kind],
+		Const: f.Const, Var: f.Var, Value: f.Value, Votes: f.Votes}
+	for _, g := range f.Subs {
+		v.Subs = append(v.Subs, formulaView(g))
+	}
+	return v
+}
+
+// Knowledge は必要な知識と、それが入手可能(§2.5)か。
+type Knowledge struct {
+	Fact       FactRef
+	Obtainable bool
+}
+
+// GoalView はゴール1つ。TrueIn は、ゴールが達成される選び方の数(Counted が false なら数えていない)。
+type GoalView struct {
+	ID, Owner  string
+	Items      []string
+	ItemsLost  []string // requires_items のうち、終了時に使い切られているもの
+	Knowledge  []Knowledge
+	Condition  *FormulaView
+	Counted    bool
+	TrueIn     int
+	OfPatterns int
+}
+
 // EndingTable は選び方ごとのエンディング。
 type EndingTable struct {
 	Skipped  string // 表を作らなかった理由
@@ -153,6 +191,8 @@ type EndingTable struct {
 	Counts   []EndingCount
 	NoEnding int
 	Multiple int
+	// GoalTrue はゴールごとの、達成される選び方の数
+	GoalTrue map[string]int
 }
 
 // EndingRow は選び方1つ。
@@ -341,6 +381,25 @@ func Explain(s *m.Scenario) Report {
 		r.Claims = append(r.Claims, c)
 	}
 	r.Endings = endingTable(w)
+	for _, g := range s.Goals {
+		gv := GoalView{ID: g.ID, Owner: g.Owner, Items: g.RequiresItems}
+		for _, i := range g.RequiresItems {
+			if final.Holder(i).Kind == m.HolderConsumed {
+				gv.ItemsLost = append(gv.ItemsLost, i)
+			}
+		}
+		for _, f := range g.RequiresKnowledge {
+			gv.Knowledge = append(gv.Knowledge, Knowledge{ref(f), w.obtainable(f)})
+		}
+		if g.Condition != nil {
+			fv := formulaView(*g.Condition)
+			gv.Condition = &fv
+		}
+		if r.Endings.Skipped == "" {
+			gv.Counted, gv.TrueIn, gv.OfPatterns = true, r.Endings.GoalTrue[g.ID], r.Endings.Total
+		}
+		r.Goals = append(r.Goals, gv)
+	}
 	return r
 }
 
@@ -483,6 +542,7 @@ func endingTable(w *world) EndingTable {
 	}
 	cons := w.effectiveConstraints()
 	ends := sortedEndings(w.s)
+	t.GoalTrue = map[string]int{}
 	counts := make([]int, len(ends))
 	vals := make([]Val, len(doms))
 	var visit func(i int)
@@ -501,6 +561,11 @@ func endingTable(w *world) EndingTable {
 			}
 		}
 		t.Total++
+		for _, g := range w.s.Goals {
+			if sigma.get(g.ID) == boolVal(true) {
+				t.GoalTrue[g.ID]++
+			}
+		}
 		var hit []string
 		for k, e := range ends {
 			if eval(sigma, e.Condition) {

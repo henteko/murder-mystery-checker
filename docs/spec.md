@@ -1,6 +1,6 @@
 # mmcheck 仕様書
 
-- 仕様バージョン: **0.5.1**
+- 仕様バージョン: **0.6.0**
 - 本書が唯一の正(single source of truth)。Lean モデル (`lean/`) は本書を形式化し、Go 実装 (`go/`) は Lean モデルと差分テストで一致させる。
 - 本書を変更した場合は仕様バージョンを上げ、Lean → オラクル → Go の順に追従させる。
 - 変更履歴は §10。
@@ -54,7 +54,7 @@ Lean オラクルと Go 実装が共通に受け付ける入力形式。作者�
 
 ```jsonc
 {
-  "spec_version": "0.5.1",
+  "spec_version": "0.6.0",
   "start_time": 1080,            // Time
   "end_time": 1440,              // Time
   "claim_tolerance": 5,          // Minutes。証言の時刻の許容誤差の既定値(省略時 0)
@@ -211,12 +211,16 @@ Lean オラクルと Go 実装が共通に受け付ける入力形式。作者�
 ```jsonc
 // goals[]
 {"id": "g_collect", "owner": "alice", "requires_items": ["knife", "key"]}  // requires_items は省略可
+{"id": "g_truth", "owner": "bob", "requires_knowledge": ["f_motive"],     // requires_knowledge と
+ "condition": {"eq": {"var": "c_vote", "value": "alice"}}}                // condition も省略可
 // choices[]
 {"id": "c_confess", "owner": "bob"}                                        // 真偽値の選択
 {"id": "c_vote", "owner": "bob", "values": ["alice", "bob", "tie"]}       // 列挙型の選択
 ```
 
 - `requires_items`: このゴールの達成には、**ゲーム終了時に owner がこれらのアイテムをすべて所持している**ことが必要(必要条件。十分条件ではない)。G 群で制約を導出するのに使う(§4.7)。
+- `requires_knowledge`: このゴールの達成には、これらの知識がすべて **入手可能**(§2.5)であることが必要(必要条件)。終了状態でプレイヤーの誰かが知っているか、手がかりで明かされる知識なら、owner はゲーム中に手に入れられるとみなす。
+- `condition`: このゴールの **達成条件**(論理式 §1.9)。ゴールが達成される ⇔ condition が真(必要十分条件)。`constraints` に `g ⇔ condition` を書くのと同じ。condition の中でそのゴール自身を参照してもよい。
 - `values` があれば列挙型、なければ真偽値。`values` は空でなく、重複を含まない。
 
 ### 1.9 論理式 (Formula)
@@ -341,7 +345,7 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
 
 - R002 の `referrer` は参照元を `"<kind>:<id>"` で表したもの: `event:e1`, `item:knife`(initial), `location:hall`(area), `placement:alice`, `initial_knowledge:alice`, `fact:f1`(contradicted_by, about), `clue:c1`, `solution`, `assertion:a1`, `handout:alice`, `board:study`, `goal:g1`, `choice:c1`, `constraint`, `ending:end1`, `travel`, `area_travel`, `perception`。R002 は (referrer, kind, id) の組ごとに1件出す。
 - R005 の `table` は `"travel"`、`"area_travel"`、`"perception"` のいずれか。
-- R009 / R012 の `referrer` は `constraint` または `ending:<id>`。R009 の `value` は `var` の誤りなら `""`。R010 の `refuter` は、truth: true なのに contradicted_by を持つ場合 `""`。
+- R009 / R012 の `referrer` は `constraint`、`ending:<id>` または `goal:<id>`(condition)。R009 の `value` は `var` の誤りなら `""`。R010 の `refuter` は、truth: true なのに contradicted_by を持つ場合 `""`。
 - R006 の reason:
   - `arrive_before_depart`: move で `arrive < at`
   - `self_transfer`: transfer で `from == to`
@@ -454,12 +458,14 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
 - 割り当て σ は各 vᵢ に dom(vᵢ) の値を対応させる。**割り当ての順序** は、(σ(v₁) の定義域内の位置, …, σ(vₙ) の定義域内の位置) の辞書式順序で決める(最小はすべて定義域の先頭)。
 - 割り当ての総数 N = Π |dom(vᵢ)|。
 
-#### 導出制約(requires_items から)
+#### 導出制約(requires_items / requires_knowledge / condition から)
 
 終了状態 E に基づいて、次の制約を `constraints` に加える。これを **実効制約** と呼ぶ。
 
 1. ゴール g の `requires_items` に `E.holder(i) == Consumed` のアイテム i がある → `¬g`(アイテムが失われていて達成できない)
 2. owner が異なるゴール g₁ < g₂ の `requires_items` に共通のアイテムがある → `¬(g₁ ∧ g₂)`(同じアイテムを2人が同時には持てない)
+3. ゴール g の `requires_knowledge` に入手可能(§2.5)でない知識がある → `¬g`(必要な知識に届く経路がない)
+4. ゴール g が `condition` c を持つ → `g ⇔ c`。論理式としては `{"or": [{"and": [{"var": g}, c]}, {"and": [{"not": {"var": g}}, {"not": c}]}]}`
 
 #### パターンとエンディング
 
@@ -492,7 +498,7 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
 
 ```jsonc
 {
-  "spec_version": "0.5.1",
+  "spec_version": "0.6.0",
   "diagnostics": [
     {
       "code": "T003",
@@ -562,7 +568,7 @@ Go CLI の `--strict` を付けると warning も 1 として扱う(Go の表示
 4. **同時刻イベントの交換可能性**: T005 と I004 の違反がなく、T012 も出ていなければ、時刻順を保つどの並べ方でイベントを処理しても、終了状態とイベントごとの検出結果(T / I / K 群)は変わらない。observe の対象は参加者ではないため T005 の対象外で、T012 の状況(「x が 10:00 に移動し、c が 10:00 に x を観察する」)では、ID の順によって T007 が出たり出なかったりする。
 5. **知識の単調性**: どのキャラクターについても、時刻が進んで知識が減ることはない。
 6. **仕様の無矛盾性**: 正しいシナリオが少なくとも1つ存在する(具体例を `decide` で示す)。
-7. **導出制約の正しさ**: owner の異なるゴールの集合について、「終了時の保持者の割り当てで、全ゴールの requires_items を同時に満たすものが存在する」⇔「消費済みのアイテムを要求しておらず、各組の requires_items が交わらない」。
+7. **導出制約の正しさ**: owner の異なるゴールの集合について、「終了時の保持者の割り当てで、全ゴールの requires_items を同時に満たすものが存在する」⇔「消費済みのアイテムを要求しておらず、各組の requires_items が交わらない」。さらに、割り当て σ が導出制約 1〜4 を満たす ⇔ (a) σ で真のゴールの集合について前者が成り立ち、(b) σ で真のゴールの requires_knowledge はどれも入手可能で、(c) condition を持つゴールの σ での値は condition の値と等しい。
 8. **区間の整合**: キャラクター c の move がどれも開始時刻以降に出発し(T001)、出発 ≤ 到着で(R006)、出発時に移動中でない(T006)なら、c の居場所の区間 `segments(c)` は時刻順に並んで互いに重ならず、各区間は空でない。さらに、開始時刻 ≤ t < 終了時刻で死亡時刻より前の t について、`whereAt(c, t)`(§2.4)は、時刻 t 以前のイベントをすべて処理した状態での居場所(移動中なら transit、そうでなければ最後の行き先)と一致する。イベントの処理前の状態(§2.1)とは一致しないことがある: 同じ時刻にあとから move するとき、そのイベントより前の処理前の状態ではまだ出発していないが、`whereAt` は出発時刻から transit になる。
 9. **移動時間の決定性**: R005 の違反がなければ、どの (from, to) についても一致するエントリは高々1つで、移動時間・知覚はその唯一のエントリで決まり、表の並び順によらない。
 10. **集計の分割**: votes が空でなければ、任意の σ について、`{plurality(v) | v ∈ 値の集合} ∪ {tie}` のうちちょうど1つが真になる。
@@ -582,7 +588,7 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 
 ```jsonc
 {
-  "spec_version": "0.5.1",
+  "spec_version": "0.6.0",
   "start_time": 1260, "end_time": 1320,
   "characters": [{"id": "alice"}, {"id": "bob"}],
   "areas": [{"id": "house", "internal_minutes": 5}],
@@ -609,7 +615,7 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 
 ```json
 {
-  "spec_version": "0.5.1",
+  "spec_version": "0.6.0",
   "diagnostics": [
     {"code": "A001", "severity": "error", "args": ["a1", "alice", "absent", "study"]},
     {"code": "G001", "severity": "error", "args": [], "witness": {"c_vote": "alice", "g_alice": false, "g_bob": false}},
@@ -630,6 +636,11 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 - T009 は出ない: alice と bob は 1272〜1320 に study に一緒にいるが、その間の e2(transfer)が2人を参加者に含むので、遭遇は認知されている。
 
 ## 10. 変更履歴
+
+- **0.6.0**
+  - §1.8: ゴールに `requires_knowledge`(必要な知識。入手可能でなければ達成できない)と `condition`(達成条件。ゴール ⇔ condition)を追加。これまで「秘密を探る」のような知識のゴールは書けず、達成条件は `constraints` に手で書いていた
+  - §4.7: 導出制約 3, 4。§4.1: condition も R002 / R009 / R012 の対象(referrer は `goal:<id>`)。requires_knowledge の知識は R002 の参照(`goal:<id>`, `fact`)
+  - §7 定理 7: 導出制約 3, 4 を含めた
 
 - **0.5.1**
   - §6.4: 入力エラーの条件を明確にした。数値は値が整数なら表記を問わない(0.5.0 の Lean オラクルは `1260.0` を入力エラーにし、`1.26e3` は受け付けていた)。指数部が 100,000 を超える数とキーの重複は入力エラー

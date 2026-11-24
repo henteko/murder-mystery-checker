@@ -3,7 +3,7 @@
     "doc": "整数値なら 1270.0 や 1.275e3 の表記も受け付ける(§6.4)",
     "expect": []
   },
-  "spec_version": "0.5.1",
+  "spec_version": "0.6.0",
   "start_time": 1260,
   "end_time": 1320,
   "characters": [

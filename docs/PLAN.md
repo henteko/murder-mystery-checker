@@ -119,3 +119,13 @@ CI(.github/workflows/ci.yml)で、仕様・Lean・Go のずれを止める。
 - `make audit`、`make ci`(CI と同じ検査をまとめて実行)
 
 確認: 新しく clone したリポジトリで `make ci` が通ることを確かめた(GitHub Actions 上での実行はまだ。初回の push で確かめる)。
+
+## 仕様 0.6.0: ゴールの必要な知識と達成条件 (2026-11-24)
+
+ゴールに `requires_knowledge`(入手可能でなければ達成できない)と `condition`(ゴール ⇔ 式)を加えた。これまで「秘密を探る」のような知識のゴールは書けず、達成条件は `constraints` に手で書いていた。
+
+- 仕様: §1.8、§4.7 の導出制約 3, 4、R002 / R009 / R012 の対象に condition を追加
+- Lean: `Goal` に2フィールド(`Formula` の決定可能な等号を手で書いた)。導出制約を `itemConstraints` / `knowledgeConstraints` / `conditionConstraints` に分け、定理 7 を `knowledge_iff`、`condition_iff` で拡張。並べ替え不変(clues / characters / goals)の証明を更新
+- Go: 同じ導出制約。explain にゴールの節(達成される選び方の数は G004 / G006 と一致することをテスト)
+- テスト: 手書きケース 11 件、ランダム生成に2フィールド
+- サンプル: 六角館の6件と荒木コノミの3件の「ゴール ⇔ 投票」を constraints から condition に移した(検出結果は同じ)

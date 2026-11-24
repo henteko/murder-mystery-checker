@@ -6,8 +6,10 @@ import MurderMystery.Proofs.G
 ゴールの集合が「ゲーム終了時に同時に達成可能」(消費済みのアイテムは消費済みのまま、
 各ゴールの requires_items をその owner が持つような保持者の割り当てがある)であることは、
 「消費済みのアイテムを要求せず、owner の異なるゴールどうしで requires_items が交わらない」ことと同値。
-さらに、判定器の導出制約 `derivedConstraints` を割り当てが満たすことは、
-その割り当てで真のゴールの集合が同時に達成可能であることと同値。
+さらに、判定器の導出制約 `derivedConstraints` を割り当てが満たすことは、次の3つの連言と同値。
+- その割り当てで真のゴールの集合が同時に達成可能(requires_items)
+- 真のゴールの requires_knowledge はどれも入手可能(§2.5)
+- condition を持つゴールは、その値が condition の値と等しい
 -/
 namespace MurderMystery
 
@@ -95,13 +97,13 @@ theorem eval_not_and (σ : Assignment) (g₁ g₂ : Goal) :
 theorem any_contains_iff (a b : List Id) : a.any b.contains = true ↔ ∃ i ∈ a, i ∈ b := by
   simp [List.any_eq_true]
 
-/-- 導出制約を満たす ⇔ 真のゴールの集合が `Compatible`(よって `Realizable`)。 -/
-theorem derived_iff (s : Scenario) (σ : Assignment) :
-    (s.derivedConstraints.all fun c => c.eval σ) = true ↔
+/-- requires_items の導出制約を満たす ⇔ 真のゴールの集合が `Compatible`(よって `Realizable`)。 -/
+theorem items_iff (s : Scenario) (σ : Assignment) :
+    (s.itemConstraints.all fun c => c.eval σ) = true ↔
       Compatible s.final.holder (s.goals.filter (goalOn σ)) := by
   have hperm : ∀ g, g ∈ s.goals.mergeSort (fun a b => decide (a.id ≤ b.id)) ↔ g ∈ s.goals :=
     fun g => List.mem_mergeSort
-  simp only [Scenario.derivedConstraints, List.all_append, Bool.and_eq_true, List.all_eq_true,
+  simp only [Scenario.itemConstraints, List.all_append, Bool.and_eq_true, List.all_eq_true,
     List.mem_filterMap, Compatible, List.mem_filter]
   constructor
   · rintro ⟨hl, hc⟩
@@ -142,5 +144,57 @@ theorem derived_iff (s : Scenario) (σ : Assignment) :
         cases on₁ : goalOn σ g₁ <;> cases on₂ : goalOn σ g₂ <;> try rfl
         exact absurd hi₂ (hc g₁ ⟨(hperm g₁).mp m₁, on₁⟩ g₂ ⟨(hperm g₂).mp m₂, on₂⟩ ho i hi₁)
       · cases hcg
+
+/-- requires_knowledge の導出制約を満たす ⇔ 真のゴールが要求する知識はどれも入手可能。 -/
+theorem knowledge_iff (s : Scenario) (σ : Assignment) :
+    (s.knowledgeConstraints.all fun c => c.eval σ) = true ↔
+      ∀ g ∈ s.goals, goalOn σ g = true → ∀ f ∈ g.requiresKnowledge, s.obtainable f = true := by
+  simp only [Scenario.knowledgeConstraints, List.all_eq_true, List.mem_filterMap]
+  constructor
+  · intro h g hg hon f hf
+    cases ho : s.obtainable f
+    · have hany : (g.requiresKnowledge.any fun f => !s.obtainable f) = true :=
+        List.any_eq_true.mpr ⟨f, hf, by simp [ho]⟩
+      have := h (Formula.not (.var g.id)) ⟨g, hg, by simp [hany]⟩
+      rw [eval_not_var, hon] at this
+      cases this
+    · rfl
+  · rintro h c ⟨g, hg, hcg⟩
+    split at hcg
+    · rename_i hany
+      simp only [Option.some.injEq] at hcg
+      subst hcg
+      rw [eval_not_var]
+      cases hon : goalOn σ g
+      · rfl
+      · obtain ⟨f, hf, ho⟩ := List.any_eq_true.mp hany
+        simp [h g hg hon f hf] at ho
+    · cases hcg
+
+theorem eval_iff (σ : Assignment) (a b : Formula) : (Formula.iff a b).eval σ = (a.eval σ == b.eval σ) := by
+  cases ha : a.eval σ <;> cases hb : b.eval σ <;> simp [Formula.iff, Formula.eval, List.attach, ha, hb]
+
+/-- condition の導出制約を満たす ⇔ condition を持つゴールの値は condition の値と等しい。 -/
+theorem condition_iff (s : Scenario) (σ : Assignment) :
+    (s.conditionConstraints.all fun c => c.eval σ) = true ↔
+      ∀ g ∈ s.goals, ∀ c, g.condition = some c → goalOn σ g = c.eval σ := by
+  simp only [Scenario.conditionConstraints, List.all_eq_true, List.mem_filterMap, Option.map_eq_some_iff]
+  constructor
+  · intro h g hg c hc
+    have := h _ ⟨g, hg, c, hc, rfl⟩
+    rw [eval_iff] at this
+    simpa [goalOn] using this
+  · rintro h _ ⟨g, hg, c, hc, rfl⟩
+    rw [eval_iff]
+    simpa [goalOn] using h g hg c hc
+
+/-- **定理 7**: 導出制約を満たす ⇔ 3つの条件の連言。 -/
+theorem derived_iff (s : Scenario) (σ : Assignment) :
+    (s.derivedConstraints.all fun c => c.eval σ) = true ↔
+      Compatible s.final.holder (s.goals.filter (goalOn σ)) ∧
+      (∀ g ∈ s.goals, goalOn σ g = true → ∀ f ∈ g.requiresKnowledge, s.obtainable f = true) ∧
+      (∀ g ∈ s.goals, ∀ c, g.condition = some c → goalOn σ g = c.eval σ) := by
+  rw [← items_iff, ← knowledge_iff, ← condition_iff]
+  simp only [Scenario.derivedConstraints, List.all_append, Bool.and_eq_true, and_assoc]
 
 end MurderMystery

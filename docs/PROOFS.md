@@ -24,7 +24,7 @@
 | 4 | 同時刻イベントの交換可能性 | **証明済み**(前提を追加。前提は T012 が出ないことと同値) | `reorder_of_check`, `reorder_same_time`, `checkT012_nil_iff`, `step_comm` |
 | 5 | 知識の単調性 | **証明済み** | `step_knows_mono`, `final_knows_of_initial`, `trace_knows_final` |
 | 6 | 仕様の無矛盾性(正しいシナリオが存在) | **証明済み**(`native_decide` 使用) | `exists_valid` |
-| 7 | 導出制約の正しさ | **証明済み** | `realizable_iff`, `derived_iff` |
+| 7 | 導出制約の正しさ(requires_items / requires_knowledge / condition) | **証明済み** | `realizable_iff`, `items_iff`, `knowledge_iff`, `condition_iff`, `derived_iff` |
 | 8 | 区間の整合 | **証明済み**(主張を正確化) | `segments_consistent`, `segments_ordered`, `whereAt_eq_stateAt` |
 | 9 | 移動時間の決定性 | **証明済み** | `edge_unique`, `edgeLookup_eq_some_iff`, `edgeLookup_perm` |
 | 10 | 集計の分割 | **証明済み** | `tally_partition` |

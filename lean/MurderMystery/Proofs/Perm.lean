@@ -245,7 +245,7 @@ theorem checkRaw_perm_of_R (hR : checkR s = []) :
     rfl
   have hG : checkG { s with events := l' } = checkG s := by
     have hd : Scenario.derivedConstraints { s with events := l' } = s.derivedConstraints := by
-      unfold Scenario.derivedConstraints; rw [hfinal]
+      simp only [Scenario.derivedConstraints, Scenario.itemConstraints, Scenario.knowledgeConstraints, Scenario.conditionConstraints, hfinal, hobtF]
     have hsat : Scenario.satisfies { s with events := l' } = s.satisfies := by
       funext v; unfold Scenario.satisfies Scenario.effectiveConstraints; rw [hd]; rfl
     have hctx : Scenario.gctx { s with events := l' } = s.gctx := by

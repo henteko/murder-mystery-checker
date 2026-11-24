@@ -1,81 +1,58 @@
 {
- "spec_version": "0.5.1",
+ "spec_version": "0.6.0",
  "_case": {
   "doc": "ランダム生成 (seed 20261124, #29)"
  },
- "start_time": 908,
- "end_time": 971,
- "claim_tolerance": 2,
+ "start_time": 661,
+ "end_time": 768,
+ "claim_tolerance": 0,
  "characters": [
   {
-   "id": "c0"
-  },
-  {
-   "id": "c1",
+   "id": "c0",
    "npc": true
   },
   {
-   "id": "c0"
+   "id": "c1"
   }
  ],
  "areas": [
   {
    "id": "a0",
-   "internal_minutes": 5
+   "internal_minutes": 4
   },
   {
-   "id": "a1",
-   "internal_minutes": 3
+   "id": "a1"
   }
  ],
  "locations": [
   {
    "id": "l0",
-   "area": "a0"
-  },
-  {
-   "id": "l1",
    "area": "a1"
   },
   {
-   "id": "l2",
-   "area": "a0"
-  },
-  {
-   "id": "l3"
-  },
-  {
-   "id": "l4",
-   "area": "a0",
-   "public": true
+   "id": "l1"
   }
  ],
  "travel": [
   {
    "from": "l0",
-   "to": "l2",
-   "minutes": 6,
-   "bidirectional": true
-  },
-  {
-   "from": "l1",
-   "to": "l3",
-   "minutes": 1,
-   "bidirectional": true
+   "to": "l1",
+   "minutes": 4,
+   "bidirectional": false
   }
  ],
  "area_travel": [
   {
    "from": "a0",
    "to": "a1",
-   "minutes": 6,
+   "minutes": 5,
    "bidirectional": true
   }
  ],
  "perception": [
   {
-   "from": "l1",
-   "to": "l3",
+   "from": "l0",
+   "to": "l1",
    "bidirectional": false
   }
  ],
@@ -95,12 +72,6 @@
    "initial": {
     "character": "c1"
    }
-  },
-  {
-   "id": "i1",
-   "initial": {
-    "location": "l1"
-   }
   }
  ],
  "facts": [
@@ -108,94 +79,155 @@
    "id": "f0"
   },
   {
-   "id": "f1",
-   "truth": false,
-   "contradicted_by": [
-    "f0"
-   ]
-  },
-  {
-   "id": "f2"
+   "id": "f1"
   }
  ],
  "initial_knowledge": [
   {
-   "character": "c1",
-   "fact": "f2"
-  },
-  {
    "character": "c0",
-   "fact": "f2"
+   "fact": "f0"
   }
  ],
  "events": [
   {
-   "id": "e00",
-   "at": 913,
-   "kind": "scene",
+   "id": "e06",
+   "at": 682,
+   "kind": "learn",
+   "character": "c1",
+   "facts": [
+    "f0"
+   ]
+  },
+  {
+   "id": "e01",
+   "at": 665,
+   "kind": "learn",
+   "character": "c1",
+   "facts": [
+    "f0"
+   ]
+  },
+  {
+   "id": "e03",
+   "at": 668,
+   "kind": "observe",
+   "character": "c0",
    "location": "l0",
-   "participants": [
-    "c0",
+   "target_location": "l0",
+   "targets": [
     "c1"
    ],
+   "facts": [
+    "f0"
+   ]
+  },
+  {
+   "id": "e04",
+   "at": 673,
+   "kind": "learn",
+   "character": "c0",
+   "facts": [
+    "f1"
+   ]
+  },
+  {
+   "id": "e05",
+   "at": 681,
+   "kind": "transfer",
+   "from": "c1",
+   "to": "c0",
+   "item": "i0",
    "requires": [
+    "f0"
+   ]
+  },
+  {
+   "id": "e00",
+   "at": 662,
+   "kind": "learn",
+   "character": "c1",
+   "facts": [
     "f1"
    ]
   },
   {
    "id": "e02",
-   "at": 923,
-   "kind": "move",
-   "character": "c0",
-   "to": "l3",
-   "arrive": 928
-  },
-  {
-   "id": "e01",
-   "at": 921,
-   "kind": "transfer",
-   "from": "c1",
-   "to": "c0",
+   "at": 667,
+   "kind": "use",
+   "character": "c1",
    "item": "i0"
   }
  ],
- "clues": [],
+ "clues": [
+  {
+   "id": "cl0",
+   "reveals": [
+    "f0"
+   ],
+   "deck": "deck"
+  },
+  {
+   "id": "cl1",
+   "reveals": [
+    "f1"
+   ],
+   "deck": "deck"
+  }
+ ],
  "solution_facts": [
-  "f1"
+  "f0"
  ],
  "assertions": [],
  "handouts": [
   {
    "character": "c0",
+   "location": "l0",
    "items": [
     "i0"
    ]
   }
  ],
- "board": [
-  {
-   "location": "l4",
-   "items": []
-  },
-  {
-   "location": "l3",
-   "items": []
-  }
- ],
+ "board": [],
  "goals": [
   {
    "id": "g0",
-   "owner": "c0"
+   "owner": "c1",
+   "requires_items": [
+    "i0"
+   ]
   }
  ],
  "choices": [
   {
    "id": "v0",
-   "owner": "c0",
+   "owner": "c1",
    "values": [
     "p",
-    "q"
+    "q",
+    "r"
    ]
+  },
+  {
+   "id": "v1",
+   "owner": "c1",
+   "values": [
+    "p",
+    "q",
+    "r"
+   ]
+  },
+  {
+   "id": "v2",
+   "owner": "c1",
+   "values": [
+    "p",
+    "q",
+    "r"
+   ]
+  },
+  {
+   "id": "flag",
+   "owner": "c1"
   }
  ],
  "endings": [
@@ -213,14 +245,6 @@
       }
      }
     ]
-   }
-  },
-  {
-   "id": "end_lose",
-   "condition": {
-    "not": {
-     "var": "g0"
-    }
    }
   }
  ],

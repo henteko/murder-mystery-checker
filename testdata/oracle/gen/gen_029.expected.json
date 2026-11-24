@@ -1,3 +1,6 @@
-{"spec_version": "0.5.1",
+{"spec_version": "0.6.0",
  "diagnostics":
- [{"severity": "error", "code": "R001", "args": ["character", "c0"]}]}
+ [{"witness": {"v2": "p", "v1": "p", "v0": "p", "g0": false, "flag": false},
+   "severity": "error",
+   "code": "G001",
+   "args": []}]}

@@ -167,7 +167,31 @@ func (w *world) effectiveConstraints() []m.Formula {
 			}
 		}
 	}
+	// 3. requires_knowledge に入手可能でない知識がある
+	for _, g := range s.Goals {
+		for _, f := range g.RequiresKnowledge {
+			if !w.obtainable(f) {
+				out = append(out, notVar(g.ID))
+				break
+			}
+		}
+	}
+	// 4. ゴール ⇔ condition
+	for _, g := range s.Goals {
+		if g.Condition != nil {
+			out = append(out, iff(m.Formula{Kind: m.FVar, Var: g.ID}, *g.Condition))
+		}
+	}
 	return out
+}
+
+// iff は a ⇔ b を (a ∧ b) ∨ (¬a ∧ ¬b) で表す。
+func iff(a, b m.Formula) m.Formula {
+	not := func(f m.Formula) m.Formula { return m.Formula{Kind: m.FNot, Subs: []m.Formula{f}} }
+	return m.Formula{Kind: m.FOr, Subs: []m.Formula{
+		{Kind: m.FAnd, Subs: []m.Formula{a, b}},
+		{Kind: m.FAnd, Subs: []m.Formula{not(a), not(b)}},
+	}}
 }
 
 func sortedEndings(s *m.Scenario) []m.Ending {

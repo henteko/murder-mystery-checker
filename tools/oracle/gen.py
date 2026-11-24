@@ -25,7 +25,7 @@ def gen(rng: random.Random, n: int):
     locs = [f"l{i}" for i in range(rng.randint(2, 5))]
     loc_area = {l: rng.choice(areas + [None]) for l in locs}
     s = {
-        "spec_version": "0.5.1",
+        "spec_version": "0.6.0",
         "_case": {"doc": f"ランダム生成 (seed {SEED}, #{n})"},
         "start_time": start, "end_time": end,
         "claim_tolerance": rng.choice([0, 0, 2, 5]),
@@ -178,6 +178,23 @@ def gen(rng: random.Random, n: int):
     if rng.random() < 0.3:
         s["choices"].append({"id": "flag", "owner": rng.choice(pcs or chars)})
     votes = [ch["id"] for ch in s["choices"] if "values" in ch]
+    # ゴールの必要な知識と達成条件 (0.6.0)
+    for g in s["goals"]:
+        if facts and rng.random() < 0.25:
+            g["requires_knowledge"] = rng.sample(facts, k=rng.randint(1, min(2, len(facts))))
+        if rng.random() < 0.3:
+            opts = [{"eq": {"var": votes[0], "value": rng.choice(values)}},
+                    {"not": {"eq": {"var": votes[-1], "value": rng.choice(values)}}},
+                    {"plurality": {"votes": votes, "value": rng.choice(values)}},
+                    {"const": rng.random() < 0.5}]
+            others = [h["id"] for h in s["goals"] if h is not g]
+            if others:
+                opts.append({"var": rng.choice(others)})
+            if any(ch["id"] == "flag" for ch in s["choices"]):
+                opts.append({"var": "flag"})
+            if rng.random() < 0.05:  # R009 / R002
+                opts = [{"var": votes[0]}, {"var": "no_such_var"}]
+            g["condition"] = rng.choice(opts)
     style = rng.random()
     if style < 0.4:
         s["endings"] = [{"id": f"end_{v}", "condition": {"plurality": {"votes": votes, "value": v}}} for v in values]

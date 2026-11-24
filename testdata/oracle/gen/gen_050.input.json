@@ -1,34 +1,27 @@
 {
- "spec_version": "0.5.1",
+ "spec_version": "0.6.0",
  "_case": {
   "doc": "ランダム生成 (seed 20261124, #50)"
  },
- "start_time": 1152,
- "end_time": 1220,
- "claim_tolerance": 2,
+ "start_time": 979,
+ "end_time": 1067,
+ "claim_tolerance": 0,
  "characters": [
   {
    "id": "c0"
   },
   {
    "id": "c1"
-  },
-  {
-   "id": "c2",
-   "npc": true
   }
  ],
  "areas": [
   {
-   "id": "a0",
-   "internal_minutes": 2
+   "id": "a0"
   }
  ],
  "locations": [
   {
-   "id": "l0",
-   "area": "a0",
-   "public": true
+   "id": "l0"
   },
   {
    "id": "l1",
@@ -36,47 +29,32 @@
   },
   {
    "id": "l2",
-   "area": "a0",
-   "public": true
+   "area": "a0"
   },
   {
    "id": "l3"
-  }
- ],
- "travel": [
+  },
   {
-   "from": "l0",
-   "to": "l2",
-   "minutes": 7,
-   "bidirectional": true
+   "id": "l4"
   }
  ],
- "perception": [
-  {
-   "from": "l1",
-   "to": "l2",
-   "bidirectional": true
-  }
- ],
+ "travel": [],
+ "perception": [],
  "placements": [
   {
    "character": "c0",
-   "location": "l1"
+   "location": "l0"
   },
   {
    "character": "c1",
-   "location": "l1"
-  },
-  {
-   "character": "c2",
-   "location": "l3"
+   "location": "l0"
   }
  ],
  "items": [
   {
    "id": "i0",
    "initial": {
-    "location": "l0"
+    "character": "c1"
    }
   }
  ],
@@ -94,65 +72,149 @@
    "id": "f3"
   },
   {
-   "id": "f4",
-   "truth": false,
-   "contradicted_by": [
-    "f3"
-   ]
+   "id": "f4"
   }
  ],
- "initial_knowledge": [],
+ "initial_knowledge": [
+  {
+   "character": "c1",
+   "fact": "f1"
+  }
+ ],
  "events": [
   {
-   "id": "e01",
-   "at": 1160,
-   "kind": "drop",
-   "character": "c1",
-   "item": "i0"
+   "id": "e02",
+   "at": 995,
+   "kind": "learn",
+   "character": "c0",
+   "facts": [
+    "f4"
+   ]
   },
   {
-   "id": "e02",
-   "at": 1168,
-   "kind": "consume",
-   "character": "c2",
-   "item": "i0"
+   "id": "e05",
+   "at": 1000,
+   "kind": "observe",
+   "character": "c1",
+   "location": "l4",
+   "target_location": "l3",
+   "targets": [],
+   "facts": [
+    "f3"
+   ]
   },
   {
    "id": "e00",
-   "at": 1152,
+   "at": 987,
+   "kind": "learn",
+   "character": "c1",
+   "facts": [
+    "f1"
+   ]
+  },
+  {
+   "id": "e06",
+   "at": 1000,
    "kind": "move",
-   "character": "c0",
-   "to": "l3",
-   "arrive": 1155
+   "character": "c1",
+   "to": "l2",
+   "arrive": 1008,
+   "mode": "carried",
+   "fatal": true
+  },
+  {
+   "id": "e01",
+   "at": 995,
+   "kind": "consume",
+   "character": "c1",
+   "item": "i0",
+   "requires": [
+    "f3"
+   ]
+  },
+  {
+   "id": "e04",
+   "at": 1000,
+   "kind": "move",
+   "character": "c1",
+   "to": "l4",
+   "arrive": 1008
+  },
+  {
+   "id": "e03",
+   "at": 995,
+   "kind": "consume",
+   "character": "c1",
+   "item": "i0"
   }
  ],
- "clues": [],
+ "clues": [
+  {
+   "id": "cl0",
+   "reveals": [
+    "f4"
+   ],
+   "deck": "deck"
+  },
+  {
+   "id": "cl1",
+   "reveals": [
+    "f3"
+   ],
+   "item": "i0"
+  }
+ ],
  "solution_facts": [],
- "assertions": [],
+ "assertions": [
+  {
+   "id": "as0",
+   "kind": "present",
+   "location": "l3",
+   "at": 1031,
+   "characters": [
+    "c0"
+   ]
+  },
+  {
+   "id": "as1",
+   "kind": "absent",
+   "location": "l2",
+   "at": 1062,
+   "characters": [
+    "c0"
+   ]
+  }
+ ],
  "handouts": [
   {
    "character": "c1",
-   "location": "l1"
+   "items": []
   },
   {
-   "character": "c2",
-   "location": "l1"
+   "character": "c0",
+   "location": "l0"
   }
  ],
  "board": [
   {
-   "location": "l2",
+   "location": "l3",
    "items": []
   }
  ],
- "goals": [],
+ "goals": [
+  {
+   "id": "g0",
+   "owner": "c0"
+  }
+ ],
  "choices": [
   {
    "id": "v0",
-   "owner": "c0",
+   "owner": "c1",
    "values": [
     "p",
-    "q"
+    "q",
+    "r"
    ]
   },
   {
@@ -160,17 +222,37 @@
    "owner": "c1",
    "values": [
     "p",
-    "q"
+    "q",
+    "r"
    ]
+  },
+  {
+   "id": "flag",
+   "owner": "c0"
   }
  ],
  "endings": [
   {
-   "id": "end_q",
+   "id": "end_win",
    "condition": {
-    "eq": {
-     "var": "v0",
-     "value": "q"
+    "and": [
+     {
+      "var": "g0"
+     },
+     {
+      "eq": {
+       "var": "v0",
+       "value": "p"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "end_lose",
+   "condition": {
+    "not": {
+     "var": "g0"
     }
    }
   }

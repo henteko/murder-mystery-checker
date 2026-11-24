@@ -126,19 +126,6 @@ structure Board where
   items : List Id
   deriving Repr, DecidableEq, Inhabited
 
-structure Goal where
-  id : Id
-  owner : Id
-  requiresItems : List Id := []
-  deriving Repr, DecidableEq, Inhabited
-
-structure Choice where
-  id : Id
-  owner : Id
-  /-- `none` なら真偽値の選択 -/
-  values : Option (List String) := none
-  deriving Repr, DecidableEq, Inhabited
-
 /-- 論理式 (§1.9)。 -/
 inductive Formula where
   | const (b : Bool)
@@ -150,6 +137,71 @@ inductive Formula where
   | and (fs : List Formula)
   | or (fs : List Formula)
   deriving Repr, Inhabited
+
+mutual
+/-- Formula の決定可能な等号(入れ子の帰納型なので手で書く)。 -/
+def Formula.decEq : (a b : Formula) → Decidable (a = b)
+  | .const x, .const y => if h : x = y then isTrue (h ▸ rfl) else isFalse (by intro e; cases e; exact h rfl)
+  | .var x, .var y => if h : x = y then isTrue (h ▸ rfl) else isFalse (by intro e; cases e; exact h rfl)
+  | .eq x v, .eq y w =>
+    if h : x = y ∧ v = w then isTrue (by rw [h.1, h.2]) else isFalse (by intro e; cases e; exact h ⟨rfl, rfl⟩)
+  | .plurality x v, .plurality y w =>
+    if h : x = y ∧ v = w then isTrue (by rw [h.1, h.2]) else isFalse (by intro e; cases e; exact h ⟨rfl, rfl⟩)
+  | .tie x, .tie y => if h : x = y then isTrue (h ▸ rfl) else isFalse (by intro e; cases e; exact h rfl)
+  | .not f, .not g => match Formula.decEq f g with
+    | isTrue h => isTrue (h ▸ rfl)
+    | isFalse h => isFalse (by intro e; cases e; exact h rfl)
+  | .and fs, .and gs => match Formula.decEqList fs gs with
+    | isTrue h => isTrue (h ▸ rfl)
+    | isFalse h => isFalse (by intro e; cases e; exact h rfl)
+  | .or fs, .or gs => match Formula.decEqList fs gs with
+    | isTrue h => isTrue (h ▸ rfl)
+    | isFalse h => isFalse (by intro e; cases e; exact h rfl)
+  | .const _, .var _ | .const _, .eq _ _ | .const _, .plurality _ _ | .const _, .tie _ | .const _, .not _
+  | .const _, .and _ | .const _, .or _
+  | .var _, .const _ | .var _, .eq _ _ | .var _, .plurality _ _ | .var _, .tie _ | .var _, .not _
+  | .var _, .and _ | .var _, .or _
+  | .eq _ _, .const _ | .eq _ _, .var _ | .eq _ _, .plurality _ _ | .eq _ _, .tie _ | .eq _ _, .not _
+  | .eq _ _, .and _ | .eq _ _, .or _
+  | .plurality _ _, .const _ | .plurality _ _, .var _ | .plurality _ _, .eq _ _ | .plurality _ _, .tie _
+  | .plurality _ _, .not _ | .plurality _ _, .and _ | .plurality _ _, .or _
+  | .tie _, .const _ | .tie _, .var _ | .tie _, .eq _ _ | .tie _, .plurality _ _ | .tie _, .not _
+  | .tie _, .and _ | .tie _, .or _
+  | .not _, .const _ | .not _, .var _ | .not _, .eq _ _ | .not _, .plurality _ _ | .not _, .tie _
+  | .not _, .and _ | .not _, .or _
+  | .and _, .const _ | .and _, .var _ | .and _, .eq _ _ | .and _, .plurality _ _ | .and _, .tie _
+  | .and _, .not _ | .and _, .or _
+  | .or _, .const _ | .or _, .var _ | .or _, .eq _ _ | .or _, .plurality _ _ | .or _, .tie _
+  | .or _, .not _ | .or _, .and _ => isFalse (by intro e; cases e)
+
+def Formula.decEqList : (a b : List Formula) → Decidable (a = b)
+  | [], [] => isTrue rfl
+  | [], _ :: _ => isFalse (by intro e; cases e)
+  | _ :: _, [] => isFalse (by intro e; cases e)
+  | f :: fs, g :: gs => match Formula.decEq f g, Formula.decEqList fs gs with
+    | isTrue h₁, isTrue h₂ => isTrue (by rw [h₁, h₂])
+    | isFalse h, _ => isFalse (by intro e; cases e; exact h rfl)
+    | _, isFalse h => isFalse (by intro e; cases e; exact h rfl)
+end
+
+instance : DecidableEq Formula := Formula.decEq
+
+structure Goal where
+  id : Id
+  owner : Id
+  requiresItems : List Id := []
+  /-- 終了時に入手可能でなければならない知識 -/
+  requiresKnowledge : List Id := []
+  /-- 達成条件(ゴールが真 ⇔ この式が真) -/
+  condition : Option Formula := none
+  deriving Repr, DecidableEq, Inhabited
+
+structure Choice where
+  id : Id
+  owner : Id
+  /-- `none` なら真偽値の選択 -/
+  values : Option (List String) := none
+  deriving Repr, DecidableEq, Inhabited
 
 structure Ending where
   id : Id

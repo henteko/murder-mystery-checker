@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.5.1",
+  "spec_version": "0.6.0",
   "note": "オタサーの姫殺人事件〜六角館の殺人編〜 (the-hexagon-house-murders) のモデル化サンプル。移動時間は推定値。",
   "start_time": 1020,
   "end_time": 1940,
@@ -1651,18 +1651,44 @@
   "goals": [
     {
       "id": "g_kaichou_not_most_voted",
-      "owner": "kaichou"
+      "name": "カイチョウ: 犯人投票で最多票にならない",
+      "owner": "kaichou",
+      "condition": {
+        "not": {
+          "eq": {
+            "var": "c_culprit_vote_top",
+            "value": "kaichou"
+          }
+        }
+      }
     },
     {
       "id": "g_kaichou_find_stalker",
-      "owner": "kaichou"
+      "name": "カイチョウ: ストーカーを特定する",
+      "owner": "kaichou",
+      "condition": {
+        "eq": {
+          "var": "c_kaichou_stalker_vote",
+          "value": "shimeji"
+        }
+      }
     },
     {
       "id": "g_kurose_protect_kaichou",
-      "owner": "kurose"
+      "name": "クロセ: カイチョウを守る",
+      "owner": "kurose",
+      "condition": {
+        "not": {
+          "eq": {
+            "var": "c_culprit_vote_top",
+            "value": "kaichou"
+          }
+        }
+      }
     },
     {
       "id": "g_kurose_two_kaichou_items",
+      "name": "クロセ: カイチョウの私物を2つ手に入れる",
       "owner": "kurose",
       "requires_items": [
         "watch",
@@ -1671,10 +1697,18 @@
     },
     {
       "id": "g_shimeji_culprit_most_voted",
-      "owner": "shimeji"
+      "name": "シメジ: 犯人に最多票を集める",
+      "owner": "shimeji",
+      "condition": {
+        "eq": {
+          "var": "c_culprit_vote_top",
+          "value": "kaichou"
+        }
+      }
     },
     {
       "id": "g_shimeji_ritual_items",
+      "name": "シメジ: 儀式の品を集める",
       "owner": "shimeji",
       "requires_items": [
         "fountain_pen",
@@ -1684,20 +1718,36 @@
     },
     {
       "id": "g_ushiro_culprit_most_voted",
-      "owner": "ushirokawada"
+      "name": "ウシロカワダ: 犯人に最多票を集める",
+      "owner": "ushirokawada",
+      "condition": {
+        "eq": {
+          "var": "c_culprit_vote_top",
+          "value": "kaichou"
+        }
+      }
     },
     {
       "id": "g_ushiro_find_spy",
-      "owner": "ushirokawada"
+      "name": "ウシロカワダ: スパイを特定する",
+      "owner": "ushirokawada",
+      "condition": {
+        "eq": {
+          "var": "c_ushiro_spy_vote",
+          "value": "hime"
+        }
+      }
     },
     {
       "id": "g_ushiro_find_secrets",
+      "name": "ウシロカワダ: 秘密を探る",
       "owner": "ushirokawada"
     }
   ],
   "choices": [
     {
       "id": "c_culprit_vote_top",
+      "name": "犯人投票の最多",
       "owner": "kaichou",
       "values": [
         "kaichou",
@@ -1710,6 +1760,7 @@
     },
     {
       "id": "c_kaichou_stalker_vote",
+      "name": "カイチョウのストーカー投票",
       "owner": "kaichou",
       "values": [
         "kurose",
@@ -1719,226 +1770,13 @@
     },
     {
       "id": "c_ushiro_spy_vote",
+      "name": "ウシロカワダのスパイ投票",
       "owner": "ushirokawada",
       "values": [
         "hime",
         "kaichou",
         "kurose",
         "shimeji"
-      ]
-    }
-  ],
-  "constraints": [
-    {
-      "or": [
-        {
-          "and": [
-            {
-              "var": "g_kaichou_not_most_voted"
-            },
-            {
-              "not": {
-                "eq": {
-                  "var": "c_culprit_vote_top",
-                  "value": "kaichou"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "and": [
-            {
-              "not": {
-                "var": "g_kaichou_not_most_voted"
-              }
-            },
-            {
-              "not": {
-                "not": {
-                  "eq": {
-                    "var": "c_culprit_vote_top",
-                    "value": "kaichou"
-                  }
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "or": [
-        {
-          "and": [
-            {
-              "var": "g_kurose_protect_kaichou"
-            },
-            {
-              "not": {
-                "eq": {
-                  "var": "c_culprit_vote_top",
-                  "value": "kaichou"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "and": [
-            {
-              "not": {
-                "var": "g_kurose_protect_kaichou"
-              }
-            },
-            {
-              "not": {
-                "not": {
-                  "eq": {
-                    "var": "c_culprit_vote_top",
-                    "value": "kaichou"
-                  }
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "or": [
-        {
-          "and": [
-            {
-              "var": "g_shimeji_culprit_most_voted"
-            },
-            {
-              "eq": {
-                "var": "c_culprit_vote_top",
-                "value": "kaichou"
-              }
-            }
-          ]
-        },
-        {
-          "and": [
-            {
-              "not": {
-                "var": "g_shimeji_culprit_most_voted"
-              }
-            },
-            {
-              "not": {
-                "eq": {
-                  "var": "c_culprit_vote_top",
-                  "value": "kaichou"
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "or": [
-        {
-          "and": [
-            {
-              "var": "g_ushiro_culprit_most_voted"
-            },
-            {
-              "eq": {
-                "var": "c_culprit_vote_top",
-                "value": "kaichou"
-              }
-            }
-          ]
-        },
-        {
-          "and": [
-            {
-              "not": {
-                "var": "g_ushiro_culprit_most_voted"
-              }
-            },
-            {
-              "not": {
-                "eq": {
-                  "var": "c_culprit_vote_top",
-                  "value": "kaichou"
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "or": [
-        {
-          "and": [
-            {
-              "var": "g_kaichou_find_stalker"
-            },
-            {
-              "eq": {
-                "var": "c_kaichou_stalker_vote",
-                "value": "shimeji"
-              }
-            }
-          ]
-        },
-        {
-          "and": [
-            {
-              "not": {
-                "var": "g_kaichou_find_stalker"
-              }
-            },
-            {
-              "not": {
-                "eq": {
-                  "var": "c_kaichou_stalker_vote",
-                  "value": "shimeji"
-                }
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "or": [
-        {
-          "and": [
-            {
-              "var": "g_ushiro_find_spy"
-            },
-            {
-              "eq": {
-                "var": "c_ushiro_spy_vote",
-                "value": "hime"
-              }
-            }
-          ]
-        },
-        {
-          "and": [
-            {
-              "not": {
-                "var": "g_ushiro_find_spy"
-              }
-            },
-            {
-              "not": {
-                "eq": {
-                  "var": "c_ushiro_spy_vote",
-                  "value": "hime"
-                }
-              }
-            }
-          ]
-        }
       ]
     }
   ],

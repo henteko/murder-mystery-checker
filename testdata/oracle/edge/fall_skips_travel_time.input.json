@@ -3,7 +3,7 @@
     "doc": "mode が fall の移動は移動時間を検査しない",
     "expect": []
   },
-  "spec_version": "0.5.1",
+  "spec_version": "0.6.0",
   "start_time": 1260,
   "end_time": 1320,
   "characters": [

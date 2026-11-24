@@ -461,6 +461,73 @@ def _(s):
     ]
 
 
+@case("edge", "goal_knowledge_unobtainable",
+      "requires_knowledge の知識が入手可能でないゴールは達成できない(導出制約 3)", ["G004"])
+def _(s):
+    s["facts"].append({"id": "f_hidden"})
+    s["goals"][0]["requires_knowledge"] = ["f_hidden"]
+
+
+@case("edge", "goal_knowledge_obtainable", "requires_knowledge の知識をプレイヤーが知っていれば達成できる")
+def _(s):
+    s["goals"][0]["requires_knowledge"] = ["f_meeting", "f_secret"]
+
+
+@case("edge", "goal_knowledge_via_clue", "手がかりで明かされる知識も入手可能")
+def _(s):
+    s["facts"].append({"id": "f_hidden"})
+    s["clues"] = [{"id": "x_hidden", "deck": "study", "reveals": ["f_hidden"]}]
+    s["goals"][0]["requires_knowledge"] = ["f_hidden"]
+
+
+@case("edge", "goal_knowledge_npc_only", "NPC だけが知っている知識は入手可能ではない", ["G004"])
+def _(s):
+    s["characters"].append({"id": "victim", "npc": True})
+    s["placements"].append({"character": "victim", "location": "study"})
+    s["facts"].append({"id": "f_hidden"})
+    s["initial_knowledge"].append({"character": "victim", "fact": "f_hidden"})
+    s["goals"][0]["requires_knowledge"] = ["f_hidden"]
+
+
+@case("edge", "goal_condition", "condition でゴールと投票を結ぶ(ゴール ⇔ alice に投票)")
+def _(s):
+    s["goals"][0]["condition"] = {"eq": {"var": "c_vote", "value": "alice"}}
+
+
+@case("edge", "goal_condition_false", "condition が常に偽のゴールは達成できない", ["G004"])
+def _(s):
+    s["goals"][0]["condition"] = {"const": False}
+
+
+@case("edge", "goal_condition_true", "condition が常に真のゴールは必ず達成される(警告)", ["G006"])
+def _(s):
+    s["goals"][0]["condition"] = {"const": True}
+
+
+@case("edge", "goal_condition_vs_items",
+      "condition が真でも requires_items のアイテムが失われていれば、その選び方はパターンにならない(alice への投票がなくなる)",
+      ["G003", "G004", "G006", "G009"])
+def _(s):
+    s["goals"][0]["condition"] = {"eq": {"var": "c_vote", "value": "alice"}}
+    s["goals"][0]["requires_items"] = ["knife"]
+    add_events(s, {"id": "e9", "at": 1290, "kind": "consume", "character": "bob", "item": "knife"})
+
+
+@case("edge", "goal_condition_unknown_var", "condition が存在しない変数を参照している", ["R002"])
+def _(s):
+    s["goals"][0]["condition"] = {"var": "c_nothing"}
+
+
+@case("edge", "goal_condition_type_error", "condition が列挙型の選択を真偽値として使っている", ["R009"])
+def _(s):
+    s["goals"][0]["condition"] = {"var": "c_vote"}
+
+
+@case("edge", "goal_knowledge_unknown_fact", "requires_knowledge が存在しない知識を参照している", ["R002"])
+def _(s):
+    s["goals"][0]["requires_knowledge"] = ["f_nothing"]
+
+
 @case("edge", "plurality_and_tie", "plurality と tie でエンディングを分ける。どの票でもちょうど1つ")
 def _(s):
     s["choices"] = [{"id": "v_alice", "owner": "alice", "values": ["alice", "bob"]},

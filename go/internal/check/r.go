@@ -274,6 +274,12 @@ func allRefs(s *m.Scenario) []ref {
 		for _, i := range g.RequiresItems {
 			add("goal:"+g.ID, "item", i)
 		}
+		for _, f := range g.RequiresKnowledge {
+			add("goal:"+g.ID, "fact", f)
+		}
+		if g.Condition != nil {
+			out = append(out, formulaRefRefs("goal:"+g.ID, *g.Condition)...)
+		}
 	}
 	for _, c := range s.Choices {
 		add("choice:"+c.ID, "character", c.Owner)
@@ -541,6 +547,11 @@ func formulas(s *m.Scenario) []namedFormula {
 	}
 	for _, e := range s.Endings {
 		out = append(out, namedFormula{"ending:" + e.ID, e.Condition})
+	}
+	for _, g := range s.Goals {
+		if g.Condition != nil {
+			out = append(out, namedFormula{"goal:" + g.ID, *g.Condition})
+		}
 	}
 	return out
 }

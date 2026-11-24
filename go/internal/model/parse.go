@@ -679,8 +679,19 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Goals, err = list(j, "goals", false, func(g *node) (Goal, error) {
 				var r p
-				x := Goal{ID: r.str(g, "id"), Owner: r.str(g, "owner"), RequiresItems: r.strs(g, "requires_items")}
-				return x, r.err
+				x := Goal{ID: r.str(g, "id"), Owner: r.str(g, "owner"), RequiresItems: r.strs(g, "requires_items"),
+					RequiresKnowledge: r.strs(g, "requires_knowledge")}
+				if r.err != nil {
+					return x, r.err
+				}
+				if c := field(g, "condition"); c != nil {
+					f, err := parseFormula(c)
+					if err != nil {
+						return x, err
+					}
+					x.Condition = &f
+				}
+				return x, nil
 			})
 			return
 		},

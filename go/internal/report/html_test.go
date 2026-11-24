@@ -124,7 +124,10 @@ func TestDiagnosticArgsUseNames(t *testing.T) {
 		t.Fatal(err)
 	}
 	out := render(t, s, raw)
-	for _, want := range []string{"シメジ / 睡眠薬", "シメジの部屋 / 睡眠薬 / シメジ が持っている"} {
+	for _, want := range []string{"シメジ / 睡眠薬", "シメジの部屋 / 睡眠薬 / シメジ が持っている",
+		"カイチョウ: ストーカーを特定する",            // ゴールの表示名
+		"達成条件: 犯人投票の最多 が「kaichou」ではない", // 達成条件
+	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("出力に %q がない", want)
 		}

@@ -1,5 +1,5 @@
 {
- "spec_version": "0.5.1",
+ "spec_version": "0.6.0",
  "_case": {
   "doc": "ランダム生成 (seed 20261124, #0)"
  },
@@ -186,11 +186,21 @@
  "goals": [
   {
    "id": "g0",
-   "owner": "c0"
+   "owner": "c0",
+   "requires_knowledge": [
+    "f0",
+    "f3"
+   ],
+   "condition": {
+    "const": true
+   }
   },
   {
    "id": "g1",
-   "owner": "c1"
+   "owner": "c1",
+   "requires_knowledge": [
+    "f3"
+   ]
   }
  ],
  "choices": [

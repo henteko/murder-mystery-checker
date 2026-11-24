@@ -164,7 +164,9 @@ def parseScenario (j : Json) : P Scenario := do
              items := ← strsOpt h "items", knows := ← strsOpt h "knows" }
     board := ← list "board" fun b => do pure { location := ← str b "location", items := ← strsReq b "items" }
     goals := ← list "goals" fun g => do
-      pure { id := ← str g "id", owner := ← str g "owner", requiresItems := ← strs g "requires_items" }
+      pure { id := ← str g "id", owner := ← str g "owner", requiresItems := ← strs g "requires_items",
+             requiresKnowledge := ← strs g "requires_knowledge",
+             condition := ← (field? g "condition").mapM parseFormula }
     choices := ← list "choices" fun c => do
       pure { id := ← str c "id", owner := ← str c "owner", values := ← strsOpt c "values" }
     constraints := ← list "constraints" parseFormula

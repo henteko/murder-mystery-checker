@@ -1,4 +1,4 @@
-{"spec_version": "0.5.1",
+{"spec_version": "0.6.0",
  "diagnostics":
  [{"witness": {"g_bob": false, "g_alice": false, "c_vote": "alice"},
    "severity": "error",

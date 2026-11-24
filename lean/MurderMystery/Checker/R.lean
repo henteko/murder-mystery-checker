@@ -125,7 +125,9 @@ def allRefs (s : Scenario) : List Ref :=
       :: b.items.map (fun i => ⟨s!"board:{b.location}", "item", i, none⟩))
   ++ s.goals.flatMap (fun g =>
       ⟨s!"goal:{g.id}", "character", g.owner, none⟩
-      :: g.requiresItems.map (fun i => ⟨s!"goal:{g.id}", "item", i, none⟩))
+      :: (g.requiresItems.map (fun i => ⟨s!"goal:{g.id}", "item", i, none⟩)
+      ++ g.requiresKnowledge.map (fun f => ⟨s!"goal:{g.id}", "fact", f, none⟩)
+      ++ (g.condition.map (formulaRefs s!"goal:{g.id}")).getD []))
   ++ s.choices.map (fun c => ⟨s!"choice:{c.id}", "character", c.owner, none⟩)
   ++ s.constraints.flatMap (formulaRefs "constraint")
   ++ s.endings.flatMap (fun e => formulaRefs s!"ending:{e.id}" e.condition)
@@ -223,6 +225,7 @@ def tallyErrors (s : Scenario) (referrer : String) (f : Formula) : List RIssue :
 
 def formulas (s : Scenario) : List (String × Formula) :=
   s.constraints.map (fun f => ("constraint", f)) ++ s.endings.map (fun e => (s!"ending:{e.id}", e.condition))
+    ++ s.goals.filterMap (fun g => g.condition.map fun c => (s!"goal:{g.id}", c))
 
 def checkR009 (s : Scenario) : List RIssue := (formulas s).flatMap fun (r, f) => formulaTypeErrors s r f
 def checkR012 (s : Scenario) : List RIssue := (formulas s).flatMap fun (r, f) => tallyErrors s r f
