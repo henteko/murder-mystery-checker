@@ -108,3 +108,14 @@ Go 実装(`go/`)を Lean の定義と1対1で書いた。
 結果:
 - ライブ差分 4,500 件(種 1 と 2)で不一致 0 件。仕様の全 54 規則が少なくとも1回出た。入力エラー 411 件も判定が一致
 - ファズ 60 秒(約 1,000 万回)で問題なし
+
+## Phase 6 完了 (2026-11-24)
+
+CI(.github/workflows/ci.yml)で、仕様・Lean・Go のずれを止める。
+
+- Lean ジョブ: 証明のビルド、証明の監査(`tools/check_axioms.py`: sorry / admit / 独自の axiom がなく、主要な定理 20 個が標準の公理だけに依存する。`exists_valid` の native_decide だけ例外)、仕様バージョンの一致(`tools/check_versions.py`: 仕様書・Lean・Go・ケースの生成・サンプル)、テストケースと期待出力が最新か(`make diff-check`)
+- Go ジョブ: gofmt、go vet、テスト(ゴールデン差分・並べ替え不変・ファズの種・YAML・CLI)
+- ライブ差分ジョブ: Lean と Go の両方をビルドし、その場で作った 1,000 件で比べる(種は run_id)。毎日の定期実行では 10,000 件とファズ 5 分。不一致の入力は成果物として保存
+- `make audit`、`make ci`(CI と同じ検査をまとめて実行)
+
+確認: 新しく clone したリポジトリで `make ci` が通ることを確かめた(GitHub Actions 上での実行はまだ。初回の push で確かめる)。

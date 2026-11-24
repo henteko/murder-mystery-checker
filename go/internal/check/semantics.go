@@ -332,9 +332,9 @@ func (w *world) deathTime(c string) (int, bool) {
 
 func (w *world) segments(c string) []segment {
 	type mv struct {
-		dep  int
-		to   string
-		arr  int
+		dep int
+		to  string
+		arr int
 	}
 	var moves []mv
 	for _, e := range w.sorted {

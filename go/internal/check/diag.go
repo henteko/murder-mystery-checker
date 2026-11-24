@@ -28,8 +28,8 @@ type Val struct {
 	S     string
 }
 
-func boolVal(b bool) Val   { return Val{B: b} }
-func strVal(s string) Val  { return Val{IsStr: true, S: s} }
+func boolVal(b bool) Val  { return Val{B: b} }
+func strVal(s string) Val { return Val{IsStr: true, S: s} }
 func (v Val) MarshalJSON() ([]byte, error) {
 	if v.IsStr {
 		return json.Marshal(v.S)

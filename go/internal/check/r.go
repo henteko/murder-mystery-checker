@@ -30,12 +30,16 @@ func ids[T any](l []T, f func(T) string) []string {
 	return out
 }
 
-func characterIds(s *m.Scenario) []string { return ids(s.Characters, func(c m.Character) string { return c.ID }) }
-func areaIds(s *m.Scenario) []string      { return ids(s.Areas, func(a m.Area) string { return a.ID }) }
-func locationIds(s *m.Scenario) []string  { return ids(s.Locations, func(l m.Location) string { return l.ID }) }
-func itemIds(s *m.Scenario) []string      { return ids(s.Items, func(i m.Item) string { return i.ID }) }
-func factIds(s *m.Scenario) []string      { return ids(s.Facts, func(f m.Fact) string { return f.ID }) }
-func eventIds(s *m.Scenario) []string     { return ids(s.Events, func(e m.Event) string { return e.ID }) }
+func characterIds(s *m.Scenario) []string {
+	return ids(s.Characters, func(c m.Character) string { return c.ID })
+}
+func areaIds(s *m.Scenario) []string { return ids(s.Areas, func(a m.Area) string { return a.ID }) }
+func locationIds(s *m.Scenario) []string {
+	return ids(s.Locations, func(l m.Location) string { return l.ID })
+}
+func itemIds(s *m.Scenario) []string  { return ids(s.Items, func(i m.Item) string { return i.ID }) }
+func factIds(s *m.Scenario) []string  { return ids(s.Facts, func(f m.Fact) string { return f.ID }) }
+func eventIds(s *m.Scenario) []string { return ids(s.Events, func(e m.Event) string { return e.ID }) }
 func variableIds(s *m.Scenario) []string {
 	return append(ids(s.Goals, func(g m.Goal) string { return g.ID }), ids(s.Choices, func(c m.Choice) string { return c.ID })...)
 }

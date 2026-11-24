@@ -238,8 +238,8 @@ func (w *world) checkGPatterns(doms []domain) []Diag {
 		g001     []Val
 		pairWit  = map[[2]int][]Val{}
 		reached  = make([]bool, len(ends))
-		goalTrue = make([]bool, len(s.Goals)) // いずれかのパターンで true
-		goalAll  = make([]bool, len(s.Goals)) // すべてのパターンで true
+		goalTrue = make([]bool, len(s.Goals))    // いずれかのパターンで true
+		goalAll  = make([]bool, len(s.Goals))    // すべてのパターンで true
 		chVals   = make([][]Val, len(s.Choices)) // 現れた値(重複なし、最初の出現順)
 	)
 	for k := range goalAll {

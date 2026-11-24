@@ -1,4 +1,4 @@
-.PHONY: all lean cases oracle go test diff-check live-diff fuzz clean
+.PHONY: all lean cases oracle go test diff-check live-diff fuzz audit ci clean
 
 ORACLE := lean/.lake/build/bin/oracle
 
@@ -23,7 +23,16 @@ go:
 
 # Go 側のテスト(ゴールデン差分テストを含む)
 test:
+	@test -z "$$(gofmt -l go)" || (gofmt -l go; echo "run gofmt -w go"; exit 1)
 	cd go && go vet ./... && go test ./...
+
+# 証明の監査(sorry・独自の axiom がない、主要な定理が標準の公理だけに依存する)と、仕様バージョンの一致
+audit: lean
+	python3 tools/check_axioms.py
+	python3 tools/check_versions.py
+
+# CI と同じ検査をまとめて実行する
+ci: audit diff-check test live-diff
 
 # ライブ差分テスト: その場で作ったシナリオで Go と Lean オラクルの出力を比べる(N 件、SEED は省略可)
 N ?= 500
