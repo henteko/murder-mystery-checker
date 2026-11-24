@@ -2,8 +2,8 @@ package main
 
 import (
 	"bytes"
-	"os"
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
