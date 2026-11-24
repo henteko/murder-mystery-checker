@@ -634,7 +634,7 @@ svg .area-all { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1
       <text class="tb" x="145" y="36" text-anchor="middle">仕様書 docs/spec.md</text>
       <text class="ts" x="145" y="53" text-anchor="middle">日本語の規則</text>
       <line class="ln" x1="145" y1="64" x2="145" y2="96" marker-end="url(#a10)"/>
-      <text class="ts" x="155" y="84">形式化(レビューと試作判定器で確認)</text>
+      <text class="ts" x="155" y="84">形式化(サンプルと試作判定器で確認)</text>
       <rect class="box" x="20" y="100" width="250" height="46" rx="6"/>
       <text class="tb" x="145" y="120" text-anchor="middle">Lean の仕様</text>
       <text class="ts" x="145" y="137" text-anchor="middle">正しさの定義・規則ごとの違反条件</text>
@@ -686,7 +686,7 @@ svg .area-all { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1
       <thead><tr><th>部分</th><th>保証のしかた</th></tr></thead>
       <tbody>
         <tr><td>判定器 <code>check</code>(error の規則、出力の並び順)</td><td><b>証明済み</b>(第1部の定理 1〜11)</td></tr>
-        <tr><td>意味論の定義(状態の変化・居場所の区間など)が仕様書の日本語どおりであること</td><td>証明できない。仕様書のレビュー、別に書いた Python の試作判定器との比較(数千件)、仕様書 §9 の例との照合で確かめる</td></tr>
+        <tr><td>意味論の定義(状態の変化・居場所の区間など)が仕様書の日本語どおりであること</td><td>証明できない。人が確認したのは、実際のシナリオ2本が仕様の形式で表現できることだけ。ほかに AI が別に書いた Python の試作判定器との比較(数千件)と、仕様書 §9 の例との照合で確かめている。仕様書の各規則を人がレビューすることは、ほとんどできていない</td></tr>
         <tr><td>JSON の読み込みと書き出し(入力エラーの判定を含む)</td><td>証明の対象外。Go との差分テストと、入力エラーの境界のテストで確かめる</td></tr>
         <tr><td>warning と R 群の規則ごとの正しさ</td><td>差分テストだけで確かめる(第3部)</td></tr>
       </tbody>
@@ -706,7 +706,7 @@ svg .area-all { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1
     <li>R 群(構造の検査)の条件を、判定器とは別の命題として書くこと。</li>
     <li>検出結果に添える情報(どのキャラクター、どの時刻か)が正しいこと。</li>
     <li>配列の要素の中の配列(場面の参加者、選択肢の値など)の並べ替え。</li>
-    <li>仕様書の日本語の説明と Lean の定義が同じ意味であること。これは証明では確かめられないので、レビューと差分テスト(Lean と Go の出力の比較)で確かめます。</li>
+    <li>仕様書の日本語の説明と Lean の定義が同じ意味であること。証明では確かめられません。人が確認したのは実際のシナリオが表現できるかだけで、各規則のレビューはほとんどしていません。Lean と Go の差分テストは両者の一致を確かめるもので、この点は確かめません。</li>
   </ul>
 </section>
 
