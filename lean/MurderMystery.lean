@@ -20,3 +20,4 @@ import MurderMystery.Proofs.Main
 import MurderMystery.Proofs.Consistency
 import MurderMystery.Proofs.Order
 import MurderMystery.Proofs.Perm
+import MurderMystery.Proofs.Commute
