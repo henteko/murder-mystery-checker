@@ -29,10 +29,19 @@ def asStr (k : String) : Json → P String
   | .str s => if s.isEmpty then throw s!"'{k}' must be non-empty" else pure s
   | _ => throw s!"'{k}' must be a string"
 
+/-- 仮数 × 10^(−指数) の末尾の 0 を指数から取り除く(1260.0 → 1260)。 -/
+def normNum (m : Int) : Nat → Int × Nat
+  | 0 => (m, 0)
+  | e + 1 => if m % 10 == 0 then normNum (m / 10) e else (m, e + 1)
+
+/-- 値が整数で 0 以上 `maxTime` 以下の数(1260、1260.0、1.26e3 はどれも 1260)。 -/
 def asNat (k : String) (j : Json) : P Nat := do
-  match j.getNat? with
-  | .ok n => if n ≤ maxTime then pure n else throw s!"'{k}' out of range"
-  | .error _ => throw s!"'{k}' must be a non-negative integer"
+  match j with
+  | .num ⟨m, e⟩ =>
+    let (m', e') := normNum m e
+    if e' != 0 || m' < 0 then throw s!"'{k}' must be a non-negative integer"
+    else if m'.toNat ≤ maxTime then pure m'.toNat else throw s!"'{k}' out of range"
+  | _ => throw s!"'{k}' must be a non-negative integer"
 
 def asBool (k : String) : Json → P Bool
   | .bool b => pure b

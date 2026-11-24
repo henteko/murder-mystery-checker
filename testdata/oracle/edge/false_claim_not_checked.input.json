@@ -3,7 +3,7 @@
     "doc": "偽の証言は時刻がずれていても K008 の対象外",
     "expect": []
   },
-  "spec_version": "0.5.0",
+  "spec_version": "0.5.1",
   "start_time": 1260,
   "end_time": 1320,
   "characters": [

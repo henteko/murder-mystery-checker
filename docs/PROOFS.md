@@ -1,6 +1,6 @@
 # Lean による形式化と証明の状況
 
-仕様 0.5.0 (docs/spec.md) の Lean 4 による形式化。`lake build`(lean/)で全証明が検査される。
+仕様 0.5.1 (docs/spec.md) の Lean 4 による形式化。`lake build`(lean/)で全証明が検査される。
 
 ## 構成
 

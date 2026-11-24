@@ -360,6 +360,12 @@ def _(s):
     pass
 
 
+@case("edge", "integral_number_forms", "整数値なら 1270.0 や 1.275e3 の表記も受け付ける(§6.4)")
+def _(s):
+    ev(s, "e1")["at"] = 1270.0
+    ev(s, "e1")["arrive"] = 1.275e3
+
+
 @case("edge", "fall_skips_travel_time", "mode が fall の移動は移動時間を検査しない")
 def _(s):
     ev(s, "e1")["mode"] = "fall"
@@ -551,6 +557,9 @@ SCHEMA = [
     ("missing_characters", "必須フィールド characters がない", None),
     ("string_time", "時刻が文字列", None),
     ("negative_time", "時刻が負", None),
+    ("fractional_time", "時刻が整数でない(1260.5)", None),
+    ("duplicate_key", "同じキーが2回ある", '{"start_time": 1260, "start_time": 1261, "end_time": 1320, '
+     '"characters": [], "locations": [], "placements": []}'),
     ("time_out_of_range", "時刻が上限を超える", None),
     ("unknown_event_kind", "未知のイベントの種類", None),
     ("empty_id", "ID が空文字列", None),
@@ -568,6 +577,8 @@ def schema_case(name):
         s["start_time"] = "1260"
     elif name == "negative_time":
         s["events"][0]["at"] = -1
+    elif name == "fractional_time":
+        s["events"][0]["at"] = 1270.5
     elif name == "time_out_of_range":
         s["end_time"] = 10000001
     elif name == "unknown_event_kind":

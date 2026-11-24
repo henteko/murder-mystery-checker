@@ -1,0 +1,6 @@
+{
+  "doc": "同じキーが2回ある",
+  "expect": [
+    "input_error"
+  ]
+}

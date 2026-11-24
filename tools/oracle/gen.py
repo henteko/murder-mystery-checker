@@ -25,7 +25,7 @@ def gen(rng: random.Random, n: int):
     locs = [f"l{i}" for i in range(rng.randint(2, 5))]
     loc_area = {l: rng.choice(areas + [None]) for l in locs}
     s = {
-        "spec_version": "0.5.0",
+        "spec_version": "0.5.1",
         "_case": {"doc": f"ランダム生成 (seed {SEED}, #{n})"},
         "start_time": start, "end_time": end,
         "claim_tolerance": rng.choice([0, 0, 2, 5]),

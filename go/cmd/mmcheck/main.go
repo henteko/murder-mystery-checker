@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const specVersion = "0.5.0"
+const specVersion = "0.5.1"
 
 func main() {
 	if len(os.Args) < 2 {
