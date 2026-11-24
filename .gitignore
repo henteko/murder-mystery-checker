@@ -1,0 +1,4 @@
+/lean/.lake/
+/bin/
+*.test
+.DS_Store

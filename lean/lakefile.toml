@@ -1,0 +1,12 @@
+name = "MurderMystery"
+version = "0.1.0"
+defaultTargets = ["MurderMystery", "oracle"]
+
+# 仕様(Spec)・判定関数(Checker)・証明(Proofs)
+[[lean_lib]]
+name = "MurderMystery"
+
+# 差分テスト用オラクル: 正規化JSON を stdin で受け取り診断JSON を stdout に出す
+[[lean_exe]]
+name = "oracle"
+root = "Oracle.Main"
