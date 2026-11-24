@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"os"
 	"encoding/json"
 	"path/filepath"
 	"strings"
@@ -34,6 +35,8 @@ func TestExitCodes(t *testing.T) {
 		{[]string{"check", "--format", "xml", clean}, 2},
 		{[]string{}, 2},
 		{[]string{"version"}, 0},
+		{[]string{"explain", "-o", filepath.Join(os.TempDir(), "mmcheck-explain-test.html"), withErr}, 0},
+		{[]string{"explain", bad}, 2},
 	}
 	for _, c := range cases {
 		if got, _, _ := cli(c.args...); got != c.want {

@@ -14,12 +14,15 @@ import (
 
 	"github.com/henteko/murder-mystery-checker/internal/check"
 	m "github.com/henteko/murder-mystery-checker/internal/model"
+	"github.com/henteko/murder-mystery-checker/internal/report"
 	"github.com/henteko/murder-mystery-checker/internal/yamlio"
 )
 
 const usage = `usage:
   mmcheck check [--format text|json] [--strict] <scenario.yaml|scenario.json|->
   mmcheck convert <scenario.yaml>     YAML を正規化 JSON に変換して出力する
+  mmcheck explain [-o out.html] <scenario.yaml|scenario.json>
+                                      判定器の解釈を、原作と読み合わせるための HTML にする
   mmcheck version
 
 終了コード: 0 = error なし / 1 = error あり(--strict なら warning も)/ 2 = 入力エラー`
@@ -50,6 +53,15 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		}
 		fmt.Fprintln(stderr, err)
 		return 2
+	case "explain":
+		fs := flag.NewFlagSet("explain", flag.ContinueOnError)
+		fs.SetOutput(stderr)
+		out := fs.String("o", "", "output HTML file (default: stdout)")
+		if err := fs.Parse(args[1:]); err != nil || fs.NArg() != 1 {
+			fmt.Fprintln(stderr, usage)
+			return 2
+		}
+		return runExplain(fs.Arg(0), *out, stdin, stdout, stderr)
 	case "check":
 		fs := flag.NewFlagSet("check", flag.ContinueOnError)
 		fs.SetOutput(stderr)
@@ -78,6 +90,34 @@ func load(path string, src []byte) (*m.Scenario, error) {
 		return yamlio.Load(src)
 	}
 	return m.ParseScenario(src)
+}
+
+func runExplain(path, out string, stdin io.Reader, stdout, stderr io.Writer) int {
+	src, err := readInput(path, stdin)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 2
+	}
+	s, err := load(path, src)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 2
+	}
+	w := stdout
+	if out != "" {
+		f, err := os.Create(out)
+		if err != nil {
+			fmt.Fprintln(stderr, err)
+			return 2
+		}
+		defer f.Close()
+		w = f
+	}
+	if err := report.HTML(w, filepath.Base(path), check.Explain(s)); err != nil {
+		fmt.Fprintln(stderr, err)
+		return 2
+	}
+	return 0
 }
 
 func runCheck(path, format string, strict bool, stdin io.Reader, stdout, stderr io.Writer) int {

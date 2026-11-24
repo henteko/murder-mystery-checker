@@ -13,6 +13,7 @@ bin/mmcheck check examples/yaml-demo/scenario.yaml
 bin/mmcheck check --format json scenario.yaml  # 検出結果を JSON で(docs/spec.md §6)
 bin/mmcheck check --strict scenario.yaml       # warning も失敗扱い
 bin/mmcheck convert scenario.yaml              # YAML を正規化 JSON に変換
+bin/mmcheck explain -o reading.html scenario.yaml  # 判定器の解釈を、原作と読み合わせるための HTML に(docs/explain.md)
 ```
 
 シナリオは作者向け YAML([docs/yaml.md](docs/yaml.md))か、正規化 JSON(docs/spec.md §1)で書く。

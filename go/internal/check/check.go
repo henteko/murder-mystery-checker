@@ -17,7 +17,7 @@ func Check(s *m.Scenario) []Diag {
 		for _, x := range stepIssues(s, st) {
 			out = append(out, errD(x.code, x.args, ptr(st.Ev.ID)))
 		}
-	})
+	}, nil)
 	w := &world{s: s, final: final, sorted: sortedEvents(s)}
 	out = append(out, w.checkPost()...)
 	out = append(out, w.checkG()...)

@@ -290,14 +290,20 @@ type Step struct {
 }
 
 // run は正規順序でイベントを処理し、各ステップで visit を呼んでから効果を適用する。終了状態を返す。
-func run(s *m.Scenario, visit func(Step)) *State {
+// after が nil でなければ、効果を適用した後にも呼ぶ(そのとき Step.Pre は処理後の状態)。
+// 判定器と explain は、どちらもこの1つのループでイベントを処理する。
+func run(s *m.Scenario, visit, after func(Step)) *State {
 	S := initState(s)
 	evs := sortedEvents(s)
 	for i, e := range evs {
+		st := Step{Pre: S, Ev: e, Earlier: evs[:i]}
 		if visit != nil {
-			visit(Step{Pre: S, Ev: e, Earlier: evs[:i]})
+			visit(st)
 		}
 		S.step(e)
+		if after != nil {
+			after(st)
+		}
 	}
 	return S
 }
