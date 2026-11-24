@@ -117,6 +117,19 @@ theorem mem_dedupSorted [DecidableEq α] (x : α) : ∀ l : List α, x ∈ dedup
 theorem mem_normalize (d : Diag) (ds : List Diag) : d ∈ normalize ds ↔ d ∈ ds := by
   simp [normalize, mem_dedupSorted, List.mem_mergeSort]
 
+/-- R 群の検出結果が空 ⇔ どの R 規則にも違反がない(R001 による打ち切りがあっても)。 -/
+theorem checkR_eq_nil_iff (s : Scenario) : checkR s = [] ↔ rIssues s = [] := by
+  unfold checkR
+  by_cases h : (checkR001 s).isEmpty
+  · simp [h]
+  · have hne : checkR001 s ≠ [] := by simpa using h
+    simp only [h, Bool.false_eq_true, ite_false, List.map_eq_nil_iff, hne, false_iff]
+    intro hr
+    apply hne
+    unfold rIssues at hr
+    simp only [List.append_eq_nil_iff] at hr
+    exact hr.1.1.1.1.1.1.1.1.1.1.1.1
+
 /-- 判定器が error を出すかどうかは、正規化の前後で変わらない。 -/
 theorem check_noError_iff (s : Scenario) :
     (∀ d ∈ check s, d.sev = .warning) ↔ (∀ d ∈ checkRaw s, d.sev = .warning) := by

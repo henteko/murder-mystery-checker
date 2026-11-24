@@ -175,7 +175,14 @@ theorem rIssues_perm (x : RIssue) : x ∈ rIssues { s with events := l' } ↔ x 
   rfl
 
 theorem checkR_perm (d : Diag) : d ∈ checkR { s with events := l' } ↔ d ∈ checkR s := by
-  simp only [checkR, List.mem_map, rIssues_perm s l' hp]
+  have h1 : (checkR001 { s with events := l' }).isEmpty = (checkR001 s).isEmpty := by
+    apply Bool.eq_iff_iff.mpr
+    simp only [List.isEmpty_iff, List.eq_nil_iff_forall_not_mem, checkR001_perm s l' hp]
+  unfold checkR
+  rw [h1]
+  split
+  · simp only [List.mem_map, rIssues_perm s l' hp]
+  · simp only [List.mem_map, checkR001_perm s l' hp]
 
 /-! ### R 群の違反がないとき -/
 
@@ -183,7 +190,8 @@ omit hp in
 theorem eventIds_nodup_of_checkR (h : checkR s = []) : (s.events.map (·.id)).Nodup := by
   apply nodup_of_duplicates_nil
   have h1 : checkR001 s = [] := by
-    simp only [checkR, List.map_eq_nil_iff, rIssues, List.append_eq_nil_iff, and_assoc] at h
+    rw [checkR_eq_nil_iff] at h
+    simp only [rIssues, List.append_eq_nil_iff, and_assoc] at h
     exact h.1
   simp only [checkR001, List.flatMap_eq_nil_iff, List.map_eq_nil_iff] at h1
   exact h1 ("event", s.eventIds) (by simp)

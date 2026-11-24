@@ -374,7 +374,8 @@ theorem mem_of_mem_runAux : ∀ (L : List Event) (S : State) (P : List Event) (s
 theorem arrive_ge_of_checkR (s : Scenario) (hR : checkR s = []) (e : Event) (he : e ∈ s.events)
     (c to : Id) (arr : Time) (m : String) (f : Bool) (hk : e.kind = .move c to arr m f) : e.time ≤ arr := by
   have h6 : checkR006 s = [] := by
-    simp only [checkR, List.map_eq_nil_iff, rIssues, List.append_eq_nil_iff] at hR
+    rw [checkR_eq_nil_iff] at hR
+    simp only [rIssues, List.append_eq_nil_iff] at hR
     exact hR.1.1.1.1.1.1.1.2
   simp only [checkR006, List.flatMap_eq_nil_iff, List.map_eq_nil_iff] at h6
   have := h6 e he

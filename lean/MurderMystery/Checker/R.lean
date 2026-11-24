@@ -258,6 +258,8 @@ def rIssues (s : Scenario) : List RIssue :=
   checkR001 s ++ checkR002 s ++ checkR003 s ++ checkR004 s ++ checkR005 s ++ checkR006 s ++ checkR007 s
     ++ checkR008 s ++ checkR009 s ++ checkR010 s ++ checkR011 s ++ checkR012 s ++ checkR013 s
 
-def checkR (s : Scenario) : List Diag := (rIssues s).map fun (c, a, e) => err c.str a e
+/-- R 群の検出結果。ID の重複 (R001) があれば参照先が決まらないので、R001 だけを出す。 -/
+def checkR (s : Scenario) : List Diag :=
+  (if (checkR001 s).isEmpty then rIssues s else checkR001 s).map fun (c, a, e) => err c.str a e
 
 end MurderMystery

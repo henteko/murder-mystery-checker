@@ -450,7 +450,8 @@ theorem mem_pairs_of_ne : ∀ {l : List α} {x y : α}, x ∈ l → y ∈ l → 
 theorem endingIds_nodup_of_checkR (s : Scenario) (h : checkR s = []) : (s.endings.map (·.id)).Nodup := by
   apply nodup_of_duplicates_nil
   have h1 : checkR001 s = [] := by
-    simp only [checkR, List.map_eq_nil_iff, rIssues, List.append_eq_nil_iff, and_assoc] at h
+    rw [checkR_eq_nil_iff] at h
+    simp only [rIssues, List.append_eq_nil_iff, and_assoc] at h
     exact h.1
   simp only [checkR001, List.flatMap_eq_nil_iff, List.map_eq_nil_iff] at h1
   exact h1 ("ending", s.endings.map (·.id)) (by simp)
