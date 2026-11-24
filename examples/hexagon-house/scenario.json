@@ -1741,7 +1741,21 @@
     {
       "id": "g_ushiro_find_secrets",
       "name": "ウシロカワダ: 秘密を探る",
-      "owner": "ushirokawada"
+      "owner": "ushirokawada",
+      "note": "サークルメンバーの秘密を特定して書き込む。秘密は ヒメ=スパイ、カイチョウ=犯人、クロセ=カイチョウが好き、シメジ=ストーカー(真相)。requires_knowledge は推測の根拠。ヒメ・カイチョウ・シメジは真相の「特定方法」から、クロセは推定",
+      "requires_knowledge": [
+        "f_hime_joined_mid",
+        "f_lipcream_at_smoking",
+        "f_hime_smokes",
+        "f_kaichou_gave_scenario",
+        "f_bloody_pen",
+        "f_murder_at_0100",
+        "f_kaichou_absent_0100",
+        "f_smoke_alibi_0050",
+        "f_kurose_notebook",
+        "f_kurose_left_kaichou_room",
+        "f_sleeping_pill"
+      ]
     }
   ],
   "choices": [
