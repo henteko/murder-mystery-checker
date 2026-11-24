@@ -41,15 +41,18 @@ def warningsT009 (s : Scenario) : List Issue :=
 def issuesK003 (s : Scenario) : List Issue :=
   s.solutionFacts.filterMap fun f => if s.obtainable f then none else some ("K003", [f])
 
-def issuesK004K005 (s : Scenario) : List Issue :=
-  s.clues.flatMap fun c => match c.item with
-    | none => []
-    | some i =>
-      let h := s.final.holder i
-      if h == .consumed then [("K004", [c.id, i])]
-      else match c.location with
-        | some l => if h != .place l then [("K005", [c.id, i, l, h.render])] else []
-        | none => []
+/-- 1つの clue についての K004 / K005。 -/
+def clueIssues (E : State) (c : Clue) : List Issue :=
+  match c.item with
+  | none => []
+  | some i =>
+    let h := E.holder i
+    if h == .consumed then [("K004", [c.id, i])]
+    else match c.location with
+      | some l => if h != .place l then [("K005", [c.id, i, l, h.render])] else []
+      | none => []
+
+def issuesK004K005 (s : Scenario) : List Issue := s.clues.flatMap (clueIssues s.final)
 
 /-- 終了状態で NPC 以外が知っているか、いずれかのハンドアウトの knows にある。 -/
 def Scenario.held (s : Scenario) (f : Id) : Bool :=
@@ -87,22 +90,32 @@ def issuesK008 (s : Scenario) : List Issue :=
 
 /-! ## H -/
 
+/-- 1つのハンドアウトについての H001 / H002 / H004。 -/
+def handoutH001 (E : State) (h : Handout) : List Issue :=
+  match h.location with
+  | some l => if (E.pos h.character).dest != l then [("H001", [h.character, l, (E.pos h.character).dest])] else []
+  | none => []
+
+def handoutH002 (E : State) (h : Handout) : List Issue :=
+  match h.items with
+  | some is => is.filterMap fun i =>
+      if E.holder i != .char h.character then some ("H002", [h.character, i, (E.holder i).render]) else none
+  | none => []
+
+def handoutH004 (E : State) (h : Handout) : List Issue :=
+  match h.knows with
+  | some ks => ks.filterMap fun f => if E.knows h.character f then none else some ("H004", [h.character, f])
+  | none => []
+
+def handoutIssues (E : State) (h : Handout) : List Issue :=
+  handoutH001 E h ++ handoutH002 E h ++ handoutH004 E h
+
+/-- 1つの盤面についての H006。 -/
+def boardIssues (E : State) (b : Board) : List Issue :=
+  b.items.filterMap (fun i => if E.holder i != .place b.location then some ("H006", [b.location, i, (E.holder i).render]) else none)
+
 def issuesH (s : Scenario) : List Issue :=
-  let E := s.final
-  let hs := s.handouts.flatMap fun h =>
-    let c := h.character
-    (match h.location with
-      | some l => if (E.pos c).dest != l then [("H001", [c, l, (E.pos c).dest])] else []
-      | none => [])
-    ++ (match h.items with
-      | some is => is.filterMap (fun i => if E.holder i != .char c then some ("H002", [c, i, (E.holder i).render]) else none)
-      | none => [])
-    ++ (match h.knows with
-      | some ks => ks.filterMap (fun f => if E.knows c f then none else some ("H004", [c, f]))
-      | none => [])
-  let bs := s.board.flatMap fun b =>
-    b.items.filterMap (fun i => if E.holder i != .place b.location then some ("H006", [b.location, i, (E.holder i).render]) else none)
-  hs ++ bs
+  s.handouts.flatMap (handoutIssues s.final) ++ s.board.flatMap (boardIssues s.final)
 
 def warningsH (s : Scenario) : List Issue :=
   let E := s.final

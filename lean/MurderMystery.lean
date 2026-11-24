@@ -22,3 +22,6 @@ import MurderMystery.Proofs.Order
 import MurderMystery.Proofs.Perm
 import MurderMystery.Proofs.Commute
 import MurderMystery.Proofs.Segments
+import MurderMystery.Proofs.Travel
+import MurderMystery.Spec.Rules
+import MurderMystery.Proofs.Rules

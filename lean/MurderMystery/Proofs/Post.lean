@@ -16,6 +16,7 @@ theorem issuesK004K005_nil (s : Scenario) :
       s.final.holder i ≠ .consumed ∧ ∀ l, c.location = some l → s.final.holder i = .place l := by
   simp only [issuesK004K005, List.flatMap_eq_nil_iff]
   apply forall_congr'; intro c; apply forall_congr'; intro _
+  unfold clueIssues
   cases hi : c.item with
   | none => simp
   | some i =>
@@ -89,8 +90,7 @@ theorem issuesH_nil (s : Scenario) :
         (∀ is, h.items = some is → ∀ i ∈ is, s.final.holder i = .char h.character) ∧
         (∀ ks, h.knows = some ks → ∀ f ∈ ks, s.final.knows h.character f = true)) ∧
       (∀ b ∈ s.board, ∀ i ∈ b.items, s.final.holder i = .place b.location) := by
-  unfold issuesH
-  dsimp only
+  unfold issuesH handoutIssues handoutH001 handoutH002 handoutH004 boardIssues
   simp only [List.append_eq_nil_iff, List.flatMap_eq_nil_iff, and_assoc]
   apply and_congr
   · apply forall_congr'; intro h; apply forall_congr'; intro _

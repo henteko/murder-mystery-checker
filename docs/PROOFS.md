@@ -18,7 +18,7 @@
 
 | # | 定理 | 状況 | Lean |
 |---|---|---|---|
-| 1 | 健全性・完全性: 判定器が error を出さない ⇔ `Valid s` | **証明済み** | `check_valid` |
+| 1 | 健全性・完全性: 判定器が error を出さない ⇔ `Valid s`。規則ごとに、コード c が出る ⇔ R 群の違反がなく規則 c の違反条件が成り立つ | **証明済み**(規則ごとは R 群以外の error 33 規則。R 群と warning は対象外) | `check_valid`, `check_rule` |
 | 2 | G の網羅判定の正しさ: G001/G002 が出ない ⇔ 全パターンでエンディングがちょうど1つ | **証明済み** | `checkG_exactly_one`, `g_exactly_one`, `mem_enumerate` |
 | 3 | 出力の決定性(狭義に整列・重複なし・`events` 配列の並べ替えに不変) | **証明済み** | `check_sorted`, `check_nodup`, `check_perm_events`, `diagLt_total` |
 | 4 | 同時刻イベントの交換可能性 | **証明済み**(前提を追加。前提は T012 が出ないことと同値) | `reorder_of_check`, `reorder_same_time`, `checkT012_nil_iff`, `step_comm` |
@@ -26,7 +26,7 @@
 | 6 | 仕様の無矛盾性(正しいシナリオが存在) | **証明済み**(`native_decide` 使用) | `exists_valid` |
 | 7 | 導出制約の正しさ | **証明済み** | `realizable_iff`, `derived_iff` |
 | 8 | 区間の整合 | **証明済み**(主張を正確化) | `segments_consistent`, `segments_ordered`, `whereAt_eq_stateAt` |
-| 9 | 移動時間の決定性 | 定義上自明(`travelTime` は関数)。R005 との関係は未証明 | |
+| 9 | 移動時間の決定性 | **証明済み** | `edge_unique`, `edgeLookup_eq_some_iff`, `edgeLookup_perm` |
 | 10 | 集計の分割 | **証明済み** | `tally_partition` |
 | 11 | 死亡の一意性 | **証明済み** | `step_dead_stable`, `runAux_dead_stable` |
 
@@ -56,6 +56,17 @@
   - `segments c` は時刻順に並んで互いに重ならず、各区間は空でない(`segments_ordered`)。
   - 開始時刻 ≤ t < 終了時刻で死亡時刻より前なら、`whereAt c t` は時刻 t 以前のイベントをすべて処理した状態 `stateAt t` での居場所と一致する(`whereAt_eq_stateAt`)。
 - **見つかった問題 4(定理の主張を正確化)**: 0.3.0 の「各イベント時刻での居場所と whereAt が一致」は成り立たない。同時刻にあとから move するとき、その前のイベントの処理前の状態ではまだ出発前だが、`whereAt` は出発時刻から transit になる。比べる相手を「時刻 t までのイベントを処理した状態」にした。
+
+### 定理 1 (規則ごと) (`Spec/Rules.lean`, `Proofs/Rules.lean`)
+
+- R 群以外の error 規則 33 個それぞれについて、違反条件を判定関数とは独立に命題で書いた(`StepViolates` / `PostViolates` / `GViolates`)。
+- `check_rule`: `c ∈ errorCodes` について、`(∃ d ∈ check s, d.code = c) ↔ checkR s = [] ∧ Violates s c`。R 群の違反があると R 以外は出ないこと(§3)も含む。
+- 対象外: R 群(違反条件を宣言的に書いていない)、warning(T009, T012, H003/H005/H007, G006/G008/G009)、検出結果の args の中身。
+- 証明のために判定器を少し組み替えた(出力は同じ): clue / ハンドアウト / 盤面ごとの検査を関数に分けた、R 群のコードを列挙型 `RCode` にした。
+
+### 定理 9: 移動時間の決定性 (`Proofs/Travel.lean`)
+
+- R005 の違反がない表では、どの (a, b) にも一致する辺は高々1つ(`edge_unique`)。`edgeLookup` の値はその辺の分数で(`edgeLookup_eq_some_iff`)、表の並び順によらない(`edgeLookup_perm`)。
 
 ## `Valid` の内容と限界
 
