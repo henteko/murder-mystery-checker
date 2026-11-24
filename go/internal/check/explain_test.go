@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"strings"
 	"testing"
 
 	m "github.com/henteko/murder-mystery-checker/internal/model"
@@ -68,37 +67,27 @@ func TestExplainAgreesWithChecker(t *testing.T) {
 			}
 		}
 		// ハンドアウト: 「食い違い」⇔ H001/H002/H004、「記載漏れ」⇔ H003/H005
+		code := map[[2]string]string{{"location", "ng"}: "H001", {"item", "ng"}: "H002", {"fact", "ng"}: "H004",
+			{"item", "missing"}: "H003", {"fact", "missing"}: "H005"}
 		for _, h := range r.Handouts {
 			for _, row := range h.Rows {
-				var want bool
-				switch {
-				case row.Aspect == "居場所(終了時)":
-					want = has(ds, "H001", h.Name, row.Declared)
-				case row.Aspect == "持ち物" && row.Status != "missing":
-					want = has(ds, "H002", h.Name, row.Declared)
-				case row.Aspect == "知識" && row.Status != "missing":
-					want = has(ds, "H004", h.Name, row.Declared)
-				case row.Aspect == "持ち物":
-					want = has(ds, "H003", h.Name, strings.TrimSuffix(row.Actual, " を所持"))
-				case row.Aspect == "知識":
-					want = has(ds, "H005", h.Name, strings.TrimSuffix(row.Actual, " を知っている"))
-				}
-				if (row.Status != "ok") != want {
-					t.Errorf("%s: handout %s %s %s: status %s, checker %v", p, h.Name, row.Aspect, row.Declared, row.Status, want)
+				for _, st := range []string{"ng", "missing"} {
+					c := code[[2]string{row.Aspect, st}]
+					if c == "" {
+						continue
+					}
+					if (row.Status == st) != has(ds, c, h.Name, row.Subject) {
+						t.Errorf("%s: handout %s %s %s: status %s vs %s", p, h.Name, row.Aspect, row.Subject, row.Status, c)
+					}
 				}
 			}
 		}
 		// 盤面: 「食い違い」⇔ H006、「記載漏れ」⇔ H007
 		for _, b := range r.Boards {
 			for _, row := range b.Rows {
-				var want bool
-				if row.Status == "missing" {
-					want = has(ds, "H007", b.Name, strings.TrimSuffix(row.Actual, " がある"))
-				} else {
-					want = has(ds, "H006", b.Name, row.Declared)
-				}
-				if (row.Status != "ok") != want {
-					t.Errorf("%s: board %s %s: status %s, checker %v", p, b.Name, row.Declared, row.Status, want)
+				if (row.Status == "ng") != has(ds, "H006", b.Name, row.Subject) ||
+					(row.Status == "missing") != has(ds, "H007", b.Name, row.Subject) {
+					t.Errorf("%s: board %s %s: status %s", p, b.Name, row.Subject, row.Status)
 				}
 			}
 		}
@@ -121,11 +110,7 @@ func TestExplainAgreesWithChecker(t *testing.T) {
 			for _, sp := range row.Spans {
 				for i := sp.From; i < sp.Till; i++ {
 					got := w.whereAt(row.Character, r.Times[i])
-					label := map[string]string{"transit": "移動中", "dead": "死亡"}[got]
-					if label == "" {
-						label = got
-					}
-					if label != sp.Label {
+					if got != sp.Label {
 						t.Fatalf("%s: grid %s at %d = %q, whereAt = %q", p, row.Character, r.Times[i], sp.Label, got)
 					}
 				}

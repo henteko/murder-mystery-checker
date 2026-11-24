@@ -6,6 +6,8 @@ import (
 	"hash/fnv"
 	"html/template"
 	"io"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/henteko/murder-mystery-checker/internal/check"
@@ -17,10 +19,19 @@ type view struct {
 	Errors, Warnings int
 	TimeLabels       []string
 	Hue              map[string]template.CSS
+	Glossary         []glossaryGroup
+}
+
+type glossaryRow struct{ ID, Name, Note string }
+
+type glossaryGroup struct {
+	Title string
+	Rows  []glossaryRow
 }
 
 // HTML は Report を1つの HTML ファイルとして書き出す(外部の読み込みなし)。
-func HTML(w io.Writer, title string, r check.Report) error {
+// labels は表示用の名前と説明(入力の name / note)。判定には使わない。
+func HTML(w io.Writer, title string, r check.Report, labels check.Labels) error {
 	v := view{Title: title, Report: r, Hue: map[string]template.CSS{}}
 	for _, d := range r.Diags {
 		if d.Sev == check.Error {
@@ -35,7 +46,24 @@ func HTML(w io.Writer, title string, r check.Report) error {
 	for i, l := range r.Locations {
 		v.Hue[l] = template.CSS(fmt.Sprintf("--h:%d", (i*67+20)%360))
 	}
-	return tmpl.Execute(w, v)
+	for _, g := range []struct{ kind, title string }{
+		{"character", "キャラクター"}, {"location", "場所"}, {"item", "アイテム"}, {"fact", "知識"},
+		{"goal", "ゴール"}, {"choice", "選択"}, {"ending", "エンディング"},
+	} {
+		var rows []glossaryRow
+		for id, l := range labels[g.kind] {
+			rows = append(rows, glossaryRow{id, l.Name, l.Note})
+		}
+		sort.Slice(rows, func(i, j int) bool { return rows[i].ID < rows[j].ID })
+		if len(rows) > 0 {
+			v.Glossary = append(v.Glossary, glossaryGroup{g.title, rows})
+		}
+	}
+	t, err := template.New("report").Funcs(funcs(labels)).Parse(page)
+	if err != nil {
+		return err
+	}
+	return t.Execute(w, v)
 }
 
 func hueOf(v view, label string) template.CSS {
@@ -47,21 +75,219 @@ func hueOf(v view, label string) template.CSS {
 	return template.CSS(fmt.Sprintf("--h:%d", f.Sum32()%360))
 }
 
-var tmpl = template.Must(template.New("report").Funcs(template.FuncMap{
-	"time":    check.FormatTime,
-	"msg":     check.Message,
-	"join":    func(xs []string) string { return strings.Join(xs, " / ") },
-	"hue":     hueOf,
-	"sevName": func(s check.Severity) string { return s.String() },
-	"span":    func(s check.Span) int { return s.Till - s.From },
-	"deref": func(p *string) string {
-		if p == nil {
-			return ""
+// namer は ID を表示名にする(名前がなければ ID のまま)。
+type namer struct{ l check.Labels }
+
+func (n namer) name(kind, id string) string {
+	if l, ok := n.l[kind][id]; ok && l.Name != "" {
+		return l.Name
+	}
+	return id
+}
+
+func (n namer) note(kind, id string) string { return n.l[kind][id].Note }
+
+// fact は知識を、名前 → 説明 → ID の順で表示する。
+func (n namer) fact(id string) string {
+	l := n.l["fact"][id]
+	switch {
+	case l.Name != "":
+		return l.Name
+	case l.Note != "":
+		return l.Note
+	}
+	return id
+}
+
+func (n namer) names(kind string, ids []string) string {
+	if len(ids) == 0 {
+		return "(なし)"
+	}
+	out := make([]string, len(ids))
+	for i, id := range ids {
+		out[i] = n.name(kind, id)
+	}
+	return strings.Join(out, "、")
+}
+
+func (n namer) facts(ids []string) string {
+	out := make([]string, len(ids))
+	for i, id := range ids {
+		out[i] = "「" + n.fact(id) + "」"
+	}
+	return strings.Join(out, "")
+}
+
+func (n namer) where(raw string) string {
+	switch raw {
+	case "transit":
+		return "移動中"
+	case "dead":
+		return "死亡"
+	case "":
+		return "(配置なし)"
+	}
+	return n.name("location", raw)
+}
+
+func (n namer) holder(h check.HolderView) string {
+	switch h.Kind {
+	case "char":
+		return n.name("character", h.ID) + " が持っている"
+	case "place":
+		return n.name("location", h.ID) + " に置かれている"
+	}
+	return "使い切られた"
+}
+
+// sentence はイベントを、表示名を使った日本語の1文にする。
+func (n namer) sentence(e check.EventLine) string {
+	c := func(id string) string { return n.name("character", id) }
+	l := func(id string) string { return n.name("location", id) }
+	it := func(id string) string { return n.name("item", id) }
+	var t string
+	switch e.Kind {
+	case "move":
+		t = fmt.Sprintf("%s が %s から %s へ移動(%s 着", c(e.Character), n.where(e.From), l(e.To), check.FormatTime(e.Arrive))
+		switch e.Mode {
+		case "walk":
+		case "fall":
+			t += "、落下"
+		case "carried":
+			t += "、運ばれる"
+		default:
+			t += "、" + e.Mode
 		}
-		return *p
-	},
-	"isErr": func(s check.Severity) bool { return s == check.Error },
-}).Parse(page))
+		if e.Fatal {
+			t += "、到着時に死亡"
+		}
+		t += ")"
+	case "scene":
+		t = fmt.Sprintf("%s で %s が居合わせる", l(e.Location), n.names("character", e.Participants))
+		if len(e.Reveals) > 0 {
+			t += "。全員が" + n.facts(e.Reveals) + "を知る"
+		}
+	case "observe":
+		if e.TargetLocation == e.Location {
+			t = fmt.Sprintf("%s が %s で", c(e.Character), l(e.Location))
+		} else {
+			t = fmt.Sprintf("%s が %s から %s を", c(e.Character), l(e.Location), l(e.TargetLocation))
+		}
+		if len(e.Targets) > 0 {
+			t += " " + n.names("character", e.Targets) + " を"
+		}
+		t += "見て、" + n.facts(e.Facts) + "を知る"
+	case "transfer":
+		t = fmt.Sprintf("%s が %s に %s を渡す", c(e.Src), c(e.Dst), it(e.Item))
+	case "pickup":
+		t = fmt.Sprintf("%s が %s を拾う", c(e.Character), it(e.Item))
+	case "drop":
+		t = fmt.Sprintf("%s が %s を置く", c(e.Character), it(e.Item))
+	case "use":
+		t = fmt.Sprintf("%s が %s を使う", c(e.Character), it(e.Item))
+	case "consume":
+		t = fmt.Sprintf("%s が %s を使い切る", c(e.Character), it(e.Item))
+	case "learn":
+		t = fmt.Sprintf("%s が%sを知る", c(e.Character), n.facts(e.Facts))
+	case "tell":
+		t = fmt.Sprintf("%s が %s に%sを伝える", c(e.Src), c(e.Dst), n.facts(e.Facts))
+	case "die":
+		t = c(e.Character) + " が死亡"
+	}
+	if len(e.Requires) > 0 {
+		t += "(必要な知識: " + n.facts(e.Requires) + ")"
+	}
+	return t
+}
+
+// argKinds は規則ごとの args が何を指すか(docs/spec.md §4 の表の args 列)。
+// c: キャラクター, l: 場所, i: アイテム, f: 知識, e: イベント, t: 時刻(分), h: 保持者, w: 居場所(移動中・死亡を含む),
+// n: エンディング, g: ゴール, v: 変数, x: そのまま
+var argKinds = map[string]string{
+	"T002": "cll", "T003": "cllx", "T004": "cl", "T005": "ce", "T006": "ce", "T007": "clw", "T008": "ccll",
+	"T009": "ccltt", "T010": "ce", "T011": "cll", "T012": "ce",
+	"I001": "cih", "I002": "ci", "I003": "cih", "I004": "ie",
+	"K001": "cf", "K002": "cf", "K003": "f", "K004": "xi", "K005": "xilh", "K006": "f", "K007": "f", "K008": "ftt",
+	"H001": "cll", "H002": "cih", "H003": "ci", "H004": "cf", "H005": "cf", "H006": "lih", "H007": "li",
+	"A001": "xcxw", "G002": "nn", "G003": "n", "G004": "g", "G006": "v", "G008": "c", "G009": "vx",
+}
+
+// args は検出結果の詳細を、表示名を使って読める形にする。R 群はそのまま。
+func (n namer) args(d check.Diag) string {
+	kinds := argKinds[d.Code]
+	out := make([]string, len(d.Args))
+	for i, a := range d.Args {
+		k := byte('x')
+		if i < len(kinds) {
+			k = kinds[i]
+		}
+		switch k {
+		case 'c':
+			out[i] = n.name("character", a)
+		case 'l':
+			out[i] = n.name("location", a)
+		case 'w':
+			out[i] = n.where(a)
+		case 'i':
+			out[i] = n.name("item", a)
+		case 'f':
+			out[i] = "「" + n.fact(a) + "」"
+		case 'n':
+			out[i] = n.name("ending", a)
+		case 'g':
+			out[i] = n.name("goal", a)
+		case 'v':
+			if l, ok := n.l["goal"][a]; ok && l.Name != "" {
+				out[i] = l.Name
+			} else {
+				out[i] = n.name("choice", a)
+			}
+		case 't':
+			if t, err := strconv.Atoi(a); err == nil {
+				out[i] = check.FormatTime(t)
+			} else {
+				out[i] = a
+			}
+		case 'h':
+			switch {
+			case strings.HasPrefix(a, "character:"):
+				out[i] = n.holder(check.HolderView{Kind: "char", ID: strings.TrimPrefix(a, "character:")})
+			case strings.HasPrefix(a, "location:"):
+				out[i] = n.holder(check.HolderView{Kind: "place", ID: strings.TrimPrefix(a, "location:")})
+			default:
+				out[i] = n.holder(check.HolderView{Kind: "consumed"})
+			}
+		default:
+			out[i] = a
+		}
+	}
+	return strings.Join(out, " / ")
+}
+
+func funcs(labels check.Labels) template.FuncMap {
+	n := namer{labels}
+	return template.FuncMap{
+		"time":     check.FormatTime,
+		"msg":      check.Message,
+		"join":     func(xs []string) string { return strings.Join(xs, " / ") },
+		"hue":      hueOf,
+		"sevName":  func(s check.Severity) string { return s.String() },
+		"span":     func(s check.Span) int { return s.Till - s.From },
+		"name":     n.name,
+		"note":     n.note,
+		"fact":     n.fact,
+		"where":    n.where,
+		"holder":   n.holder,
+		"sentence": n.sentence,
+		"args":     n.args,
+		"deref": func(p *string) string {
+			if p == nil {
+				return ""
+			}
+			return *p
+		},
+	}
+}
 
 const page = `<!doctype html>
 <html lang="ja">
@@ -117,6 +343,15 @@ td.dead { background: var(--dead); color: var(--dead-fg); }
 .diag { display: block; font-size: 13px; }
 tr.flag td { background: var(--err-bg); }
 ul.plain { margin: 0; padding-left: 1.2em; }
+.memo { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.memo::before { content: "メモ: "; }
+.eid { color: var(--muted); font-family: ui-monospace, Menlo, monospace; font-size: 11px; }
+div.eid { margin-top: 2px; }
+ul.facts { margin: 0; padding-left: 1.1em; font-size: 13px; }
+ul.facts li.false { color: var(--err); }
+ul.facts li.solution { font-weight: 700; }
+.mark { display: inline-block; font-size: 11px; border: 1px solid var(--err); border-radius: 3px; padding: 0 3px; margin-right: 4px; }
+.learned { margin-bottom: 6px; }
 </style>
 </head>
 <body>
@@ -138,7 +373,7 @@ ul.plain { margin: 0; padding-left: 1.2em; }
   {{if .Diags}}
   <div class="scroll"><table>
     <tr><th>重大度</th><th>コード</th><th>内容</th><th>イベント</th><th>詳細</th></tr>
-    {{range .Diags}}<tr><td><span class="pill {{sevName .Sev}}">{{sevName .Sev}}</span></td><td class="mono">{{.Code}}</td><td>{{msg .Code}}</td><td class="mono">{{deref .Event}}</td><td>{{join .Args}}{{if .Witness}}<br>例: {{range .Witness}}<code>{{.Var}}={{.Val.MarshalJSON | printf "%s"}}</code> {{end}}{{end}}</td></tr>
+    {{range .Diags}}<tr><td><span class="pill {{sevName .Sev}}">{{sevName .Sev}}</span></td><td class="mono">{{.Code}}</td><td>{{msg .Code}}</td><td class="mono">{{deref .Event}}</td><td>{{args .}}{{if .Witness}}<br>例: {{range .Witness}}<code>{{.Var}}={{.Val.MarshalJSON | printf "%s"}}</code> {{end}}{{end}}</td></tr>
     {{end}}
   </table></div>
   {{else}}<p>検出結果はありません。</p>{{end}}
@@ -149,17 +384,17 @@ ul.plain { margin: 0; padding-left: 1.2em; }
   <p class="note">時刻ごとに各キャラクターがどこにいるか。斜線は移動中(出発した時刻から到着の直前まで)。列の幅は時間の長さではなく区切りの数。</p>
   <div class="scroll"><table class="grid">
     <tr><th class="who">キャラクター</th>{{range .TimeLabels}}<th class="t">{{.}}</th>{{end}}</tr>
-    {{$v := .}}{{range .Rows}}<tr><th class="who">{{.Character}}{{if .NPC}}<span class="npc">NPC</span>{{end}}</th>{{range .Spans}}<td colspan="{{span .}}" class="{{.Kind}}"{{if eq .Kind "loc"}} style="{{hue $v .Label}}"{{end}}>{{.Label}}</td>{{end}}</tr>
+    {{$v := .}}{{range .Rows}}<tr><th class="who" title="{{note "character" .Character}}">{{name "character" .Character}}{{if .NPC}}<span class="npc">NPC</span>{{end}}</th>{{range .Spans}}<td colspan="{{span .}}" class="{{.Kind}}"{{if eq .Kind "loc"}} style="{{hue $v .Label}}" title="{{note "location" .Label}}"{{end}}>{{where .Label}}</td>{{end}}</tr>
     {{end}}
   </table></div>
 </section>
 
 <section id="events">
   <h2>イベント(処理の順)</h2>
-  <p class="note">同じ時刻のイベントは ID の順に処理する。移動元は、そのイベントを処理する直前の居場所。</p>
+  <p class="note">判定器の解釈(1行目)と、シナリオに書かれたメモ(2行目)を並べている。同じ時刻のイベントは ID の順に処理する。移動元は、そのイベントを処理する直前の居場所。</p>
   <div class="scroll"><table>
-    <tr><th>時刻</th><th>ID</th><th>内容</th><th>検出結果</th></tr>
-    {{range .Events}}<tr{{if .Diags}} class="flag"{{end}}><td class="time">{{time .Time}}</td><td class="mono">{{.ID}}</td><td>{{.Text}}</td><td>{{range .Diags}}<span class="diag"><span class="pill {{sevName .Sev}}">{{.Code}}</span> {{msg .Code}}<br><small>{{join .Args}}</small></span>{{end}}</td></tr>
+    <tr><th>時刻</th><th>内容</th><th>検出結果</th></tr>
+    {{range .Events}}<tr{{if .Diags}} class="flag"{{end}}><td class="time">{{time .Time}}</td><td>{{sentence .}}{{with note "event" .ID}}<div class="memo">{{.}}</div>{{end}}<div class="eid">{{.ID}}</div></td><td>{{range .Diags}}<span class="diag"><span class="pill {{sevName .Sev}}">{{.Code}}</span> {{msg .Code}}<br><small>{{args .}}</small></span>{{end}}</td></tr>
     {{end}}
   </table></div>
 </section>
@@ -168,35 +403,35 @@ ul.plain { margin: 0; padding-left: 1.2em; }
   <h2>持ち物</h2>
   <div class="scroll"><table>
     <tr><th>アイテム</th><th>はじめ</th><th>変化</th><th>終了時</th></tr>
-    {{range .Items}}<tr><td class="mono">{{.ID}}</td><td>{{.Initial}}</td><td>{{if .Changes}}<ul class="plain">{{range .Changes}}<li>{{time .Time}} <code>{{.EventID}}</code> → {{.Holder}}</li>{{end}}</ul>{{else}}(変化なし){{end}}</td><td>{{.Final}}</td></tr>
+    {{range .Items}}<tr><td>{{name "item" .ID}}{{with note "item" .ID}}<div class="memo">{{.}}</div>{{end}}<div class="eid">{{.ID}}</div></td><td>{{holder .Initial}}</td><td>{{if .Changes}}<ul class="plain">{{range .Changes}}<li>{{time .Time}} → {{holder .Holder}} <span class="eid">{{.EventID}}</span></li>{{end}}</ul>{{else}}(変化なし){{end}}</td><td>{{holder .Final}}</td></tr>
     {{end}}
   </table></div>
 </section>{{end}}
 
 <section id="knowledge">
   <h2>知識</h2>
-  <p class="note">赤い枠は偽の知識、太字は真相に必要な知識。</p>
+  <p class="note">赤い印は偽の知識、太字は真相に必要な知識。</p>
   <div class="scroll"><table>
     <tr><th>キャラクター</th><th>はじめから</th><th>知ったこと</th><th>終了時</th></tr>
-    {{range .Knowledge}}<tr><td>{{.Character}}{{if .NPC}}<span class="npc">NPC</span>{{end}}</td>
-      <td>{{range .Initial}}{{template "fact" .}}{{end}}</td>
-      <td>{{if .Learned}}<ul class="plain">{{range .Learned}}<li>{{time .Time}} <code>{{.EventID}}</code> {{range .Facts}}{{template "fact" .}}{{end}}</li>{{end}}</ul>{{end}}</td>
-      <td>{{range .Final}}{{template "fact" .}}{{end}}</td></tr>
+    {{range .Knowledge}}<tr><td>{{name "character" .Character}}{{if .NPC}}<span class="npc">NPC</span>{{end}}</td>
+      <td><ul class="facts">{{range .Initial}}{{template "fact" .}}{{end}}</ul></td>
+      <td>{{range .Learned}}<div class="learned">{{time .Time}} <span class="eid">{{.EventID}}</span><ul class="facts">{{range .Facts}}{{template "fact" .}}{{end}}</ul></div>{{end}}</td>
+      <td><ul class="facts">{{range .Final}}{{template "fact" .}}{{end}}</ul></td></tr>
     {{end}}
   </table></div>
 </section>
 
 {{if or .Handouts .Boards}}<section id="declarations">
   <h2>ハンドアウト・盤面と終了時の状態</h2>
-  {{range .Handouts}}<h3>ハンドアウト: {{.Name}}</h3>{{template "decl" .Rows}}{{end}}
-  {{range .Boards}}<h3>盤面: {{.Name}}</h3>{{template "decl" .Rows}}{{end}}
+  {{range .Handouts}}<h3>ハンドアウト: {{name "character" .Name}}</h3>{{template "decl" .Rows}}{{end}}
+  {{range .Boards}}<h3>盤面: {{name "location" .Name}}</h3>{{template "decl" .Rows}}{{end}}
 </section>{{end}}
 
 {{if .Assertions}}<section id="assertions">
   <h2>真相の断言</h2>
   <div class="scroll"><table>
     <tr><th>ID</th><th>断言</th><th>判定器の解釈</th><th></th></tr>
-    {{range .Assertions}}<tr><td class="mono">{{.ID}}</td><td>{{time .Time}} に {{.Character}} は {{.Location}} に{{if eq .Kind "present"}}いる{{else}}いない{{end}}</td><td>{{time .Time}} の {{.Character}}: {{if eq .Where "transit"}}移動中{{else if eq .Where "dead"}}死亡{{else}}{{.Where}}{{end}}</td><td>{{if .OK}}<span class="pill ok">一致</span>{{else}}<span class="pill error">矛盾</span>{{end}}</td></tr>
+    {{range .Assertions}}<tr><td class="mono">{{.ID}}</td><td>{{time .Time}} に {{name "character" .Character}} は {{name "location" .Location}} に{{if eq .Kind "present"}}いる{{else}}いない{{end}}{{with note "assertion" .ID}}<div class="memo">{{.}}</div>{{end}}</td><td>{{time .Time}} の {{name "character" .Character}}: {{where .Where}}</td><td>{{if .OK}}<span class="pill ok">一致</span>{{else}}<span class="pill error">矛盾</span>{{end}}</td></tr>
     {{end}}
   </table></div>
 </section>{{end}}
@@ -205,7 +440,7 @@ ul.plain { margin: 0; padding-left: 1.2em; }
   <h2>証言の時刻</h2>
   <div class="scroll"><table>
     <tr><th>知識</th><th>対象のイベント</th><th>主張</th><th>実際</th><th>許容誤差</th><th></th></tr>
-    {{range .Claims}}<tr><td class="mono">{{.Fact}}{{if not .Truth}} (偽){{end}}</td><td class="mono">{{.Event}}{{if eq .Point "arrive"}}(到着){{end}}</td><td class="time">{{time .Claimed}}</td><td class="time">{{if .Found}}{{time .Actual}}{{else}}(イベントがない){{end}}</td><td>{{.Tolerance}} 分</td><td>{{if not .Truth}}<span class="pill">検査対象外</span>{{else if not .Found}}{{else if .OK}}<span class="pill ok">範囲内</span>{{else}}<span class="pill error">ずれ</span>{{end}}</td></tr>
+    {{range .Claims}}<tr><td>{{fact .Fact}}{{if not .Truth}} (偽){{end}}<div class="eid">{{.Fact}}</div></td><td class="mono">{{.Event}}{{if eq .Point "arrive"}}(到着){{end}}</td><td class="time">{{time .Claimed}}</td><td class="time">{{if .Found}}{{time .Actual}}{{else}}(イベントがない){{end}}</td><td>{{.Tolerance}} 分</td><td>{{if not .Truth}}<span class="pill">検査対象外</span>{{else if not .Found}}{{else if .OK}}<span class="pill ok">範囲内</span>{{else}}<span class="pill error">ずれ</span>{{end}}</td></tr>
     {{end}}
   </table></div>
 </section>{{end}}
@@ -216,23 +451,36 @@ ul.plain { margin: 0; padding-left: 1.2em; }
   <p class="note">制約(導出制約を含む)を満たす選び方 {{.Total}} 通り。エンディングがない選び方 {{.NoEnding}} 通り、2つ以上になる選び方 {{.Multiple}} 通り。{{if lt .Shown .Total}}先頭の {{.Shown}} 通りだけを表示している。{{end}}</p>
   <div class="scroll"><table>
     <tr><th>エンディング</th><th>選び方の数</th></tr>
-    {{range .Counts}}<tr><td class="mono">{{.ID}}</td><td>{{.Count}}</td></tr>{{end}}
+    {{range .Counts}}<tr><td>{{name "ending" .ID}}{{with note "ending" .ID}}<div class="memo">{{.}}</div>{{end}}<div class="eid">{{.ID}}</div></td><td>{{.Count}}</td></tr>{{end}}
   </table></div>
   <h3>選び方ごとの結果</h3>
   <div class="scroll"><table>
-    <tr>{{range .Vars}}<th class="mono">{{.}}</th>{{end}}<th>エンディング</th></tr>
-    {{range .Rows}}<tr{{if ne (len .Endings) 1}} class="flag"{{end}}>{{range .Values}}<td>{{.}}</td>{{end}}<td class="mono">{{if .Endings}}{{join .Endings}}{{else}}(なし){{end}}</td></tr>
+    <tr>{{range .Vars}}<th class="mono" title="{{note "goal" .}}{{note "choice" .}}">{{.}}</th>{{end}}<th>エンディング</th></tr>
+    {{range .Rows}}<tr{{if ne (len .Endings) 1}} class="flag"{{end}}>{{range .Values}}<td>{{.}}</td>{{end}}<td>{{if .Endings}}{{range $i, $e := .Endings}}{{if $i}} / {{end}}{{name "ending" $e}}{{end}}{{else}}(なし){{end}}</td></tr>
     {{end}}
   </table></div>
   {{end}}{{end}}
 </section>
+
+{{if .Glossary}}<section id="glossary">
+  <h2>用語(ID と表示名・説明)</h2>
+  <p class="note">シナリオの name / note(text)フィールドから。判定には使わない。</p>
+  {{range .Glossary}}<h3>{{.Title}}</h3>
+  <div class="scroll"><table>
+    <tr><th>ID</th><th>表示名</th><th>説明</th></tr>
+    {{range .Rows}}<tr><td class="mono">{{.ID}}</td><td>{{.Name}}</td><td>{{.Note}}</td></tr>{{end}}
+  </table></div>{{end}}
+</section>{{end}}
 </main>
 </body>
 </html>
-{{define "fact"}}<span class="fact{{if .False}} false{{end}}{{if .Solution}} solution{{end}}">{{.ID}}</span>{{end}}
+{{define "fact"}}<li class="{{if .False}}false{{end}}{{if .Solution}} solution{{end}}">{{if .False}}<span class="mark">偽</span>{{end}}{{fact .ID}} <span class="eid">{{.ID}}</span></li>{{end}}
 {{define "decl"}}<div class="scroll"><table>
   <tr><th>項目</th><th>書かれていること</th><th>終了時の状態</th><th></th></tr>
-  {{range .}}<tr><td>{{.Aspect}}</td><td class="mono">{{.Declared}}</td><td>{{.Actual}}</td><td>{{if eq .Status "ok"}}<span class="pill ok">一致</span>{{else if eq .Status "ng"}}<span class="pill error">食い違い</span>{{else}}<span class="pill warning">記載漏れ</span>{{end}}</td></tr>
+  {{range .}}<tr><td>{{if eq .Aspect "location"}}居場所{{else if eq .Aspect "item"}}持ち物{{else}}知識{{end}}</td>
+  <td>{{if not .Listed}}(書かれていない){{else if eq .Aspect "location"}}{{name "location" .Subject}}{{else if eq .Aspect "item"}}{{name "item" .Subject}}{{else}}{{fact .Subject}}{{end}}{{if .Listed}} <span class="eid">{{.Subject}}</span>{{end}}</td>
+  <td>{{if eq .Aspect "location"}}{{where .ActualLoc}}{{else if eq .Aspect "item"}}{{name "item" .Subject}}: {{holder .Holder}}{{else}}{{fact .Subject}}: {{if .Known}}知っている{{else}}知らない{{end}}{{end}}</td>
+  <td>{{if eq .Status "ok"}}<span class="pill ok">一致</span>{{else if eq .Status "ng"}}<span class="pill error">食い違い</span>{{else}}<span class="pill warning">記載漏れ</span>{{end}}</td></tr>
   {{end}}
 </table></div>{{end}}
 `

@@ -6,19 +6,24 @@
   "claim_tolerance": 5,
   "characters": [
     {
-      "id": "kaichou"
+      "id": "kaichou",
+      "name": "カイチョウ"
     },
     {
-      "id": "kurose"
+      "id": "kurose",
+      "name": "クロセ"
     },
     {
-      "id": "shimeji"
+      "id": "shimeji",
+      "name": "シメジ"
     },
     {
-      "id": "ushirokawada"
+      "id": "ushirokawada",
+      "name": "ウシロカワダ"
     },
     {
       "id": "hime",
+      "name": "ヒメ",
       "npc": true,
       "note": "被害者 NPC"
     }
@@ -26,66 +31,81 @@
   "areas": [
     {
       "id": "lodge",
+      "name": "館",
       "internal_minutes": 1,
       "note": "合宿所(館)"
     },
     {
-      "id": "outside"
+      "id": "outside",
+      "name": "館の外"
     },
     {
-      "id": "shrine_area"
+      "id": "shrine_area",
+      "name": "神社"
     },
     {
-      "id": "harbor"
+      "id": "harbor",
+      "name": "港"
     }
   ],
   "locations": [
     {
       "id": "port",
+      "name": "港",
       "area": "harbor",
       "public": true
     },
     {
       "id": "shrine",
+      "name": "神社",
       "area": "shrine_area"
     },
     {
       "id": "smoking_area",
+      "name": "喫煙所",
       "area": "outside",
       "note": "館の外の喫煙スペース"
     },
     {
       "id": "room_kaichou",
+      "name": "カイチョウの部屋",
       "area": "lodge"
     },
     {
       "id": "room_kurose",
+      "name": "クロセの部屋",
       "area": "lodge"
     },
     {
       "id": "room_shimeji",
+      "name": "シメジの部屋",
       "area": "lodge"
     },
     {
       "id": "room_ushirokawada",
+      "name": "ウシロカワダの部屋",
       "area": "lodge"
     },
     {
       "id": "room_hime",
+      "name": "ヒメの部屋",
       "area": "lodge"
     },
     {
       "id": "dining",
+      "name": "食堂",
       "area": "lodge",
       "public": true
     },
     {
       "id": "hall",
+      "name": "大広間",
       "area": "lodge",
       "public": true
     },
     {
       "id": "corridor",
+      "name": "廊下",
       "area": "lodge",
       "public": true
     }
@@ -153,6 +173,7 @@
   "items": [
     {
       "id": "fountain_pen",
+      "name": "万年筆",
       "initial": {
         "character": "kaichou"
       },
@@ -160,6 +181,7 @@
     },
     {
       "id": "watch",
+      "name": "腕時計",
       "initial": {
         "character": "kaichou"
       },
@@ -167,6 +189,7 @@
     },
     {
       "id": "scenario",
+      "name": "シナリオ",
       "initial": {
         "character": "kaichou"
       },
@@ -174,6 +197,7 @@
     },
     {
       "id": "cigarettes",
+      "name": "タバコ",
       "initial": {
         "character": "hime"
       },
@@ -181,6 +205,7 @@
     },
     {
       "id": "lip_cream",
+      "name": "リップクリーム",
       "initial": {
         "character": "hime"
       },
@@ -188,6 +213,7 @@
     },
     {
       "id": "sleeping_pill",
+      "name": "睡眠薬",
       "initial": {
         "character": "shimeji"
       },
@@ -195,6 +221,7 @@
     },
     {
       "id": "notebook",
+      "name": "手帳",
       "initial": {
         "location": "room_kurose"
       },
@@ -202,6 +229,7 @@
     },
     {
       "id": "table_clock",
+      "name": "置き時計",
       "initial": {
         "location": "room_hime"
       },

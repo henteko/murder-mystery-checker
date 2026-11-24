@@ -98,7 +98,15 @@ func runExplain(path, out string, stdin io.Reader, stdout, stderr io.Writer) int
 		fmt.Fprintln(stderr, err)
 		return 2
 	}
-	s, err := load(path, src)
+	// 表示名と説明(name / note)は正規化 JSON から読む。YAML は変換してから読む
+	j := src
+	if ext := strings.ToLower(filepath.Ext(path)); ext == ".yaml" || ext == ".yml" {
+		if j, err = yamlio.ToJSON(src); err != nil {
+			fmt.Fprintln(stderr, err)
+			return 2
+		}
+	}
+	s, err := m.ParseScenario(j)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return 2
@@ -113,7 +121,7 @@ func runExplain(path, out string, stdin io.Reader, stdout, stderr io.Writer) int
 		defer f.Close()
 		w = f
 	}
-	if err := report.HTML(w, filepath.Base(path), check.Explain(s)); err != nil {
+	if err := report.HTML(w, filepath.Base(path), check.Explain(s), check.ParseLabels(j)); err != nil {
 		fmt.Fprintln(stderr, err)
 		return 2
 	}

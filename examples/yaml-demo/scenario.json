@@ -8,13 +8,16 @@
   "characters": [
     {
       "id": "owner",
+      "name": "店主",
       "npc": true
     },
     {
-      "id": "clerk"
+      "id": "clerk",
+      "name": "店員"
     },
     {
-      "id": "customer"
+      "id": "customer",
+      "name": "客"
     }
   ],
   "choices": [
@@ -177,30 +180,36 @@
       "id": "letter_opener",
       "initial": {
         "location": "counter"
-      }
+      },
+      "name": "ペーパーナイフ"
     },
     {
       "id": "ledger",
       "initial": {
         "character": "owner"
-      }
+      },
+      "name": "帳簿"
     }
   ],
   "locations": [
     {
       "area": "shop",
-      "id": "counter"
+      "id": "counter",
+      "name": "カウンター"
     },
     {
       "area": "shop",
-      "id": "stacks"
+      "id": "stacks",
+      "name": "本棚"
     },
     {
       "area": "shop",
-      "id": "backroom"
+      "id": "backroom",
+      "name": "バックルーム"
     },
     {
       "id": "street",
+      "name": "通り",
       "public": true
     }
   ],

@@ -19,6 +19,12 @@ bin/mmcheck explain -o reading.html examples/yaml-demo/scenario.yaml
 | 真相の断言・証言の時刻 | 断言・証言と、判定器の解釈の照合 |
 | 選び方とエンディング | 制約を満たす選び方ごとのエンディング(256 通りまで表示) |
 
+## 表示名と説明
+
+ID の代わりに、入力の `name`(短い表示名)と `note`(説明。`text` も同じ)を使う。知識は名前がなければ説明文で表示する。イベントには、判定器の解釈(1行目)とシナリオに書かれたメモ(2行目)を並べるので、原作の文と照らし合わせやすい。検出結果の詳細も、仕様書 §4 の args の種類に従って表示名に置き換える。末尾に ID と表示名・説明の一覧を付ける。
+
+`name` / `note` は判定に使わない表示専用のフィールド(判定器は知らないフィールドを読み飛ばす)。
+
 ## 何で保証しているか(証明・差分テスト・単体テストの境界)
 
 explain は判定をひとつも足さない。仕様書にも定義しない、Go 側だけの表示機能である(YAML 変換やテキスト出力と同じ)。そのかわり、**意味(居場所・状態・エンディング)は差分テスト済みの関数だけで計算する**ことを、構造とテストで保証する。
@@ -32,6 +38,6 @@ explain は判定をひとつも足さない。仕様書にも定義しない、
 - `internal/check/explain.go` は、判定器と同じループ(`run`)と同じ関数(`initState`、`step`、`whereAt`、`domains`、`effectiveConstraints`、`eval`)で状態を計算する。表示のために意味論を書き直さない
 - `internal/report`(HTML)は判定器の結果(`check.Report`)だけを受け取る。`TestImportsOnlyChecker` が、ほかの内部パッケージを読み込んでいないことを確かめる
 - `TestExplainAgreesWithChecker` が、全テストケースとサンプルで、explain の照合(断言・証言・ハンドアウト・盤面・エンディング)と居場所の表が、判定器の検出結果・`whereAt` と一致することを確かめる。explain 側だけ解釈を変えると、このテストが落ちる(確認済み)
-- `TestRenderAll`、`TestEscapes`、`TestSampleContent` が、HTML が作れること、ID がエスケープされること、主な内容が出ることを確かめる
+- `TestRenderAll`、`TestEscapes`、`TestSampleContent`、`TestDiagnosticArgsUseNames` が、HTML が作れること、ID や表示名がエスケープされること、主な内容と表示名が出ることを確かめる
 
 したがって、読み合わせで見つかった「意図と違う解釈」は、そのまま判定器(と Lean のモデル)の解釈のずれと考えてよい。

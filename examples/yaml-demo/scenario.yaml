@@ -7,17 +7,17 @@ claim_tolerance: 2
 areas:
   - {id: shop, internal_minutes: 1}
 locations:
-  - {id: counter, area: shop}
-  - {id: stacks, area: shop}
-  - {id: backroom, area: shop}
-  - {id: street, public: true}
+  - {id: counter, name: カウンター, area: shop}
+  - {id: stacks, name: 本棚, area: shop}
+  - {id: backroom, name: バックルーム, area: shop}
+  - {id: street, name: 通り, public: true}
 travel:
   - {from: counter, to: street, minutes: 1, bidirectional: true}
   - {from: stacks, to: street, minutes: 2, bidirectional: true}
 
 items:
-  - {id: letter_opener, initial: {location: counter}}
-  - {id: ledger, initial: {character: owner}}
+  - {id: letter_opener, name: ペーパーナイフ, initial: {location: counter}}
+  - {id: ledger, name: 帳簿, initial: {character: owner}}
 
 facts:
   - {id: f_ledger_missing, text: 帳簿がなくなっている}
@@ -26,11 +26,13 @@ facts:
 
 characters:
   - id: owner
+    name: 店主
     npc: true
     location: backroom
     timeline:
       - {id: owner_dies, at: "21:25", kind: die}
   - id: clerk
+    name: 店員
     location: counter
     knows: [f_ledger_missing]
     timeline:
@@ -39,6 +41,7 @@ characters:
       - {at: "21:20", kind: scene, location: backroom, participants: [clerk, owner]}
       - {at: "21:30", kind: move, to: counter, arrive: "21:30"}       # 移動時間 1 分が足りない
   - id: customer
+    name: 客
     location: street
     timeline:
       - {id: customer_enters, at: "21:10", kind: move, to: stacks, arrive: "21:12"}

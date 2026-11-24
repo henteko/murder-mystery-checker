@@ -47,28 +47,43 @@ type Span struct {
 	From, Till int
 }
 
-// EventLine はイベント1件。
+// EventLine はイベント1件。ID のまま持ち、文章や表示名への置き換えは表示側でする。
+// From は処理直前の居場所(move の移動元)。
 type EventLine struct {
-	Time  int
-	ID    string
-	Kind  string
-	Text  string
-	Diags []Diag
+	Time                     int
+	ID                       string
+	Kind                     string
+	Character, From, To      string
+	Arrive                   int
+	Mode                     string
+	Fatal                    bool
+	Location, TargetLocation string
+	Participants, Targets    []string
+	Reveals, Facts           []string
+	Src, Dst, Item           string
+	Requires                 []string
+	Diags                    []Diag
+}
+
+// HolderView はアイテムの保持者。Kind は "char" / "place" / "consumed"。
+type HolderView struct {
+	Kind string
+	ID   string
 }
 
 // HolderChange はアイテムの保持者の変化。
 type HolderChange struct {
 	Time    int
 	EventID string
-	Holder  string
+	Holder  HolderView
 }
 
 // ItemHistory はアイテム1つの保持者の推移。
 type ItemHistory struct {
 	ID      string
-	Initial string
+	Initial HolderView
 	Changes []HolderChange
-	Final   string
+	Final   HolderView
 }
 
 // FactRef は知識の参照(真偽と、真相に必要か)。
@@ -94,9 +109,17 @@ type KnowledgeHistory struct {
 	Final     []FactRef
 }
 
-// DeclRow は宣言1項目と終了状態の照合。Status は "ok" / "ng" / "missing"(書かれていない)。
+// DeclRow は宣言1項目と終了状態の照合。Aspect は "location" / "item" / "fact"。
+// Listed が false の行は「書かれていないが終了時にそうなっている」(記載漏れ)。
+// Status は "ok" / "ng" / "missing"。
 type DeclRow struct {
-	Aspect, Declared, Actual, Status string
+	Aspect    string
+	Subject   string
+	Listed    bool
+	ActualLoc string
+	Holder    HolderView
+	Known     bool
+	Status    string
 }
 
 // DeclCheck はハンドアウトまたは盤面1つの照合。
@@ -155,14 +178,14 @@ func FormatTime(t int) string {
 	return fmt.Sprintf("%02d:%02d", r/60, r%60)
 }
 
-func holderText(h m.Holder) string {
+func holderView(h m.Holder) HolderView {
 	switch h.Kind {
 	case m.HolderChar:
-		return h.ID + " が所持"
+		return HolderView{"char", h.ID}
 	case m.HolderPlace:
-		return h.ID + " に置かれている"
+		return HolderView{"place", h.ID}
 	}
-	return "使い切られた"
+	return HolderView{Kind: "consumed"}
 }
 
 // Explain はシナリオの解釈をまとめる。
@@ -197,7 +220,7 @@ func Explain(s *m.Scenario) Report {
 	for _, it := range s.Items {
 		if _, ok := itemIdx[it.ID]; !ok {
 			itemIdx[it.ID] = len(r.Items)
-			r.Items = append(r.Items, ItemHistory{ID: it.ID, Initial: holderText(init.Holder(it.ID))})
+			r.Items = append(r.Items, ItemHistory{ID: it.ID, Initial: holderView(init.Holder(it.ID))})
 		}
 	}
 	know := map[string]*KnowledgeHistory{}
@@ -236,8 +259,15 @@ func Explain(s *m.Scenario) Report {
 	}
 	final := run(s, func(st Step) {
 		e, S := st.Ev, st.Pre
-		r.Events = append(r.Events, EventLine{Time: e.Time, ID: e.ID, Kind: kindName(e.Kind.Kind),
-			Text: eventText(S, e), Diags: byEvent[e.ID]})
+		k := e.Kind
+		line := EventLine{Time: e.Time, ID: e.ID, Kind: kindName(k.Kind), Character: k.Character, To: k.To,
+			Arrive: k.Arrive, Mode: k.Mode, Fatal: k.Fatal, Location: k.Location, TargetLocation: k.TargetLocation,
+			Participants: k.Participants, Targets: k.Targets, Reveals: k.Reveals, Facts: k.Facts,
+			Src: k.Src, Dst: k.Dst, Item: k.Item, Requires: e.Requires, Diags: byEvent[e.ID]}
+		if k.Kind == m.Move {
+			line.From = S.Pos(k.Character).Dest
+		}
+		r.Events = append(r.Events, line)
 		who, facts = recipients(e.Kind)
 		before = map[m.Pair]bool{}
 		for _, c := range who {
@@ -254,7 +284,7 @@ func Explain(s *m.Scenario) Report {
 		if hasItem {
 			if h := S.Holder(item); h != oldHolder {
 				if i, ok := itemIdx[item]; ok {
-					r.Items[i].Changes = append(r.Items[i].Changes, HolderChange{e.Time, e.ID, holderText(h)})
+					r.Items[i].Changes = append(r.Items[i].Changes, HolderChange{e.Time, e.ID, holderView(h)})
 				}
 			}
 		}
@@ -272,7 +302,7 @@ func Explain(s *m.Scenario) Report {
 	})
 	sorted := sortedEvents(s)
 	for i := range r.Items {
-		r.Items[i].Final = holderText(final.Holder(r.Items[i].ID))
+		r.Items[i].Final = holderView(final.Holder(r.Items[i].ID))
 	}
 	for _, c := range knowOrder {
 		kh := know[c]
@@ -318,71 +348,6 @@ func kindName(k m.Kind) string {
 	return [...]string{"move", "scene", "observe", "transfer", "pickup", "drop", "use", "consume", "learn", "tell", "die"}[k]
 }
 
-func list(xs []string) string {
-	if len(xs) == 0 {
-		return "(なし)"
-	}
-	return strings.Join(xs, "、")
-}
-
-// eventText はイベントを日本語の1文にする。S は処理前の状態(移動元を読む)。
-func eventText(S *State, e m.Event) string {
-	k := e.Kind
-	var t string
-	switch k.Kind {
-	case m.Move:
-		t = fmt.Sprintf("%s が %s から %s へ移動(%s 着", k.Character, S.Pos(k.Character).Dest, k.To, FormatTime(k.Arrive))
-		switch k.Mode {
-		case "walk":
-		case "fall":
-			t += "、落下"
-		case "carried":
-			t += "、運ばれる"
-		default:
-			t += "、" + k.Mode
-		}
-		if k.Fatal {
-			t += "、到着時に死亡"
-		}
-		t += ")"
-	case m.Scene:
-		t = fmt.Sprintf("%s で場面: %s", k.Location, list(k.Participants))
-		if len(k.Reveals) > 0 {
-			t += fmt.Sprintf("。全員が %s を知る", list(k.Reveals))
-		}
-	case m.Observe:
-		if k.TargetLocation == k.Location {
-			t = fmt.Sprintf("%s が %s で", k.Character, k.Location)
-		} else {
-			t = fmt.Sprintf("%s が %s から %s を", k.Character, k.Location, k.TargetLocation)
-		}
-		if len(k.Targets) > 0 {
-			t += fmt.Sprintf(" %s を", list(k.Targets))
-		}
-		t += fmt.Sprintf("観察し、%s を知る", list(k.Facts))
-	case m.Transfer:
-		t = fmt.Sprintf("%s が %s に %s を渡す", k.Src, k.Dst, k.Item)
-	case m.Pickup:
-		t = fmt.Sprintf("%s が %s を拾う", k.Character, k.Item)
-	case m.Drop:
-		t = fmt.Sprintf("%s が %s を置く", k.Character, k.Item)
-	case m.Use:
-		t = fmt.Sprintf("%s が %s を使う", k.Character, k.Item)
-	case m.Consume:
-		t = fmt.Sprintf("%s が %s を使い切る", k.Character, k.Item)
-	case m.Learn:
-		t = fmt.Sprintf("%s が %s を知る", k.Character, list(k.Facts))
-	case m.Tell:
-		t = fmt.Sprintf("%s が %s に %s を伝える", k.Src, k.Dst, list(k.Facts))
-	case m.Die:
-		t = fmt.Sprintf("%s が死亡", k.Character)
-	}
-	if len(e.Requires) > 0 {
-		t += fmt.Sprintf("(必要な知識: %s)", list(e.Requires))
-	}
-	return t
-}
-
 // grid は居場所の表を作る。区切りの時刻の間は whereAt が一定なので、区切りごとに whereAt を読む。
 func (r *Report) grid(w *world) {
 	s := w.s
@@ -422,11 +387,8 @@ func (r *Report) grid(w *world) {
 		for i := 0; i+1 < len(r.Times); i++ {
 			wh := w.whereAt(c.ID, r.Times[i])
 			kind, label := "loc", wh
-			switch wh {
-			case "transit":
-				kind, label = "transit", "移動中"
-			case "dead":
-				kind, label = "dead", "死亡"
+			if wh == "transit" || wh == "dead" {
+				kind = wh
 			}
 			if n := len(row.Spans); n > 0 && row.Spans[n-1].Label == label && row.Spans[n-1].Kind == kind {
 				row.Spans[n-1].Till = i + 1
@@ -450,31 +412,29 @@ func (r *Report) declarations(w *world) {
 		c := h.Character
 		dc := DeclCheck{Name: c}
 		if h.Location != nil {
-			dc.Rows = append(dc.Rows, DeclRow{"居場所(終了時)", *h.Location, E.Pos(c).Dest, status(E.Pos(c).Dest == *h.Location)})
+			dc.Rows = append(dc.Rows, DeclRow{Aspect: "location", Subject: *h.Location, Listed: true,
+				ActualLoc: E.Pos(c).Dest, Status: status(E.Pos(c).Dest == *h.Location)})
 		}
+		mine := m.Holder{Kind: m.HolderChar, ID: c}
 		if h.Items != nil {
 			for _, i := range *h.Items {
-				hd := E.Holder(i)
-				dc.Rows = append(dc.Rows, DeclRow{"持ち物", i, holderText(hd), status(hd == m.Holder{Kind: m.HolderChar, ID: c})})
+				dc.Rows = append(dc.Rows, DeclRow{Aspect: "item", Subject: i, Listed: true,
+					Holder: holderView(E.Holder(i)), Status: status(E.Holder(i) == mine)})
 			}
 			for _, i := range itemIds(s) {
-				if E.Holder(i) == (m.Holder{Kind: m.HolderChar, ID: c}) && !contains(*h.Items, i) {
-					dc.Rows = append(dc.Rows, DeclRow{"持ち物", "(書かれていない)", i + " を所持", "missing"})
+				if E.Holder(i) == mine && !contains(*h.Items, i) {
+					dc.Rows = append(dc.Rows, DeclRow{Aspect: "item", Subject: i, Holder: holderView(mine), Status: "missing"})
 				}
 			}
 		}
 		if h.Knows != nil {
 			for _, f := range *h.Knows {
 				k := E.Knows(c, f)
-				actual := "知らない"
-				if k {
-					actual = "知っている"
-				}
-				dc.Rows = append(dc.Rows, DeclRow{"知識", f, actual, status(k)})
+				dc.Rows = append(dc.Rows, DeclRow{Aspect: "fact", Subject: f, Listed: true, Known: k, Status: status(k)})
 			}
 			for _, f := range factIds(s) {
 				if E.Knows(c, f) && !contains(*h.Knows, f) {
-					dc.Rows = append(dc.Rows, DeclRow{"知識", "(書かれていない)", f + " を知っている", "missing"})
+					dc.Rows = append(dc.Rows, DeclRow{Aspect: "fact", Subject: f, Known: true, Status: "missing"})
 				}
 			}
 		}
@@ -482,13 +442,14 @@ func (r *Report) declarations(w *world) {
 	}
 	for _, b := range s.Board {
 		dc := DeclCheck{Name: b.Location}
+		here := m.Holder{Kind: m.HolderPlace, ID: b.Location}
 		for _, i := range b.Items {
-			hd := E.Holder(i)
-			dc.Rows = append(dc.Rows, DeclRow{"置かれている物", i, holderText(hd), status(hd == m.Holder{Kind: m.HolderPlace, ID: b.Location})})
+			dc.Rows = append(dc.Rows, DeclRow{Aspect: "item", Subject: i, Listed: true,
+				Holder: holderView(E.Holder(i)), Status: status(E.Holder(i) == here)})
 		}
 		for _, i := range itemIds(s) {
-			if E.Holder(i) == (m.Holder{Kind: m.HolderPlace, ID: b.Location}) && !contains(b.Items, i) {
-				dc.Rows = append(dc.Rows, DeclRow{"置かれている物", "(書かれていない)", i + " がある", "missing"})
+			if E.Holder(i) == here && !contains(b.Items, i) {
+				dc.Rows = append(dc.Rows, DeclRow{Aspect: "item", Subject: i, Holder: holderView(here), Status: "missing"})
 			}
 		}
 		r.Boards = append(r.Boards, dc)
@@ -500,9 +461,9 @@ func valText(v Val) string {
 		return v.S
 	}
 	if v.B {
-		return "達成"
+		return "true"
 	}
-	return "—"
+	return "false"
 }
 
 // endingTable は選び方ごとのエンディング(G 群と同じ定義域・制約・評価)。

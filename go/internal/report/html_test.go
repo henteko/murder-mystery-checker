@@ -34,9 +34,9 @@ func TestImportsOnlyChecker(t *testing.T) {
 	}
 }
 
-func render(t *testing.T, s *m.Scenario) string {
+func render(t *testing.T, s *m.Scenario, raw []byte) string {
 	var b bytes.Buffer
-	if err := HTML(&b, "test", check.Explain(s)); err != nil {
+	if err := HTML(&b, "test", check.Explain(s), check.ParseLabels(raw)); err != nil {
 		t.Fatal(err)
 	}
 	return b.String()
@@ -60,7 +60,7 @@ func TestRenderAll(t *testing.T) {
 		if err != nil {
 			continue
 		}
-		out := render(t, s)
+		out := render(t, s, raw)
 		for _, id := range []string{`id="diagnostics"`, `id="where"`, `id="events"`, `id="knowledge"`, `id="endings"`} {
 			if !strings.Contains(out, id) {
 				t.Fatalf("%s: %s がない", p, id)
@@ -75,13 +75,17 @@ func TestRenderAll(t *testing.T) {
 
 // TestEscapes は、ID などに含まれる記号が HTML として解釈されないことを確かめる。
 func TestEscapes(t *testing.T) {
-	s, err := m.ParseScenario([]byte(`{"start_time": 0, "end_time": 10,
-		"characters": [{"id": "<script>alert(1)</script>"}], "locations": [{"id": "a&b"}],
-		"placements": [{"character": "<script>alert(1)</script>", "location": "a&b"}]}`))
+	raw := []byte(`{"start_time": 0, "end_time": 10,
+		"characters": [{"id": "<script>alert(1)</script>", "name": "<b>x</b>"}], "locations": [{"id": "a&b", "note": "<i>n</i>"}],
+		"placements": [{"character": "<script>alert(1)</script>", "location": "a&b"}]}`)
+	s, err := m.ParseScenario(raw)
 	if err != nil {
 		t.Fatal(err)
 	}
-	out := render(t, s)
+	out := render(t, s, raw)
+	if strings.Contains(out, "<b>x</b>") || strings.Contains(out, "<i>n</i>") {
+		t.Fatal("表示名・説明がエスケープされていない")
+	}
 	if strings.Contains(out, "<script>alert") {
 		t.Fatal("ID がエスケープされていない")
 	}
@@ -97,13 +101,30 @@ func TestSampleContent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	out := render(t, s)
+	out := render(t, s, raw)
 	for _, want := range []string{
 		"clerk が backroom から counter へ移動(21:30 着)", // 移動元は処理前の居場所
 		"移動中", "死亡", "K008", "T003",
-		"letter_opener", "clerk が所持", // 持ち物の推移
+		"letter_opener", "clerk が持っている", // 持ち物の推移
 		"ずれ", // 証言の照合(このサンプルでは「ずれ」が1件)
+		"店員は 21:20 にバックルームにいた", // 知識は説明文(text)で表示する
+		"用語(ID と表示名・説明)",
 	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("出力に %q がない", want)
+		}
+	}
+}
+
+// TestDiagnosticArgsUseNames は、検出結果の詳細が表示名で出ることを確かめる(六角館のサンプル)。
+func TestDiagnosticArgsUseNames(t *testing.T) {
+	raw, _ := os.ReadFile(filepath.Join("..", "..", "..", "examples", "hexagon-house", "scenario.json"))
+	s, err := m.ParseScenario(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := render(t, s, raw)
+	for _, want := range []string{"シメジ / 睡眠薬", "シメジの部屋 / 睡眠薬 / シメジ が持っている"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("出力に %q がない", want)
 		}

@@ -6,16 +6,20 @@
   "claim_tolerance": 5,
   "characters": [
     {
-      "id": "tsumugi"
+      "id": "tsumugi",
+      "name": "ツムギ"
     },
     {
-      "id": "sousuke"
+      "id": "sousuke",
+      "name": "ソウスケ"
     },
     {
-      "id": "tom"
+      "id": "tom",
+      "name": "トム"
     },
     {
       "id": "konomi",
+      "name": "コノミ",
       "npc": true,
       "note": "故人 NPC"
     }
@@ -23,60 +27,72 @@
   "areas": [
     {
       "id": "building",
+      "name": "校舎",
       "internal_minutes": 1,
       "note": "校舎"
     },
     {
-      "id": "rooftop"
+      "id": "rooftop",
+      "name": "屋上"
     },
     {
-      "id": "outside"
+      "id": "outside",
+      "name": "校舎の外"
     }
   ],
   "locations": [
     {
       "id": "practice_room",
+      "name": "空き教室",
       "area": "building",
       "note": "コノミが1人で練習する空き教室"
     },
     {
       "id": "hiding_spot",
+      "name": "物陰",
       "area": "building",
       "note": "練習する教室が見える物陰(推定)"
     },
     {
       "id": "sousuke_classroom",
+      "name": "ソウスケの教室",
       "area": "building",
       "public": true,
       "note": "ソウスケの初期位置(推定)"
     },
     {
       "id": "library",
+      "name": "図書室",
       "area": "building",
       "public": true
     },
     {
       "id": "clubroom",
+      "name": "ゲーム部部室",
       "area": "building",
       "note": "ゲーム部部室。窓の下が落下地点"
     },
     {
       "id": "corridor",
+      "name": "廊下",
       "area": "building",
       "public": true
     },
     {
       "id": "vending",
+      "name": "自販機",
       "area": "building",
       "public": true,
       "note": "一階の自販機"
     },
     {
       "id": "roof",
+      "name": "屋上",
       "area": "rooftop"
     },
     {
       "id": "courtyard",
+      "name": "中庭",
       "area": "outside",
       "public": true,
       "note": "校舎の外。落下地点"
@@ -145,6 +161,7 @@
   "items": [
     {
       "id": "drink",
+      "name": "飲み物",
       "initial": {
         "location": "vending"
       },
