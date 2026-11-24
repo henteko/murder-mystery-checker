@@ -10,9 +10,35 @@ import (
 )
 
 // InputError は入力エラー (§6.4)。CLI は終了コード 2 を返す。
-type InputError struct{ Msg string }
+// InputError は入力の誤り。Path はその場所(例: goals[2].requires_tagged[0])。空なら場所なし。
+type InputError struct {
+	Msg  string
+	Path string
+}
 
-func (e *InputError) Error() string { return "input error: " + e.Msg }
+func (e *InputError) Error() string {
+	if e.Path != "" {
+		return "input error: " + e.Path + ": " + e.Msg
+	}
+	return "input error: " + e.Msg
+}
+
+// withPath は入力の誤りに場所 seg を前に付ける(それ以外の誤りはそのまま)。
+func withPath(err error, seg string) error {
+	ie, ok := err.(*InputError)
+	if !ok {
+		return err
+	}
+	path := seg
+	if ie.Path != "" {
+		if strings.HasPrefix(ie.Path, "[") {
+			path += ie.Path
+		} else {
+			path += "." + ie.Path
+		}
+	}
+	return &InputError{Msg: ie.Msg, Path: path}
+}
 
 func inErr(format string, a ...any) error { return &InputError{Msg: fmt.Sprintf(format, a...)} }
 
@@ -403,10 +429,14 @@ func list[T any](j *node, k string, required bool, f func(*node) (T, error)) ([]
 		return nil, err
 	}
 	out := make([]T, 0, len(vs))
-	for _, v := range vs {
+	for i, v := range vs {
 		x, err := f(v)
 		if err != nil {
-			return nil, err
+			seg := fmt.Sprintf("%s[%d]", k, i)
+			if id := field(v, "id"); id != nil && id.kind == nStr && id.s != "" {
+				seg += "(id=" + id.s + ")" // YAML の timeline から変換したイベントでも場所が分かるように
+			}
+			return nil, withPath(err, seg)
 		}
 		out = append(out, x)
 	}
@@ -532,7 +562,10 @@ func parseFormula(j *node) (Formula, error) {
 	}
 	if v := field(j, "not"); v != nil {
 		sub, err := parseFormula(v)
-		return Formula{Kind: FNot, Subs: []Formula{sub}}, err
+		if err != nil {
+			return Formula{}, withPath(err, "not")
+		}
+		return Formula{Kind: FNot, Subs: []Formula{sub}}, nil
 	}
 	for _, k := range []string{"and", "or"} {
 		if v := field(j, k); v != nil {
@@ -544,10 +577,10 @@ func parseFormula(j *node) (Formula, error) {
 			if k == "or" {
 				f.Kind = FOr
 			}
-			for _, sv := range vs {
+			for i, sv := range vs {
 				sub, err := parseFormula(sv)
 				if err != nil {
-					return Formula{}, err
+					return Formula{}, withPath(err, fmt.Sprintf("%s[%d]", k, i))
 				}
 				f.Subs = append(f.Subs, sub)
 			}
@@ -706,7 +739,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 				if c := field(g, "condition"); c != nil {
 					f, err := parseFormula(c)
 					if err != nil {
-						return x, err
+						return x, withPath(err, "condition")
 					}
 					x.Condition = &f
 				}
@@ -734,8 +767,10 @@ func ParseScenario(data []byte) (*Scenario, error) {
 				if err != nil {
 					return x, err
 				}
-				x.Condition, err = parseFormula(c)
-				return x, err
+				if x.Condition, err = parseFormula(c); err != nil {
+					return x, withPath(err, "condition")
+				}
+				return x, nil
 			})
 			return
 		},

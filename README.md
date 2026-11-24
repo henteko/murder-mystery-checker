@@ -16,6 +16,21 @@ bin/mmcheck convert scenario.yaml              # YAML を正規化 JSON に変�
 bin/mmcheck explain -o reading.html scenario.yaml  # 判定器の解釈を、原作と読み合わせるための HTML に(docs/explain.md)
 ```
 
+### AI のループから使う
+
+生成 → 検査 → 修正を自動で回す仕組みから使うための機能。
+
+```sh
+bin/mmcheck guide                                      # シナリオの書き方(YAML)と、検査に合格する最小の例
+bin/mmcheck rules [--format json]                      # 全規則のコード・重大度・説明・引数名・直し方のヒント
+bin/mmcheck check --format agent --strict scenario.yaml  # AI 向けの JSON(合否、件数、説明、引数名、ヒント)
+```
+
+- `--format agent` は、検出結果ごとに `message`(説明)、`hint`(直し方)、`args`(名前つき。時刻には「時:分」も付く)を出す。`ok` が合否で、終了コードと一致する。
+- 書式の誤り(終了コード 2)は `input_error` に `message` と `path`(例: `goals[1](id=g2)`、`endings[0].condition.and[1]`)を出す。YAML の `timeline` のイベントは変換後の `events[n]` になるので、`(id=…)` で探す。
+- `--format json` は仕様書 §6 の形(Lean オラクルと比べる形式)のまま変えていない。
+- 矛盾がないことは、良いシナリオであることを意味しない。中身を削れば検出結果は減るので、キャラクター数・死亡・真相・エンディングなどの最低条件は、ループの側で別に検査すること。
+
 シナリオは作者向け YAML([docs/yaml.md](docs/yaml.md))か、正規化 JSON(docs/spec.md §1)で書く。
 終了コードは 0 = error なし、1 = error あり、2 = 入力エラー。
 

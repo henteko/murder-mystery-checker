@@ -3,6 +3,7 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -18,8 +19,14 @@ import (
 	"github.com/henteko/murder-mystery-checker/internal/yamlio"
 )
 
+//go:embed guide.md
+var guide string
+
 const usage = `usage:
-  mmcheck check [--format text|json] [--strict] <scenario.yaml|scenario.json|->
+  mmcheck check [--format text|json|agent] [--strict] <scenario.yaml|scenario.json|->
+                                      agent: AI 向けの JSON(合否・説明・引数名・直し方のヒント)
+  mmcheck rules [--format text|json]  全規則のコード・重大度・説明・引数・ヒント
+  mmcheck guide                       シナリオの書き方(YAML)と最小の例
   mmcheck convert <scenario.yaml>     YAML を正規化 JSON に変換して出力する
   mmcheck explain [-o out.html] <scenario.yaml|scenario.json>
                                       判定器の解釈を、原作と読み合わせるための HTML にする
@@ -62,12 +69,29 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 			return 2
 		}
 		return runExplain(fs.Arg(0), *out, stdin, stdout, stderr)
+	case "rules":
+		fs := flag.NewFlagSet("rules", flag.ContinueOnError)
+		fs.SetOutput(stderr)
+		format := fs.String("format", "text", "output format: text or json")
+		if err := fs.Parse(args[1:]); err != nil || fs.NArg() != 0 || (*format != "text" && *format != "json") {
+			fmt.Fprintln(stderr, usage)
+			return 2
+		}
+		printRules(stdout, *format)
+		return 0
+	case "guide":
+		if len(args) != 1 {
+			fmt.Fprintln(stderr, usage)
+			return 2
+		}
+		fmt.Fprint(stdout, guide)
+		return 0
 	case "check":
 		fs := flag.NewFlagSet("check", flag.ContinueOnError)
 		fs.SetOutput(stderr)
-		format := fs.String("format", "text", "output format: text or json")
+		format := fs.String("format", "text", "output format: text, json or agent")
 		strict := fs.Bool("strict", false, "treat warnings as failures (exit code 1)")
-		if err := fs.Parse(args[1:]); err != nil || fs.NArg() != 1 || (*format != "text" && *format != "json") {
+		if err := fs.Parse(args[1:]); err != nil || fs.NArg() != 1 || (*format != "text" && *format != "json" && *format != "agent") {
 			fmt.Fprintln(stderr, usage)
 			return 2
 		}
@@ -130,20 +154,29 @@ func runExplain(path, out string, stdin io.Reader, stdout, stderr io.Writer) int
 
 func runCheck(path, format string, strict bool, stdin io.Reader, stdout, stderr io.Writer) int {
 	src, err := readInput(path, stdin)
-	if err != nil {
-		fmt.Fprintln(stderr, err)
-		return 2
-	}
-	s, err := load(path, src)
-	if err != nil {
-		var ie *m.InputError
-		if !errors.As(err, &ie) {
-			err = &m.InputError{Msg: err.Error()}
+	if err == nil {
+		var s *m.Scenario
+		if s, err = load(path, src); err == nil {
+			return reportDiags(check.Check(s), format, strict, stdout)
 		}
-		fmt.Fprintln(stderr, err)
-		return 2
 	}
-	ds := check.Check(s)
+	var ie *m.InputError
+	if !errors.As(err, &ie) {
+		ie = &m.InputError{Msg: err.Error()}
+	}
+	if format == "agent" {
+		writeAgent(stdout, agentOutput{OK: false, SpecVersion: check.SpecVersion,
+			InputError:  &agentInputError{Message: ie.Msg, Path: ie.Path},
+			Diagnostics: []agentDiag{}})
+	}
+	fmt.Fprintln(stderr, ie)
+	return 2
+}
+
+func reportDiags(ds []check.Diag, format string, strict bool, stdout io.Writer) int {
+	if format == "agent" {
+		return writeAgent(stdout, agentReport(ds, strict))
+	}
 	if format == "json" {
 		out, _ := json.MarshalIndent(check.Output{SpecVersion: check.SpecVersion, Diagnostics: ds}, "", "  ")
 		fmt.Fprintln(stdout, string(out))
@@ -162,4 +195,81 @@ func runCheck(path, format string, strict bool, stdin io.Reader, stdout, stderr 
 		return 1
 	}
 	return 0
+}
+
+// ---------------------------------------------------------------- AI 向けの出力(--format agent)
+
+type agentInputError struct {
+	Message string `json:"message"`
+	Path    string `json:"path,omitempty"`
+}
+
+type agentDiag struct {
+	Code     string               `json:"code"`
+	Severity string               `json:"severity"`
+	Message  string               `json:"message"`
+	Hint     string               `json:"hint"`
+	Event    *string              `json:"event,omitempty"`
+	Args     []check.NamedArg     `json:"args"`
+	Witness  map[string]check.Val `json:"witness,omitempty"`
+}
+
+type agentOutput struct {
+	OK          bool             `json:"ok"`
+	SpecVersion string           `json:"spec_version"`
+	Errors      int              `json:"errors"`
+	Warnings    int              `json:"warnings"`
+	InputError  *agentInputError `json:"input_error,omitempty"`
+	Diagnostics []agentDiag      `json:"diagnostics"`
+}
+
+func agentReport(ds []check.Diag, strict bool) agentOutput {
+	out := agentOutput{SpecVersion: check.SpecVersion, Diagnostics: []agentDiag{}}
+	for _, d := range ds {
+		if d.Sev == check.Error {
+			out.Errors++
+		} else {
+			out.Warnings++
+		}
+		ad := agentDiag{Code: d.Code, Severity: d.Sev.String(), Message: check.Message(d.Code),
+			Hint: check.Hint(d.Code), Event: d.Event, Args: check.NameArgs(d)}
+		if d.Witness != nil {
+			ad.Witness = map[string]check.Val{}
+			for _, e := range *d.Witness {
+				ad.Witness[e.Var] = e.Val
+			}
+		}
+		out.Diagnostics = append(out.Diagnostics, ad)
+	}
+	out.OK = out.Errors == 0 && !(strict && out.Warnings > 0)
+	return out
+}
+
+// writeAgent は AI 向けの JSON を書き、終了コード(0 合格 / 1 不合格 / 2 入力エラー)を返す。
+func writeAgent(w io.Writer, o agentOutput) int {
+	b, _ := json.MarshalIndent(o, "", "  ")
+	fmt.Fprintln(w, string(b))
+	switch {
+	case o.InputError != nil:
+		return 2
+	case o.OK:
+		return 0
+	}
+	return 1
+}
+
+func printRules(w io.Writer, format string) {
+	rs := check.Rules()
+	if format == "json" {
+		b, _ := json.MarshalIndent(rs, "", "  ")
+		fmt.Fprintln(w, string(b))
+		return
+	}
+	for _, r := range rs {
+		fmt.Fprintf(w, "%s  %-7s  %s\n", r.Code, r.Severity, r.Message)
+		if len(r.Args) > 0 {
+			fmt.Fprintf(w, "      args: %s\n", strings.Join(r.Args, ", "))
+		}
+		fmt.Fprintf(w, "      hint: %s\n", r.Hint)
+	}
 }

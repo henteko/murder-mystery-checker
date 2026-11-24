@@ -87,7 +87,7 @@
 |---|---|---|
 | 判定の意味 | Lean の判定器(居場所・状態・規則・エンディング) | 証明(この文書) |
 | Go の判定器が Lean と同じであること | `go/internal/check` の判定と意味論 | 差分テスト(testdata/oracle のゴールデン、ライブ差分) |
-| Go だけの機能 | YAML 変換(`internal/yamlio`)、テキスト出力、explain(`internal/check/explain.go`, `internal/report`) | 単体テスト。意味は差分テスト済みの関数だけで計算し、そのことも単体テストで固定する(docs/explain.md) |
+| Go だけの機能 | YAML 変換(`internal/yamlio`)、テキスト出力、AI 向けの出力(`--format agent`、`rules`、`guide`)、入力エラーの場所、explain(`internal/check/explain.go`, `internal/report`) | 単体テスト。意味は差分テスト済みの関数だけで計算し、そのことも単体テストで固定する(docs/explain.md) |
 | 仕様書の日本語・作者の意図と Lean のモデル | — | 証明もテストもできない。人が確認したのは実際のシナリオが表現できるかだけ。`mmcheck explain` の読み合わせと、規則ごとのテストケースを読むことで補う |
 
 ## 差分による確認
