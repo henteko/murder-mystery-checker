@@ -24,3 +24,7 @@ lean/            Lake プロジェクト (MurderMystery/{Spec,Checker,Proofs}, O
 go/              Go モジュール (cmd/mmcheck, internal/{model,check,yamlio})
 testdata/oracle/ *.input.json / *.expected.json (Lean が生成)
 ```
+
+## 仕様 0.2.0 (2026-11-24)
+六角館サンプル(examples/hexagon-house)のモデル化で見つかった不足 A〜I をすべて取り込んだ。
+J(知識の中身に基づく推論)は対象外のまま。詳細は docs/spec.md §10。

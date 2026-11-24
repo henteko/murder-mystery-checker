@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.1.0",
+  "spec_version": "0.2.0",
   "note": "オタサーの姫殺人事件〜六角館の殺人編〜 (the-hexagon-house-murders) のモデル化サンプル。移動時間は推定値。",
   "start_time": 1020,
   "end_time": 1940,
@@ -17,594 +17,114 @@
       "id": "ushirokawada"
     },
     {
-      "id": "hime"
+      "id": "hime",
+      "npc": true,
+      "note": "被害者 NPC"
+    }
+  ],
+  "areas": [
+    {
+      "id": "lodge",
+      "internal_minutes": 1,
+      "note": "合宿所(館)"
+    },
+    {
+      "id": "outside"
+    },
+    {
+      "id": "shrine_area"
+    },
+    {
+      "id": "harbor"
     }
   ],
   "locations": [
     {
-      "id": "port"
+      "id": "port",
+      "area": "harbor",
+      "public": true
     },
     {
-      "id": "shrine"
+      "id": "shrine",
+      "area": "shrine_area"
     },
     {
-      "id": "smoking_area"
+      "id": "smoking_area",
+      "area": "outside",
+      "note": "館の外の喫煙スペース"
     },
     {
-      "id": "room_kaichou"
+      "id": "room_kaichou",
+      "area": "lodge"
     },
     {
-      "id": "room_kurose"
+      "id": "room_kurose",
+      "area": "lodge"
     },
     {
-      "id": "room_shimeji"
+      "id": "room_shimeji",
+      "area": "lodge"
     },
     {
-      "id": "room_ushirokawada"
+      "id": "room_ushirokawada",
+      "area": "lodge"
     },
     {
-      "id": "room_hime"
+      "id": "room_hime",
+      "area": "lodge"
     },
     {
-      "id": "dining"
+      "id": "dining",
+      "area": "lodge",
+      "public": true
     },
     {
-      "id": "hall"
+      "id": "hall",
+      "area": "lodge",
+      "public": true
     },
     {
-      "id": "corridor"
+      "id": "corridor",
+      "area": "lodge",
+      "public": true
     }
   ],
-  "travel": [
+  "area_travel": [
     {
-      "from": "port",
-      "to": "shrine",
-      "minutes": 40
+      "from": "lodge",
+      "to": "outside",
+      "minutes": 2,
+      "bidirectional": true
     },
     {
-      "from": "port",
-      "to": "smoking_area",
-      "minutes": 31
+      "from": "lodge",
+      "to": "shrine_area",
+      "minutes": 20,
+      "bidirectional": true
     },
     {
-      "from": "port",
-      "to": "room_kaichou",
-      "minutes": 30
+      "from": "lodge",
+      "to": "harbor",
+      "minutes": 30,
+      "bidirectional": true
     },
     {
-      "from": "port",
-      "to": "room_kurose",
-      "minutes": 30
+      "from": "outside",
+      "to": "shrine_area",
+      "minutes": 21,
+      "bidirectional": true
     },
     {
-      "from": "port",
-      "to": "room_shimeji",
-      "minutes": 30
+      "from": "outside",
+      "to": "harbor",
+      "minutes": 31,
+      "bidirectional": true
     },
     {
-      "from": "port",
-      "to": "room_ushirokawada",
-      "minutes": 30
-    },
-    {
-      "from": "port",
-      "to": "room_hime",
-      "minutes": 30
-    },
-    {
-      "from": "port",
-      "to": "dining",
-      "minutes": 30
-    },
-    {
-      "from": "port",
-      "to": "hall",
-      "minutes": 30
-    },
-    {
-      "from": "port",
-      "to": "corridor",
-      "minutes": 30
-    },
-    {
-      "from": "shrine",
-      "to": "port",
-      "minutes": 40
-    },
-    {
-      "from": "shrine",
-      "to": "smoking_area",
-      "minutes": 21
-    },
-    {
-      "from": "shrine",
-      "to": "room_kaichou",
-      "minutes": 20
-    },
-    {
-      "from": "shrine",
-      "to": "room_kurose",
-      "minutes": 20
-    },
-    {
-      "from": "shrine",
-      "to": "room_shimeji",
-      "minutes": 20
-    },
-    {
-      "from": "shrine",
-      "to": "room_ushirokawada",
-      "minutes": 20
-    },
-    {
-      "from": "shrine",
-      "to": "room_hime",
-      "minutes": 20
-    },
-    {
-      "from": "shrine",
-      "to": "dining",
-      "minutes": 20
-    },
-    {
-      "from": "shrine",
-      "to": "hall",
-      "minutes": 20
-    },
-    {
-      "from": "shrine",
-      "to": "corridor",
-      "minutes": 20
-    },
-    {
-      "from": "smoking_area",
-      "to": "port",
-      "minutes": 31
-    },
-    {
-      "from": "smoking_area",
-      "to": "shrine",
-      "minutes": 21
-    },
-    {
-      "from": "smoking_area",
-      "to": "room_kaichou",
-      "minutes": 2
-    },
-    {
-      "from": "smoking_area",
-      "to": "room_kurose",
-      "minutes": 2
-    },
-    {
-      "from": "smoking_area",
-      "to": "room_shimeji",
-      "minutes": 2
-    },
-    {
-      "from": "smoking_area",
-      "to": "room_ushirokawada",
-      "minutes": 2
-    },
-    {
-      "from": "smoking_area",
-      "to": "room_hime",
-      "minutes": 2
-    },
-    {
-      "from": "smoking_area",
-      "to": "dining",
-      "minutes": 2
-    },
-    {
-      "from": "smoking_area",
-      "to": "hall",
-      "minutes": 2
-    },
-    {
-      "from": "smoking_area",
-      "to": "corridor",
-      "minutes": 2
-    },
-    {
-      "from": "room_kaichou",
-      "to": "port",
-      "minutes": 30
-    },
-    {
-      "from": "room_kaichou",
-      "to": "shrine",
-      "minutes": 20
-    },
-    {
-      "from": "room_kaichou",
-      "to": "smoking_area",
-      "minutes": 2
-    },
-    {
-      "from": "room_kaichou",
-      "to": "room_kurose",
-      "minutes": 1
-    },
-    {
-      "from": "room_kaichou",
-      "to": "room_shimeji",
-      "minutes": 1
-    },
-    {
-      "from": "room_kaichou",
-      "to": "room_ushirokawada",
-      "minutes": 1
-    },
-    {
-      "from": "room_kaichou",
-      "to": "room_hime",
-      "minutes": 1
-    },
-    {
-      "from": "room_kaichou",
-      "to": "dining",
-      "minutes": 1
-    },
-    {
-      "from": "room_kaichou",
-      "to": "hall",
-      "minutes": 1
-    },
-    {
-      "from": "room_kaichou",
-      "to": "corridor",
-      "minutes": 1
-    },
-    {
-      "from": "room_kurose",
-      "to": "port",
-      "minutes": 30
-    },
-    {
-      "from": "room_kurose",
-      "to": "shrine",
-      "minutes": 20
-    },
-    {
-      "from": "room_kurose",
-      "to": "smoking_area",
-      "minutes": 2
-    },
-    {
-      "from": "room_kurose",
-      "to": "room_kaichou",
-      "minutes": 1
-    },
-    {
-      "from": "room_kurose",
-      "to": "room_shimeji",
-      "minutes": 1
-    },
-    {
-      "from": "room_kurose",
-      "to": "room_ushirokawada",
-      "minutes": 1
-    },
-    {
-      "from": "room_kurose",
-      "to": "room_hime",
-      "minutes": 1
-    },
-    {
-      "from": "room_kurose",
-      "to": "dining",
-      "minutes": 1
-    },
-    {
-      "from": "room_kurose",
-      "to": "hall",
-      "minutes": 1
-    },
-    {
-      "from": "room_kurose",
-      "to": "corridor",
-      "minutes": 1
-    },
-    {
-      "from": "room_shimeji",
-      "to": "port",
-      "minutes": 30
-    },
-    {
-      "from": "room_shimeji",
-      "to": "shrine",
-      "minutes": 20
-    },
-    {
-      "from": "room_shimeji",
-      "to": "smoking_area",
-      "minutes": 2
-    },
-    {
-      "from": "room_shimeji",
-      "to": "room_kaichou",
-      "minutes": 1
-    },
-    {
-      "from": "room_shimeji",
-      "to": "room_kurose",
-      "minutes": 1
-    },
-    {
-      "from": "room_shimeji",
-      "to": "room_ushirokawada",
-      "minutes": 1
-    },
-    {
-      "from": "room_shimeji",
-      "to": "room_hime",
-      "minutes": 1
-    },
-    {
-      "from": "room_shimeji",
-      "to": "dining",
-      "minutes": 1
-    },
-    {
-      "from": "room_shimeji",
-      "to": "hall",
-      "minutes": 1
-    },
-    {
-      "from": "room_shimeji",
-      "to": "corridor",
-      "minutes": 1
-    },
-    {
-      "from": "room_ushirokawada",
-      "to": "port",
-      "minutes": 30
-    },
-    {
-      "from": "room_ushirokawada",
-      "to": "shrine",
-      "minutes": 20
-    },
-    {
-      "from": "room_ushirokawada",
-      "to": "smoking_area",
-      "minutes": 2
-    },
-    {
-      "from": "room_ushirokawada",
-      "to": "room_kaichou",
-      "minutes": 1
-    },
-    {
-      "from": "room_ushirokawada",
-      "to": "room_kurose",
-      "minutes": 1
-    },
-    {
-      "from": "room_ushirokawada",
-      "to": "room_shimeji",
-      "minutes": 1
-    },
-    {
-      "from": "room_ushirokawada",
-      "to": "room_hime",
-      "minutes": 1
-    },
-    {
-      "from": "room_ushirokawada",
-      "to": "dining",
-      "minutes": 1
-    },
-    {
-      "from": "room_ushirokawada",
-      "to": "hall",
-      "minutes": 1
-    },
-    {
-      "from": "room_ushirokawada",
-      "to": "corridor",
-      "minutes": 1
-    },
-    {
-      "from": "room_hime",
-      "to": "port",
-      "minutes": 30
-    },
-    {
-      "from": "room_hime",
-      "to": "shrine",
-      "minutes": 20
-    },
-    {
-      "from": "room_hime",
-      "to": "smoking_area",
-      "minutes": 2
-    },
-    {
-      "from": "room_hime",
-      "to": "room_kaichou",
-      "minutes": 1
-    },
-    {
-      "from": "room_hime",
-      "to": "room_kurose",
-      "minutes": 1
-    },
-    {
-      "from": "room_hime",
-      "to": "room_shimeji",
-      "minutes": 1
-    },
-    {
-      "from": "room_hime",
-      "to": "room_ushirokawada",
-      "minutes": 1
-    },
-    {
-      "from": "room_hime",
-      "to": "dining",
-      "minutes": 1
-    },
-    {
-      "from": "room_hime",
-      "to": "hall",
-      "minutes": 1
-    },
-    {
-      "from": "room_hime",
-      "to": "corridor",
-      "minutes": 1
-    },
-    {
-      "from": "dining",
-      "to": "port",
-      "minutes": 30
-    },
-    {
-      "from": "dining",
-      "to": "shrine",
-      "minutes": 20
-    },
-    {
-      "from": "dining",
-      "to": "smoking_area",
-      "minutes": 2
-    },
-    {
-      "from": "dining",
-      "to": "room_kaichou",
-      "minutes": 1
-    },
-    {
-      "from": "dining",
-      "to": "room_kurose",
-      "minutes": 1
-    },
-    {
-      "from": "dining",
-      "to": "room_shimeji",
-      "minutes": 1
-    },
-    {
-      "from": "dining",
-      "to": "room_ushirokawada",
-      "minutes": 1
-    },
-    {
-      "from": "dining",
-      "to": "room_hime",
-      "minutes": 1
-    },
-    {
-      "from": "dining",
-      "to": "hall",
-      "minutes": 1
-    },
-    {
-      "from": "dining",
-      "to": "corridor",
-      "minutes": 1
-    },
-    {
-      "from": "hall",
-      "to": "port",
-      "minutes": 30
-    },
-    {
-      "from": "hall",
-      "to": "shrine",
-      "minutes": 20
-    },
-    {
-      "from": "hall",
-      "to": "smoking_area",
-      "minutes": 2
-    },
-    {
-      "from": "hall",
-      "to": "room_kaichou",
-      "minutes": 1
-    },
-    {
-      "from": "hall",
-      "to": "room_kurose",
-      "minutes": 1
-    },
-    {
-      "from": "hall",
-      "to": "room_shimeji",
-      "minutes": 1
-    },
-    {
-      "from": "hall",
-      "to": "room_ushirokawada",
-      "minutes": 1
-    },
-    {
-      "from": "hall",
-      "to": "room_hime",
-      "minutes": 1
-    },
-    {
-      "from": "hall",
-      "to": "dining",
-      "minutes": 1
-    },
-    {
-      "from": "hall",
-      "to": "corridor",
-      "minutes": 1
-    },
-    {
-      "from": "corridor",
-      "to": "port",
-      "minutes": 30
-    },
-    {
-      "from": "corridor",
-      "to": "shrine",
-      "minutes": 20
-    },
-    {
-      "from": "corridor",
-      "to": "smoking_area",
-      "minutes": 2
-    },
-    {
-      "from": "corridor",
-      "to": "room_kaichou",
-      "minutes": 1
-    },
-    {
-      "from": "corridor",
-      "to": "room_kurose",
-      "minutes": 1
-    },
-    {
-      "from": "corridor",
-      "to": "room_shimeji",
-      "minutes": 1
-    },
-    {
-      "from": "corridor",
-      "to": "room_ushirokawada",
-      "minutes": 1
-    },
-    {
-      "from": "corridor",
-      "to": "room_hime",
-      "minutes": 1
-    },
-    {
-      "from": "corridor",
-      "to": "dining",
-      "minutes": 1
-    },
-    {
-      "from": "corridor",
-      "to": "hall",
-      "minutes": 1
+      "from": "shrine_area",
+      "to": "harbor",
+      "minutes": 40,
+      "bidirectional": true
     }
   ],
   "placements": [
@@ -798,7 +318,11 @@
     },
     {
       "id": "f_sleeping_pill",
-      "note": "シメジの部屋に睡眠薬がある"
+      "note": "睡眠薬がある"
+    },
+    {
+      "id": "f_hime_has_scenario",
+      "note": "ヒメの部屋に「六角館の殺人」シナリオがある"
     }
   ],
   "initial_knowledge": [
@@ -887,47 +411,51 @@
       "kind": "drop",
       "character": "kaichou",
       "item": "watch",
-      "note": "腕時計を自室の鞄に入れる"
+      "note": "腕時計を自室の鞄に入れておく(推定: 盗まれた場所が鞄のため)"
     },
     {
       "id": "kaichou_03",
       "at": 1052,
-      "kind": "learn",
+      "kind": "observe",
       "character": "kaichou",
+      "location": "room_kaichou",
       "facts": [
         "f_locks_broken"
       ],
-      "note": "部屋の鍵が壊れていることに気づく"
+      "note": "自室の鍵が壊れていることに気づく"
     },
     {
       "id": "shimeji_02",
       "at": 1052,
-      "kind": "learn",
+      "kind": "observe",
       "character": "shimeji",
+      "location": "room_shimeji",
       "facts": [
         "f_locks_broken"
       ],
-      "note": "部屋の鍵が壊れていることに気づく"
+      "note": "自室の鍵が壊れていることに気づく"
     },
     {
       "id": "ushirokawada_02",
       "at": 1052,
-      "kind": "learn",
+      "kind": "observe",
       "character": "ushirokawada",
+      "location": "room_ushirokawada",
       "facts": [
         "f_locks_broken"
       ],
-      "note": "部屋の鍵が壊れていることに気づく"
+      "note": "自室の鍵が壊れていることに気づく"
     },
     {
       "id": "hime_02",
       "at": 1052,
-      "kind": "learn",
+      "kind": "observe",
       "character": "hime",
+      "location": "room_hime",
       "facts": [
         "f_locks_broken"
       ],
-      "note": "部屋の鍵が壊れていることに気づく"
+      "note": "自室の鍵が壊れていることに気づく"
     },
     {
       "id": "kaichou_04",
@@ -977,12 +505,17 @@
     {
       "id": "kurose_03",
       "at": 1101,
-      "kind": "learn",
+      "kind": "observe",
       "character": "kurose",
+      "location": "shrine",
       "facts": [
         "f_saw_handover"
       ],
-      "note": "カイチョウがヒメに何かを渡すのを目撃"
+      "targets": [
+        "kaichou",
+        "hime"
+      ],
+      "note": "カイチョウがヒメに何かを渡すのを物陰から目撃"
     },
     {
       "id": "kurose_04",
@@ -1183,7 +716,7 @@
       "character": "ushirokawada",
       "to": "corridor",
       "arrive": 1291,
-      "note": "タバコと言って抜け出し各部屋を調査"
+      "note": "タバコと言って抜け出し各部屋を調査(ヒメの部屋には入れず)"
     },
     {
       "id": "ushirokawada_06",
@@ -1204,8 +737,9 @@
     {
       "id": "shimeji_08",
       "at": 1298,
-      "kind": "learn",
+      "kind": "observe",
       "character": "shimeji",
+      "location": "smoking_area",
       "facts": [
         "f_smoking_empty_2135",
         "f_someone_smoked"
@@ -1252,14 +786,6 @@
       "arrive": 1441
     },
     {
-      "id": "shimeji_11",
-      "at": 1442,
-      "kind": "drop",
-      "character": "shimeji",
-      "item": "sleeping_pill",
-      "note": "睡眠薬を自室に置く(ハンドアウトに記述なし・探索カードから推定)"
-    },
-    {
       "id": "ushirokawada_08",
       "at": 1478,
       "kind": "move",
@@ -1273,19 +799,20 @@
       "kind": "pickup",
       "character": "ushirokawada",
       "item": "lip_cream",
-      "note": "ヒメのリップクリームを拾いポケットへ"
+      "note": "ヒメのリップクリームを拾い、明日返そうとポケットへ"
     },
     {
       "id": "ushirokawada_10",
       "at": 1482,
-      "kind": "learn",
+      "kind": "observe",
       "character": "ushirokawada",
+      "location": "smoking_area",
       "facts": [
         "f_lipcream_at_smoking"
       ]
     },
     {
-      "id": "shimeji_12",
+      "id": "shimeji_11",
       "at": 1488,
       "kind": "move",
       "character": "shimeji",
@@ -1293,7 +820,7 @@
       "arrive": 1490
     },
     {
-      "id": "shimeji_13",
+      "id": "shimeji_12",
       "at": 1490,
       "kind": "scene",
       "location": "smoking_area",
@@ -1301,25 +828,10 @@
         "shimeji",
         "ushirokawada"
       ],
+      "reveals": [
+        "f_smoke_alibi_0050"
+      ],
       "note": "喫煙所で会う"
-    },
-    {
-      "id": "shimeji_14",
-      "at": 1491,
-      "kind": "learn",
-      "character": "shimeji",
-      "facts": [
-        "f_smoke_alibi_0050"
-      ]
-    },
-    {
-      "id": "ushirokawada_11",
-      "at": 1491,
-      "kind": "learn",
-      "character": "ushirokawada",
-      "facts": [
-        "f_smoke_alibi_0050"
-      ]
     },
     {
       "id": "kaichou_13",
@@ -1332,10 +844,14 @@
     {
       "id": "kaichou_14",
       "at": 1491,
-      "kind": "learn",
+      "kind": "observe",
       "character": "kaichou",
+      "location": "room_hime",
       "facts": [
         "f_hime_smokes"
+      ],
+      "targets": [
+        "hime"
       ],
       "note": "机の上のタバコを見る"
     },
@@ -1348,19 +864,20 @@
         "kaichou",
         "hime"
       ],
+      "reveals": [
+        "f_culprit_kaichou"
+      ],
       "note": "殺害"
     },
     {
-      "id": "kaichou_16",
+      "id": "hime_12",
       "at": 1501,
-      "kind": "learn",
-      "character": "kaichou",
-      "facts": [
-        "f_culprit_kaichou"
-      ]
+      "kind": "die",
+      "character": "hime",
+      "note": "ヒメ死亡"
     },
     {
-      "id": "kaichou_17",
+      "id": "kaichou_16",
       "at": 1502,
       "kind": "drop",
       "character": "kaichou",
@@ -1368,7 +885,7 @@
       "note": "万年筆を投げ捨てる"
     },
     {
-      "id": "kaichou_18",
+      "id": "kaichou_17",
       "at": 1503,
       "kind": "pickup",
       "character": "kaichou",
@@ -1376,7 +893,7 @@
       "note": "タバコを握りつぶしたまま持ち去る"
     },
     {
-      "id": "kaichou_19",
+      "id": "kaichou_18",
       "at": 1514,
       "kind": "move",
       "character": "kaichou",
@@ -1384,7 +901,7 @@
       "arrive": 1515
     },
     {
-      "id": "kaichou_20",
+      "id": "kaichou_19",
       "at": 1516,
       "kind": "drop",
       "character": "kaichou",
@@ -1392,13 +909,15 @@
       "note": "タバコを自室の机に置く"
     },
     {
-      "id": "kaichou_21",
+      "id": "kaichou_20",
       "at": 1517,
-      "kind": "learn",
+      "kind": "observe",
       "character": "kaichou",
+      "location": "room_kaichou",
       "facts": [
         "f_watch_missing"
-      ]
+      ],
+      "note": "鞄が開いており腕時計がない"
     },
     {
       "id": "kurose_08",
@@ -1411,8 +930,9 @@
     {
       "id": "kurose_09",
       "at": 1501,
-      "kind": "learn",
+      "kind": "observe",
       "character": "kurose",
+      "location": "room_kaichou",
       "facts": [
         "f_kaichou_absent_0100"
       ]
@@ -1434,12 +954,26 @@
       "arrive": 1509
     },
     {
-      "id": "ushirokawada_12",
+      "id": "ushirokawada_11",
       "at": 1507,
       "kind": "move",
       "character": "ushirokawada",
       "to": "corridor",
       "arrive": 1509
+    },
+    {
+      "id": "ushirokawada_12",
+      "at": 1509,
+      "kind": "observe",
+      "character": "ushirokawada",
+      "location": "corridor",
+      "facts": [
+        "f_kurose_left_kaichou_room"
+      ],
+      "targets": [
+        "kurose"
+      ],
+      "note": "カイチョウの部屋から幸せそうに出てくるクロセを見る"
     },
     {
       "id": "kurose_12",
@@ -1450,29 +984,13 @@
         "kurose",
         "ushirokawada"
       ],
+      "reveals": [
+        "f_corridor_0110"
+      ],
       "note": "廊下で会う"
     },
     {
       "id": "kurose_13",
-      "at": 1511,
-      "kind": "learn",
-      "character": "kurose",
-      "facts": [
-        "f_corridor_0110"
-      ]
-    },
-    {
-      "id": "ushirokawada_13",
-      "at": 1511,
-      "kind": "learn",
-      "character": "ushirokawada",
-      "facts": [
-        "f_corridor_0110",
-        "f_kurose_left_kaichou_room"
-      ]
-    },
-    {
-      "id": "kurose_14",
       "at": 1512,
       "kind": "move",
       "character": "kurose",
@@ -1480,7 +998,7 @@
       "arrive": 1513
     },
     {
-      "id": "ushirokawada_14",
+      "id": "ushirokawada_13",
       "at": 1512,
       "kind": "move",
       "character": "ushirokawada",
@@ -1488,7 +1006,7 @@
       "arrive": 1513
     },
     {
-      "id": "shimeji_15",
+      "id": "shimeji_13",
       "at": 1528,
       "kind": "move",
       "character": "shimeji",
@@ -1496,16 +1014,21 @@
       "arrive": 1530
     },
     {
-      "id": "shimeji_16",
+      "id": "shimeji_14",
       "at": 1531,
-      "kind": "learn",
+      "kind": "observe",
       "character": "shimeji",
+      "location": "room_hime",
       "facts": [
         "f_hime_dead_0130"
-      ]
+      ],
+      "targets": [
+        "hime"
+      ],
+      "note": "ヒメの遺体を発見"
     },
     {
-      "id": "shimeji_17",
+      "id": "shimeji_15",
       "at": 1532,
       "kind": "pickup",
       "character": "shimeji",
@@ -1513,7 +1036,7 @@
       "note": "血の付いた万年筆を拾う"
     },
     {
-      "id": "shimeji_18",
+      "id": "shimeji_16",
       "at": 1533,
       "kind": "learn",
       "character": "shimeji",
@@ -1522,7 +1045,7 @@
       ]
     },
     {
-      "id": "shimeji_19",
+      "id": "shimeji_17",
       "at": 1539,
       "kind": "move",
       "character": "shimeji",
@@ -1530,7 +1053,7 @@
       "arrive": 1540
     },
     {
-      "id": "kaichou_22",
+      "id": "kaichou_21",
       "at": 1888,
       "kind": "move",
       "character": "kaichou",
@@ -1538,7 +1061,7 @@
       "arrive": 1890
     },
     {
-      "id": "kurose_15",
+      "id": "kurose_14",
       "at": 1888,
       "kind": "move",
       "character": "kurose",
@@ -1546,7 +1069,7 @@
       "arrive": 1890
     },
     {
-      "id": "shimeji_20",
+      "id": "shimeji_18",
       "at": 1888,
       "kind": "move",
       "character": "shimeji",
@@ -1554,7 +1077,7 @@
       "arrive": 1890
     },
     {
-      "id": "ushirokawada_15",
+      "id": "ushirokawada_14",
       "at": 1888,
       "kind": "move",
       "character": "ushirokawada",
@@ -1562,7 +1085,7 @@
       "arrive": 1890
     },
     {
-      "id": "kaichou_23",
+      "id": "kaichou_22",
       "at": 1890,
       "kind": "scene",
       "location": "dining",
@@ -1575,7 +1098,7 @@
       "note": "朝食"
     },
     {
-      "id": "kaichou_24",
+      "id": "kaichou_23",
       "at": 1928,
       "kind": "move",
       "character": "kaichou",
@@ -1583,7 +1106,7 @@
       "arrive": 1929
     },
     {
-      "id": "kurose_16",
+      "id": "kurose_15",
       "at": 1928,
       "kind": "move",
       "character": "kurose",
@@ -1591,7 +1114,7 @@
       "arrive": 1929
     },
     {
-      "id": "shimeji_21",
+      "id": "shimeji_19",
       "at": 1928,
       "kind": "move",
       "character": "shimeji",
@@ -1599,7 +1122,7 @@
       "arrive": 1929
     },
     {
-      "id": "ushirokawada_16",
+      "id": "ushirokawada_15",
       "at": 1928,
       "kind": "move",
       "character": "ushirokawada",
@@ -1607,7 +1130,7 @@
       "arrive": 1929
     },
     {
-      "id": "kaichou_25",
+      "id": "kaichou_24",
       "at": 1930,
       "kind": "scene",
       "location": "room_hime",
@@ -1617,65 +1140,44 @@
         "shimeji",
         "ushirokawada"
       ],
+      "reveals": [
+        "f_hime_stabbed"
+      ],
       "note": "ヒメの死体発見"
-    },
-    {
-      "id": "kaichou_26",
-      "at": 1931,
-      "kind": "learn",
-      "character": "kaichou",
-      "facts": [
-        "f_hime_stabbed"
-      ]
-    },
-    {
-      "id": "kurose_17",
-      "at": 1931,
-      "kind": "learn",
-      "character": "kurose",
-      "facts": [
-        "f_hime_stabbed"
-      ]
-    },
-    {
-      "id": "shimeji_22",
-      "at": 1931,
-      "kind": "learn",
-      "character": "shimeji",
-      "facts": [
-        "f_hime_stabbed"
-      ]
-    },
-    {
-      "id": "ushirokawada_17",
-      "at": 1931,
-      "kind": "learn",
-      "character": "ushirokawada",
-      "facts": [
-        "f_hime_stabbed"
-      ]
     }
   ],
   "clues": [
     {
       "id": "x_kaichou_room",
       "location": "room_kaichou",
+      "item": "cigarettes",
       "reveals": [
         "f_hime_smokes"
       ],
-      "note": "握り潰された誰かの私物のタバコ"
+      "note": "探索カード: 握り潰された誰かの私物のタバコ"
     },
     {
       "id": "x_hime_room_clock",
       "location": "room_hime",
+      "item": "table_clock",
       "reveals": [
         "f_murder_at_0100"
       ],
-      "note": "置き時計 01:00"
+      "note": "探索カード: 置き時計 01:00"
+    },
+    {
+      "id": "x_hime_room_scenario",
+      "location": "room_hime",
+      "item": "scenario",
+      "reveals": [
+        "f_hime_has_scenario"
+      ],
+      "note": "探索カード: 「六角館の殺人」シナリオ"
     },
     {
       "id": "x_kurose_room",
       "location": "room_kurose",
+      "item": "notebook",
       "reveals": [
         "f_kurose_notebook"
       ]
@@ -1683,6 +1185,7 @@
     {
       "id": "x_shimeji_room",
       "location": "room_shimeji",
+      "item": "sleeping_pill",
       "reveals": [
         "f_sleeping_pill"
       ]
@@ -1690,10 +1193,11 @@
     {
       "id": "x_ushiro_room",
       "location": "room_ushirokawada",
+      "item": "lip_cream",
       "reveals": [
         "f_lipcream_at_smoking"
       ],
-      "note": "ヒメの私物のリップクリーム"
+      "note": "探索カード: ヒメの私物のリップクリーム"
     },
     {
       "id": "x_lodge",
@@ -1735,6 +1239,39 @@
       "location": "room_ushirokawada",
       "reveals": [
         "f_ushiro_past_trouble"
+      ]
+    }
+  ],
+  "board": [
+    {
+      "location": "room_kaichou",
+      "items": [
+        "cigarettes"
+      ]
+    },
+    {
+      "location": "room_hime",
+      "items": [
+        "scenario",
+        "table_clock"
+      ]
+    },
+    {
+      "location": "room_kurose",
+      "items": [
+        "notebook"
+      ]
+    },
+    {
+      "location": "room_shimeji",
+      "items": [
+        "sleeping_pill"
+      ]
+    },
+    {
+      "location": "room_ushirokawada",
+      "items": [
+        "lip_cream"
       ]
     }
   ],
@@ -1822,7 +1359,11 @@
     },
     {
       "id": "g_kurose_two_kaichou_items",
-      "owner": "kurose"
+      "owner": "kurose",
+      "requires_items": [
+        "watch",
+        "fountain_pen"
+      ]
     },
     {
       "id": "g_shimeji_culprit_most_voted",
@@ -1830,7 +1371,12 @@
     },
     {
       "id": "g_shimeji_ritual_items",
-      "owner": "shimeji"
+      "owner": "shimeji",
+      "requires_items": [
+        "fountain_pen",
+        "lip_cream",
+        "cigarettes"
+      ]
     },
     {
       "id": "g_ushiro_culprit_most_voted",
@@ -1847,9 +1393,35 @@
   ],
   "choices": [
     {
-      "id": "c_vote_kaichou_most",
+      "id": "c_culprit_vote_top",
       "owner": "kaichou",
-      "note": "犯人投票でカイチョウが単独最多(同票は false)"
+      "values": [
+        "kaichou",
+        "kurose",
+        "shimeji",
+        "ushirokawada",
+        "tie"
+      ],
+      "note": "犯人投票の最多得票者(同票は tie)"
+    },
+    {
+      "id": "c_kaichou_stalker_vote",
+      "owner": "kaichou",
+      "values": [
+        "kurose",
+        "shimeji",
+        "ushirokawada"
+      ]
+    },
+    {
+      "id": "c_ushiro_spy_vote",
+      "owner": "ushirokawada",
+      "values": [
+        "hime",
+        "kaichou",
+        "kurose",
+        "shimeji"
+      ]
     }
   ],
   "constraints": [
@@ -1862,7 +1434,10 @@
             },
             {
               "not": {
-                "var": "c_vote_kaichou_most"
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "kaichou"
+                }
               }
             }
           ]
@@ -1877,7 +1452,10 @@
             {
               "not": {
                 "not": {
-                  "var": "c_vote_kaichou_most"
+                  "eq": {
+                    "var": "c_culprit_vote_top",
+                    "value": "kaichou"
+                  }
                 }
               }
             }
@@ -1894,7 +1472,10 @@
             },
             {
               "not": {
-                "var": "c_vote_kaichou_most"
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "kaichou"
+                }
               }
             }
           ]
@@ -1909,7 +1490,10 @@
             {
               "not": {
                 "not": {
-                  "var": "c_vote_kaichou_most"
+                  "eq": {
+                    "var": "c_culprit_vote_top",
+                    "value": "kaichou"
+                  }
                 }
               }
             }
@@ -1925,7 +1509,10 @@
               "var": "g_shimeji_culprit_most_voted"
             },
             {
-              "var": "c_vote_kaichou_most"
+              "eq": {
+                "var": "c_culprit_vote_top",
+                "value": "kaichou"
+              }
             }
           ]
         },
@@ -1938,7 +1525,10 @@
             },
             {
               "not": {
-                "var": "c_vote_kaichou_most"
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "kaichou"
+                }
               }
             }
           ]
@@ -1953,7 +1543,10 @@
               "var": "g_ushiro_culprit_most_voted"
             },
             {
-              "var": "c_vote_kaichou_most"
+              "eq": {
+                "var": "c_culprit_vote_top",
+                "value": "kaichou"
+              }
             }
           ]
         },
@@ -1966,7 +1559,10 @@
             },
             {
               "not": {
-                "var": "c_vote_kaichou_most"
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "kaichou"
+                }
               }
             }
           ]
@@ -1974,16 +1570,72 @@
       ]
     },
     {
-      "not": {
-        "and": [
-          {
-            "var": "g_kurose_two_kaichou_items"
-          },
-          {
-            "var": "g_shimeji_ritual_items"
-          }
-        ]
-      }
+      "or": [
+        {
+          "and": [
+            {
+              "var": "g_kaichou_find_stalker"
+            },
+            {
+              "eq": {
+                "var": "c_kaichou_stalker_vote",
+                "value": "shimeji"
+              }
+            }
+          ]
+        },
+        {
+          "and": [
+            {
+              "not": {
+                "var": "g_kaichou_find_stalker"
+              }
+            },
+            {
+              "not": {
+                "eq": {
+                  "var": "c_kaichou_stalker_vote",
+                  "value": "shimeji"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "or": [
+        {
+          "and": [
+            {
+              "var": "g_ushiro_find_spy"
+            },
+            {
+              "eq": {
+                "var": "c_ushiro_spy_vote",
+                "value": "hime"
+              }
+            }
+          ]
+        },
+        {
+          "and": [
+            {
+              "not": {
+                "var": "g_ushiro_find_spy"
+              }
+            },
+            {
+              "not": {
+                "eq": {
+                  "var": "c_ushiro_spy_vote",
+                  "value": "hime"
+                }
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "endings": [
@@ -2003,7 +1655,10 @@
             }
           },
           {
-            "var": "c_vote_kaichou_most"
+            "eq": {
+              "var": "c_culprit_vote_top",
+              "value": "kaichou"
+            }
           }
         ]
       }
@@ -2019,7 +1674,10 @@
           },
           {
             "not": {
-              "var": "c_vote_kaichou_most"
+              "eq": {
+                "var": "c_culprit_vote_top",
+                "value": "kaichou"
+              }
             }
           }
         ]

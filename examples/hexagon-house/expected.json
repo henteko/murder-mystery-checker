@@ -1,11 +1,12 @@
 {
-  "spec_version": "0.1.0",
+  "spec_version": "0.2.0",
   "diagnostics": [
     {
-      "code": "G008",
+      "code": "H003",
       "severity": "warning",
       "args": [
-        "hime"
+        "shimeji",
+        "sleeping_pill"
       ]
     },
     {
@@ -14,6 +15,44 @@
       "args": [
         "ushirokawada",
         "lip_cream"
+      ]
+    },
+    {
+      "code": "H006",
+      "severity": "error",
+      "args": [
+        "room_shimeji",
+        "sleeping_pill",
+        "character:shimeji"
+      ]
+    },
+    {
+      "code": "H006",
+      "severity": "error",
+      "args": [
+        "room_ushirokawada",
+        "lip_cream",
+        "character:ushirokawada"
+      ]
+    },
+    {
+      "code": "K005",
+      "severity": "error",
+      "args": [
+        "x_shimeji_room",
+        "sleeping_pill",
+        "room_shimeji",
+        "character:shimeji"
+      ]
+    },
+    {
+      "code": "K005",
+      "severity": "error",
+      "args": [
+        "x_ushiro_room",
+        "lip_cream",
+        "room_ushirokawada",
+        "character:ushirokawada"
       ]
     }
   ]
