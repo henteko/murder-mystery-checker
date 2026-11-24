@@ -21,3 +21,4 @@ import MurderMystery.Proofs.Consistency
 import MurderMystery.Proofs.Order
 import MurderMystery.Proofs.Perm
 import MurderMystery.Proofs.Commute
+import MurderMystery.Proofs.Segments
