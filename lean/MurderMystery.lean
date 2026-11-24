@@ -11,3 +11,5 @@ import MurderMystery.Checker.G
 import MurderMystery.Checker.Check
 import MurderMystery.Proofs.Basic
 import MurderMystery.Proofs.G
+import MurderMystery.Proofs.Tally
+import MurderMystery.Proofs.Items
