@@ -366,6 +366,13 @@ def _(s):
     ev(s, "e1")["arrive"] = 1.275e3
 
 
+@case("edge", "no_variables_no_endings",
+      "ゴールも選択もエンディングもない。空の割り当て1通りでエンディングがないので G001(witness は空)", ["G001"])
+def _(s):
+    s["goals"], s["choices"], s["endings"] = [], [], []
+    s["characters"] = [{"id": "alice", "npc": True}, {"id": "bob", "npc": True}]
+
+
 @case("edge", "fall_skips_travel_time", "mode が fall の移動は移動時間を検査しない")
 def _(s):
     ev(s, "e1")["mode"] = "fall"
@@ -558,6 +565,8 @@ SCHEMA = [
     ("string_time", "時刻が文字列", None),
     ("negative_time", "時刻が負", None),
     ("fractional_time", "時刻が整数でない(1260.5)", None),
+    ("huge_exponent", "指数部が 100,000 を超える(値は 0 でも入力エラー)", '{"start_time": 0e100001, "end_time": 1320, '
+     '"characters": [], "locations": [], "placements": []}'),
     ("duplicate_key", "同じキーが2回ある", '{"start_time": 1260, "start_time": 1261, "end_time": 1320, '
      '"characters": [], "locations": [], "placements": []}'),
     ("time_out_of_range", "時刻が上限を超える", None),

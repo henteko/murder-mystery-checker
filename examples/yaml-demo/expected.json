@@ -1,0 +1,7 @@
+{"spec_version": "0.5.1",
+ "diagnostics":
+ [{"severity": "error", "code": "K008", "args": ["customer@1", "1265", "1270"]},
+  {"severity": "error",
+   "event": "clerk#4",
+   "code": "T003",
+   "args": ["clerk", "backroom", "counter", "1"]}]}

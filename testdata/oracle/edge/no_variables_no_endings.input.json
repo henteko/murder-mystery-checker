@@ -1,0 +1,106 @@
+{
+  "_case": {
+    "doc": "ゴールも選択もエンディングもない。空の割り当て1通りでエンディングがないので G001(witness は空)",
+    "expect": [
+      "G001"
+    ]
+  },
+  "spec_version": "0.5.1",
+  "start_time": 1260,
+  "end_time": 1320,
+  "characters": [
+    {
+      "id": "alice",
+      "npc": true
+    },
+    {
+      "id": "bob",
+      "npc": true
+    }
+  ],
+  "areas": [
+    {
+      "id": "house",
+      "internal_minutes": 5
+    }
+  ],
+  "locations": [
+    {
+      "id": "hall",
+      "area": "house"
+    },
+    {
+      "id": "study",
+      "area": "house"
+    }
+  ],
+  "placements": [
+    {
+      "character": "alice",
+      "location": "hall"
+    },
+    {
+      "character": "bob",
+      "location": "study"
+    }
+  ],
+  "items": [
+    {
+      "id": "knife",
+      "initial": {
+        "character": "alice"
+      }
+    }
+  ],
+  "facts": [
+    {
+      "id": "f_secret"
+    },
+    {
+      "id": "f_meeting"
+    }
+  ],
+  "initial_knowledge": [
+    {
+      "character": "alice",
+      "fact": "f_secret"
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "at": 1270,
+      "kind": "move",
+      "character": "bob",
+      "to": "hall",
+      "arrive": 1275
+    },
+    {
+      "id": "e2",
+      "at": 1280,
+      "kind": "scene",
+      "location": "hall",
+      "participants": [
+        "alice",
+        "bob"
+      ],
+      "reveals": [
+        "f_meeting"
+      ]
+    },
+    {
+      "id": "e3",
+      "at": 1285,
+      "kind": "transfer",
+      "from": "alice",
+      "to": "bob",
+      "item": "knife"
+    }
+  ],
+  "solution_facts": [
+    "f_secret"
+  ],
+  "goals": [],
+  "choices": [],
+  "endings": []
+}

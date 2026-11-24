@@ -1,0 +1,69 @@
+# 古書店の閉店後(YAML の書き方の見本。docs/yaml.md)
+spec_version: "0.5.1"
+start_time: "21:00"
+end_time: "22:00"
+claim_tolerance: 2
+
+areas:
+  - {id: shop, internal_minutes: 1}
+locations:
+  - {id: counter, area: shop}
+  - {id: stacks, area: shop}
+  - {id: backroom, area: shop}
+  - {id: street, public: true}
+travel:
+  - {from: counter, to: street, minutes: 1, bidirectional: true}
+  - {from: stacks, to: street, minutes: 2, bidirectional: true}
+
+items:
+  - {id: letter_opener, initial: {location: counter}}
+  - {id: ledger, initial: {character: owner}}
+
+facts:
+  - {id: f_ledger_missing, text: 帳簿がなくなっている}
+  - {id: f_opener_blood, text: ペーパーナイフに血}
+  - {id: f_clerk_in_back, text: 店員は 21:20 にバックルームにいた}
+
+characters:
+  - id: owner
+    npc: true
+    location: backroom
+    timeline:
+      - {id: owner_dies, at: "21:25", kind: die}
+  - id: clerk
+    location: counter
+    knows: [f_ledger_missing]
+    timeline:
+      - {at: "21:05", kind: pickup, item: letter_opener}
+      - {id: clerk_to_back, at: "21:15", kind: move, to: backroom, arrive: "21:16"}
+      - {at: "21:20", kind: scene, location: backroom, participants: [clerk, owner]}
+      - {at: "21:30", kind: move, to: counter, arrive: "21:30"}       # 移動時間 1 分が足りない
+  - id: customer
+    location: street
+    timeline:
+      - {id: customer_enters, at: "21:10", kind: move, to: stacks, arrive: "21:12"}
+      - {at: "21:20", kind: observe, location: stacks, target_location: backroom, targets: [clerk],
+         facts: [f_clerk_in_back]}
+
+perception:
+  - {from: stacks, to: backroom}      # 本棚の隙間からバックルームが見える
+
+handouts:
+  - character: customer
+    knows: [f_clerk_in_back]
+    timeline:
+      - {at: "21:05", event: customer_enters, text: 店に入ったのは 21:05 ごろ}
+
+clues:
+  - {id: c_opener, item: letter_opener, reveals: [f_opener_blood]}
+
+solution_facts: [f_clerk_in_back, f_opener_blood]
+
+goals:
+  - {id: g_clerk_hide, owner: clerk}
+  - {id: g_customer_solve, owner: customer}
+choices:
+  - {id: vote, owner: customer, values: [clerk, customer]}
+endings:
+  - {id: end_caught, condition: {eq: {var: vote, value: clerk}}}
+  - {id: end_escaped, condition: {eq: {var: vote, value: customer}}}

@@ -1,0 +1,247 @@
+{
+  "areas": [
+    {
+      "id": "shop",
+      "internal_minutes": 1
+    }
+  ],
+  "characters": [
+    {
+      "id": "owner",
+      "npc": true
+    },
+    {
+      "id": "clerk"
+    },
+    {
+      "id": "customer"
+    }
+  ],
+  "choices": [
+    {
+      "id": "vote",
+      "owner": "customer",
+      "values": [
+        "clerk",
+        "customer"
+      ]
+    }
+  ],
+  "claim_tolerance": 2,
+  "clues": [
+    {
+      "id": "c_opener",
+      "item": "letter_opener",
+      "reveals": [
+        "f_opener_blood"
+      ]
+    }
+  ],
+  "end_time": 1320,
+  "endings": [
+    {
+      "condition": {
+        "eq": {
+          "value": "clerk",
+          "var": "vote"
+        }
+      },
+      "id": "end_caught"
+    },
+    {
+      "condition": {
+        "eq": {
+          "value": "customer",
+          "var": "vote"
+        }
+      },
+      "id": "end_escaped"
+    }
+  ],
+  "events": [
+    {
+      "at": 1285,
+      "character": "owner",
+      "id": "owner_dies",
+      "kind": "die"
+    },
+    {
+      "at": 1265,
+      "character": "clerk",
+      "id": "clerk#1",
+      "item": "letter_opener",
+      "kind": "pickup"
+    },
+    {
+      "arrive": 1276,
+      "at": 1275,
+      "character": "clerk",
+      "id": "clerk_to_back",
+      "kind": "move",
+      "to": "backroom"
+    },
+    {
+      "at": 1280,
+      "id": "clerk#3",
+      "kind": "scene",
+      "location": "backroom",
+      "participants": [
+        "clerk",
+        "owner"
+      ]
+    },
+    {
+      "arrive": 1290,
+      "at": 1290,
+      "character": "clerk",
+      "id": "clerk#4",
+      "kind": "move",
+      "to": "counter"
+    },
+    {
+      "arrive": 1272,
+      "at": 1270,
+      "character": "customer",
+      "id": "customer_enters",
+      "kind": "move",
+      "to": "stacks"
+    },
+    {
+      "at": 1280,
+      "character": "customer",
+      "facts": [
+        "f_clerk_in_back"
+      ],
+      "id": "customer#2",
+      "kind": "observe",
+      "location": "stacks",
+      "target_location": "backroom",
+      "targets": [
+        "clerk"
+      ]
+    }
+  ],
+  "facts": [
+    {
+      "id": "f_ledger_missing",
+      "text": "帳簿がなくなっている"
+    },
+    {
+      "id": "f_opener_blood",
+      "text": "ペーパーナイフに血"
+    },
+    {
+      "id": "f_clerk_in_back",
+      "text": "店員は 21:20 にバックルームにいた"
+    },
+    {
+      "about": {
+        "event": "customer_enters"
+      },
+      "claimed_at": 1265,
+      "id": "customer@1",
+      "text": "店に入ったのは 21:05 ごろ"
+    }
+  ],
+  "goals": [
+    {
+      "id": "g_clerk_hide",
+      "owner": "clerk"
+    },
+    {
+      "id": "g_customer_solve",
+      "owner": "customer"
+    }
+  ],
+  "handouts": [
+    {
+      "character": "customer",
+      "knows": [
+        "f_clerk_in_back",
+        "customer@1"
+      ]
+    }
+  ],
+  "initial_knowledge": [
+    {
+      "character": "clerk",
+      "fact": "f_ledger_missing"
+    },
+    {
+      "character": "customer",
+      "fact": "customer@1"
+    }
+  ],
+  "items": [
+    {
+      "id": "letter_opener",
+      "initial": {
+        "location": "counter"
+      }
+    },
+    {
+      "id": "ledger",
+      "initial": {
+        "character": "owner"
+      }
+    }
+  ],
+  "locations": [
+    {
+      "area": "shop",
+      "id": "counter"
+    },
+    {
+      "area": "shop",
+      "id": "stacks"
+    },
+    {
+      "area": "shop",
+      "id": "backroom"
+    },
+    {
+      "id": "street",
+      "public": true
+    }
+  ],
+  "perception": [
+    {
+      "from": "stacks",
+      "to": "backroom"
+    }
+  ],
+  "placements": [
+    {
+      "character": "owner",
+      "location": "backroom"
+    },
+    {
+      "character": "clerk",
+      "location": "counter"
+    },
+    {
+      "character": "customer",
+      "location": "street"
+    }
+  ],
+  "solution_facts": [
+    "f_clerk_in_back",
+    "f_opener_blood"
+  ],
+  "spec_version": "0.5.1",
+  "start_time": 1260,
+  "travel": [
+    {
+      "bidirectional": true,
+      "from": "counter",
+      "minutes": 1,
+      "to": "street"
+    },
+    {
+      "bidirectional": true,
+      "from": "stacks",
+      "minutes": 2,
+      "to": "street"
+    }
+  ]
+}

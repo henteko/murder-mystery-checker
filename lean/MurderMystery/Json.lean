@@ -32,7 +32,7 @@ def asStr (k : String) : Json → P String
 /-- 仮数 × 10^(−指数) の末尾の 0 を指数から取り除く(1260.0 → 1260)。 -/
 def normNum (m : Int) : Nat → Int × Nat
   | 0 => (m, 0)
-  | e + 1 => if m % 10 == 0 then normNum (m / 10) e else (m, e + 1)
+  | e + 1 => if m == 0 then (0, 0) else if m % 10 == 0 then normNum (m / 10) e else (m, e + 1)
 
 /-- 値が整数で 0 以上 `maxTime` 以下の数(1260、1260.0、1.26e3 はどれも 1260)。 -/
 def asNat (k : String) (j : Json) : P Nat := do
