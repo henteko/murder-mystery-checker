@@ -6,7 +6,7 @@ import MurderMystery.Checker.Diag
 namespace MurderMystery
 
 /-- 2回以上現れる値(最初の出現順、重複なし)。 -/
-def duplicates [BEq α] (l : List α) : List α :=
+def duplicates [DecidableEq α] (l : List α) : List α :=
   dedup (l.filter fun x => (l.filter (· == x)).length ≥ 2)
 
 namespace Scenario
@@ -47,7 +47,7 @@ structure Ref where
   kind : String
   id : Id
   event : Option Id := none
-  deriving BEq
+  deriving DecidableEq
 
 def eventRefs (e : Event) : List Ref :=
   let r := s!"event:{e.id}"

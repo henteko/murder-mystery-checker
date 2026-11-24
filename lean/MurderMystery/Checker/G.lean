@@ -39,16 +39,28 @@ def checkG008 (s : Scenario) : List Diag :=
   s.characters.filterMap fun c =>
     if !c.npc && !s.goals.any (·.owner == c.id) then some (warn "G008" [c.id]) else none
 
-def checkGPatterns (s : Scenario) (g : GCtx) : List Diag :=
-  let ends := s.endings.mergeSort (fun a b => decide (a.id ≤ b.id))
-  let matched (vals : List Val) : List Id := (ends.filter fun e => e.condition.eval (g.σ vals)).map (·.id)
-  let g001 := match g.pats.find? (fun p => (matched p).isEmpty) with
-    | some p => [g.witness p (err "G001" [])]
-    | none => []
-  let g002 := (pairs (ends.map (·.id))).filterMap fun (e₁, e₂) =>
-    match g.pats.find? (fun p => let m := matched p; m.contains e₁ && m.contains e₂) with
-    | some p => some (g.witness p (err "G002" [e₁, e₂]))
+def Scenario.sortedEndings (s : Scenario) : List Ending :=
+  s.endings.mergeSort (fun a b => decide (a.id ≤ b.id))
+
+/-- エンディング e がパターン p で成り立つか。 -/
+def GCtx.holds (g : GCtx) (e : Ending) (p : List Val) : Bool := e.condition.eval (g.σ p)
+
+/-- G001: 網羅性の違反(最小の反例1件)。 -/
+def checkG001 (s : Scenario) (g : GCtx) : List Diag :=
+  match g.pats.find? (fun p => s.sortedEndings.all fun e => !g.holds e p) with
+  | some p => [g.witness p (err "G001" [])]
+  | none => []
+
+/-- G002: 排他性の違反(エンディングの組ごとに最小の反例)。 -/
+def checkG002 (s : Scenario) (g : GCtx) : List Diag :=
+  (pairs s.sortedEndings).filterMap fun (e₁, e₂) =>
+    match g.pats.find? (fun p => g.holds e₁ p && g.holds e₂ p) with
+    | some p => some (g.witness p (err "G002" [e₁.id, e₂.id]))
     | none => none
+
+/-- G003 / G004 / G006 / G009。 -/
+def checkGRest (s : Scenario) (g : GCtx) : List Diag :=
+  let ends := s.sortedEndings
   let g003 := ends.filterMap fun e =>
     if g.pats.any (fun p => e.condition.eval (g.σ p)) then none else some (err "G003" [e.id])
   let valsOf (v : Id) : List Val := g.pats.map fun p => g.σ p v
@@ -62,20 +74,26 @@ def checkGPatterns (s : Scenario) (g : GCtx) : List Diag :=
     ++ (match c.values with
       | some vals => vals.filterMap fun v => if vs.contains (.str v) then none else some (warn "G009" [c.id, v])
       | none => [])
-  g001 ++ g002 ++ g003 ++ g46 ++ gc
+  g003 ++ g46 ++ gc
+
+def checkGPatterns (s : Scenario) (g : GCtx) : List Diag :=
+  checkG001 s g ++ checkG002 s g ++ checkGRest s g
+
+def Scenario.gVars (s : Scenario) : List Id := s.domains.map (·.1)
+def Scenario.gDoms (s : Scenario) : List (List Val) := s.domains.map (·.2)
+/-- 割り当ての総数 N。 -/
+def Scenario.gCount (s : Scenario) : Nat := (s.gDoms.map List.length).foldl (· * ·) 1
+/-- 割り当て vals が実効制約を満たすか。 -/
+def Scenario.satisfies (s : Scenario) (vals : List Val) : Bool :=
+  s.effectiveConstraints.all fun c => c.eval (toAssignment s.gVars vals)
+def Scenario.gctx (s : Scenario) : GCtx :=
+  ⟨s.gVars, s.gDoms, (enumerate s.gDoms).filter s.satisfies⟩
 
 def checkG (s : Scenario) : List Diag :=
-  let ds := s.domains
-  let vars := ds.map (·.1)
-  let doms := ds.map (·.2)
-  let n := (doms.map List.length).foldl (· * ·) 1
   let body :=
-    if n > gLimit then [err "G007" [toString n]]
-    else
-      let cons := s.effectiveConstraints
-      let pats := (enumerate doms).filter fun p => cons.all fun c => c.eval (toAssignment vars p)
-      if pats.isEmpty then [err "G005" []]
-      else checkGPatterns s ⟨vars, doms, pats⟩
+    if s.gCount > gLimit then [err "G007" [toString s.gCount]]
+    else if s.gctx.pats.isEmpty then [err "G005" []]
+    else checkGPatterns s s.gctx
   body ++ checkG008 s
 
 end MurderMystery

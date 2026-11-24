@@ -8,8 +8,8 @@ namespace MurderMystery
 /-! ## 汎用 -/
 
 /-- 重複を除く(最初の出現を残す)。 -/
-def dedup [BEq α] (l : List α) : List α :=
-  l.foldl (fun acc x => if acc.contains x then acc else acc ++ [x]) []
+def dedup [DecidableEq α] (l : List α) : List α :=
+  l.foldl (fun acc x => if x ∈ acc then acc else acc ++ [x]) []
 
 def update [DecidableEq α] (f : α → β) (k : α) (v : β) : α → β :=
   fun x => if x = k then v else f x

@@ -9,3 +9,5 @@ import MurderMystery.Checker.Events
 import MurderMystery.Checker.Post
 import MurderMystery.Checker.G
 import MurderMystery.Checker.Check
+import MurderMystery.Proofs.Basic
+import MurderMystery.Proofs.G

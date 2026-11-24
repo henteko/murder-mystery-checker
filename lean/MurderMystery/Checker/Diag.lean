@@ -8,7 +8,7 @@ namespace MurderMystery
 inductive Sev where
   | error
   | warning
-  deriving Repr, DecidableEq, BEq, Inhabited
+  deriving Repr, DecidableEq, Inhabited
 
 structure Diag where
   code : String
@@ -19,7 +19,7 @@ structure Diag where
   witness : Option (List (Id × Val)) := none
   /-- witness の並べ替えキー(定義域内の位置)。出力には含めない -/
   wkey : List Nat := []
-  deriving Repr, DecidableEq, BEq, Inhabited
+  deriving Repr, DecidableEq, Inhabited
 
 def err (code : String) (args : List String) (event : Option Id := none) : Diag :=
   { code, sev := .error, event, args }

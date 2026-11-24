@@ -9,7 +9,7 @@ namespace MurderMystery
 inductive Val where
   | bool (b : Bool)
   | str (s : String)
-  deriving Repr, DecidableEq, BEq, Inhabited
+  deriving Repr, DecidableEq, Inhabited
 
 abbrev Assignment := Id → Val
 
@@ -19,7 +19,7 @@ def count (vals : List Val) (w : Val) : Nat := (vals.filter (· == w)).length
 /-- 最多得票の値(重複なし)。 -/
 def winners (vals : List Val) : List Val :=
   let ds := dedup vals
-  let m := (ds.map (count vals)).foldl max 0
+  let m := ((ds.map (count vals)).max?).getD 0
   ds.filter (fun w => count vals w == m)
 
 def Formula.eval (σ : Assignment) : Formula → Bool
