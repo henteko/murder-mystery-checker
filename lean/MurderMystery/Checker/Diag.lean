@@ -27,19 +27,56 @@ def err (code : String) (args : List String) (event : Option Id := none) : Diag 
 def warn (code : String) (args : List String) (event : Option Id := none) : Diag :=
   { code, sev := .warning, event, args }
 
+/-! ## 比較関数
+
+すべて Bool 値の狭義の < 。`Proofs/Order.lean` で狭義全順序であることを示す。 -/
+
+def strLt (a b : String) : Bool := decide (a < b)
+
+def natLt (a b : Nat) : Bool := decide (a < b)
+
 /-- 辞書式の < (短い方が接頭辞なら短い方が先)。 -/
-def lexLt [LT α] [DecidableRel (α := α) (· < ·)] [DecidableEq α] : List α → List α → Bool
+def lexLt [DecidableEq α] (lt : α → α → Bool) : List α → List α → Bool
   | [], [] => false
   | [], _ :: _ => true
   | _ :: _, [] => false
-  | a :: as, b :: bs => if a = b then lexLt as bs else decide (a < b)
+  | a :: as, b :: bs => if a = b then lexLt lt as bs else lt a b
+
+/-- none が最小。 -/
+def optLt (lt : α → α → Bool) : Option α → Option α → Bool
+  | none, none => false
+  | none, some _ => true
+  | some _, none => false
+  | some a, some b => lt a b
+
+/-- 組の辞書式の < 。 -/
+def pairLt [DecidableEq α] (lt₁ : α → α → Bool) (lt₂ : β → β → Bool) (a b : α × β) : Bool :=
+  if a.1 = b.1 then lt₂ a.2 b.2 else lt₁ a.1 b.1
+
+/-- error が先。 -/
+def sevLt : Sev → Sev → Bool
+  | .error, .warning => true
+  | _, _ => false
+
+/-- 真偽値が先(false, true の順)、次に文字列。 -/
+def valLt : Val → Val → Bool
+  | .bool false, .bool true => true
+  | .bool _, .str _ => true
+  | .str a, .str b => strLt a b
+  | _, _ => false
+
+/-- §6.3 の正規順序のキー: (code, event, args, witness の位置, severity, witness)。
+後ろの2つは全順序にするためのもので、通常は前の4つで決まる。 -/
+abbrev DiagKey := String × Option Id × List String × List Nat × Sev × Option (List (Id × Val))
+
+def Diag.key (d : Diag) : DiagKey := (d.code, d.event, d.args, d.wkey, d.sev, d.witness)
+
+def keyLt : DiagKey → DiagKey → Bool :=
+  pairLt strLt <| pairLt (optLt strLt) <| pairLt (lexLt strLt) <| pairLt (lexLt natLt) <|
+    pairLt sevLt (optLt (lexLt (pairLt strLt valLt)))
 
 /-- §6.3 の正規順序の < 。 -/
-def Diag.lt (a b : Diag) : Bool :=
-  if a.code ≠ b.code then decide (a.code < b.code)
-  else if a.event.getD "" ≠ b.event.getD "" then decide (a.event.getD "" < b.event.getD "")
-  else if a.args ≠ b.args then lexLt a.args b.args
-  else lexLt a.wkey b.wkey
+def Diag.lt (a b : Diag) : Bool := keyLt a.key b.key
 
 def Diag.le (a b : Diag) : Bool := !b.lt a
 

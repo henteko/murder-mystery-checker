@@ -174,6 +174,10 @@ def checkR006 (s : Scenario) : List RIssue :=
   s.events.flatMap fun e => (eventShapeErrors e).map fun r => rerr "R006" [r] (some e.id)
 
 /-! ## R007〜R013 -/
+def EventKind.isMove : EventKind → Bool
+  | .move .. => true
+  | _ => false
+
 def checkR007 (s : Scenario) : List RIssue :=
   s.clues.filterMap fun c =>
     if c.location.isNone && c.item.isNone && c.deck.isNone then some (rerr "R007" [c.id]) else none
@@ -230,10 +234,9 @@ def checkR011 (s : Scenario) : List RIssue :=
     ++ (match f.aboutEvent with
       | some eid =>
         if f.aboutPoint == "arrive" then
-          match s.findEvent? eid with
-          | some ⟨_, _, .move .., _⟩ => []
-          | some _ => [rerr "R011" [f.id, "arrive_on_non_move"]]
-          | none => []
+          if s.events.any (fun e => e.id == eid && !e.kind.isMove) then
+            [rerr "R011" [f.id, "arrive_on_non_move"]]
+          else []
         else []
       | none => [])
 

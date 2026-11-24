@@ -1,6 +1,6 @@
 # mmcheck 仕様書
 
-- 仕様バージョン: **0.3.0**
+- 仕様バージョン: **0.3.1**
 - 本書が唯一の正(single source of truth)。Lean モデル (`lean/`) は本書を形式化し、Go 実装 (`go/`) は Lean モデルと差分テストで一致させる。
 - 本書を変更した場合は仕様バージョンを上げ、Lean → オラクル → Go の順に追従させる。
 - 変更履歴は §10。
@@ -54,7 +54,7 @@ Lean オラクルと Go 実装が共通に受け付ける入力形式。作者�
 
 ```jsonc
 {
-  "spec_version": "0.3.0",
+  "spec_version": "0.3.1",
   "start_time": 1080,            // Time
   "end_time": 1440,              // Time
   "claim_tolerance": 5,          // Minutes。証言の時刻の許容誤差の既定値(省略時 0)
@@ -352,7 +352,7 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
   - `unknown_mode`: move の mode が `walk` / `fall` / `carried` 以外
 - R011 の reason:
   - `about_without_claimed_at` / `claimed_at_without_about`: 片方だけがある
-  - `arrive_on_non_move`: `point: "arrive"` の対象が move ではない
+  - `arrive_on_non_move`: `point: "arrive"` の対象の ID を持つイベントのいずれかが move ではない(ID が重複していても、イベントの並び順によらず決まる)
   - `unknown_point`: point が `at` / `arrive` 以外
 - R012 の reason:
   - `empty_votes`: votes が空
@@ -489,7 +489,7 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
 
 ```jsonc
 {
-  "spec_version": "0.3.0",
+  "spec_version": "0.3.1",
   "diagnostics": [
     {
       "code": "T003",
@@ -514,9 +514,13 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
 検出結果は次のキーの辞書式順序で昇順に並べる。
 
 1. `code`(文字列)
-2. `event`(なしは `""` として扱う)
+2. `event`(なしは最小。どの ID よりも前)
 3. `args`(文字列の配列として辞書式に比べる。短い方が接頭辞なら短い方が先)
 4. `witness`(§4.7 の割り当ての順序。なしは最小として扱う)
+5. `severity`(error が先)
+6. `witness` の値(なしが最小。(変数 ID, 値) の組の列として辞書式に比べる。組は変数 ID、値の順に比べ、値は真偽値が文字列より前、false が true より前、文字列どうしは文字列の順)
+
+5 と 6 は順序を全順序にするための規則で、通常の出力は 1〜4 で決まる。文字列は Unicode のコードポイントの列として比べる。
 
 ### 6.4 スキーマエラー
 
@@ -547,7 +551,7 @@ Go CLI の `--strict` を付けると warning も 1 として扱う(Go の表示
 
 1. **健全性・完全性**: `(check s).all (·.severity = .warning) ↔ Valid s`。さらに規則ごとに「その規則の検出結果が出る ↔ その規則の `Prop` が成り立つ」。
 2. **G の網羅判定の正しさ**: 有限の数え上げによる判定が `∀ σ ∈ P, |match σ| = 1` と同値。
-3. **出力の決定性**: `check s` は §6.3 の順序でソート済みで、重複がない。入力配列の並べ替えに対して `check` は不変。
+3. **出力の決定性**: `check s` は §6.3 の順序で狭義に整列しており、重複がない。`events` 配列の並べ替えに対して `check` は不変(R 群の違反があっても)。
 4. **同時刻イベントの交換可能性**: T005 と I004 の違反がなければ、同時刻のイベントの処理順を入れ替えても終了状態と検出結果は変わらない。
 5. **知識の単調性**: どのキャラクターについても、時刻が進んで知識が減ることはない。
 6. **仕様の無矛盾性**: 正しいシナリオが少なくとも1つ存在する(具体例を `decide` で示す)。
@@ -571,7 +575,7 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 
 ```jsonc
 {
-  "spec_version": "0.3.0",
+  "spec_version": "0.3.1",
   "start_time": 1260, "end_time": 1320,
   "characters": [{"id": "alice"}, {"id": "bob"}],
   "areas": [{"id": "house", "internal_minutes": 5}],
@@ -598,7 +602,7 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 
 ```json
 {
-  "spec_version": "0.3.0",
+  "spec_version": "0.3.1",
   "diagnostics": [
     {"code": "A001", "severity": "error", "args": ["a1", "alice", "absent", "study"]},
     {"code": "G001", "severity": "error", "args": [], "witness": {"c_vote": "alice", "g_alice": false, "g_bob": false}},
@@ -619,6 +623,11 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 - T009 は出ない: alice と bob は 1272〜1320 に study に一緒にいるが、その間の e2(transfer)が2人を参加者に含むので、遭遇は認知されている。
 
 ## 10. 変更履歴
+
+- **0.3.1**(定理 3, 4, 8 の証明に伴う修正)
+  - §6.3: 正規順序を全順序にした。`event` がないものを最小とし、同じキーなら severity、witness の値で比べる
+  - R011 `arrive_on_non_move`: 同じ ID のイベントのいずれかが move でなければ出す(ID が重複したとき、イベントの並び順で結果が変わっていた)
+  - §7 定理 3: 並べ替え不変性の対象を `events` 配列とした
 
 - **0.3.0**
   - K1: 知識の真偽(`facts[].truth`)と、偽の知識を否定する知識(`contradicted_by`)。K006(嘘・思い込みを見破れない)、K007(真相が偽の知識に依存している)、R010

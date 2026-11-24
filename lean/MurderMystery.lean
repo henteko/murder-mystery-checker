@@ -18,3 +18,5 @@ import MurderMystery.Proofs.Events
 import MurderMystery.Proofs.Post
 import MurderMystery.Proofs.Main
 import MurderMystery.Proofs.Consistency
+import MurderMystery.Proofs.Order
+import MurderMystery.Proofs.Perm
