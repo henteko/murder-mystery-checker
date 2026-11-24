@@ -113,7 +113,7 @@ def parseEvent (j : Json) : P Event := do
     | k => throw s!"unknown event kind '{k}'"
   pure { id, time, kind, requires }
 
-partial def parseFormula (j : Json) : P Formula := do
+partial def parseFormula (tr : Id → Bool) (j : Json) : P Formula := do
   let obj ← match j with
     | .obj o => pure o
     | _ => throw "formula must be an object"
@@ -123,13 +123,20 @@ partial def parseFormula (j : Json) : P Formula := do
   if let some v := field? j "eq" then return .eq (← str v "var") (← str v "value")
   if let some v := field? j "plurality" then return .plurality (← strsReq v "votes") (← str v "value")
   if let some v := field? j "tie" then return .tie (← strsReq v "votes")
-  if let some v := field? j "not" then return .not (← parseFormula v)
-  if let some v := field? j "and" then return .and (← (← asArr "and" v).mapM parseFormula)
-  if let some v := field? j "or" then return .or (← (← asArr "or" v).mapM parseFormula)
+  if let some v := field? j "truth" then let f ← asStr "truth" v; return .truth f (tr f)
+  if let some v := field? j "not" then return .not (← parseFormula tr v)
+  if let some v := field? j "and" then return .and (← (← asArr "and" v).mapM (parseFormula tr))
+  if let some v := field? j "or" then return .or (← (← asArr "or" v).mapM (parseFormula tr))
   throw "unknown formula"
 
 def parseScenario (j : Json) : P Scenario := do
   let list {α} (k : String) (f : Json → P α) : P (List α) := do (← arrD j k).mapM f
+  let facts ← list "facts" parseFact
+  -- {"truth": f} の値: f の truth(最初に見つかったもの)。f がなければ false(R002 になる)
+  let tr (f : Id) : Bool := match facts.find? (·.id == f) with
+    | some x => x.truth
+    | none => false
+  let parseFormula := parseFormula tr
   pure {
     startTime := ← nat j "start_time"
     endTime := ← nat j "end_time"
@@ -144,8 +151,9 @@ def parseScenario (j : Json) : P Scenario := do
     perception := ← list "perception" (parseEdge false)
     placements := ← (← asArr "placements" (← req j "placements")).mapM fun p => do
       pure { character := ← str p "character", location := ← str p "location" }
-    items := ← list "items" fun i => do pure { id := ← str i "id", initial := ← parseHolder (← req i "initial") }
-    facts := ← list "facts" parseFact
+    items := ← list "items" fun i => do
+      pure { id := ← str i "id", initial := ← parseHolder (← req i "initial"), tags := ← strs i "tags" }
+    facts := facts
     initialKnowledge := ← list "initial_knowledge" fun k => do pure (← str k "character", ← str k "fact")
     events := ← list "events" parseEvent
     clues := ← list "clues" fun c => do
@@ -166,11 +174,14 @@ def parseScenario (j : Json) : P Scenario := do
     goals := ← list "goals" fun g => do
       pure { id := ← str g "id", owner := ← str g "owner", requiresItems := ← strs g "requires_items",
              requiresKnowledge := ← strs g "requires_knowledge",
+             requiresTagged := ← (← arrD g "requires_tagged").mapM (fun t => do pure (← str t "tag", ← nat t "count")),
+             conceals := ← strs g "conceals",
              condition := ← (field? g "condition").mapM parseFormula }
     choices := ← list "choices" fun c => do
       pure { id := ← str c "id", owner := ← str c "owner", values := ← strsOpt c "values" }
     constraints := ← list "constraints" parseFormula
     endings := ← list "endings" fun e => do pure { id := ← str e "id", condition := ← parseFormula (← req e "condition") }
+    exploration := ← (field? j "exploration").mapM fun x => nat x "draws_per_player"
   }
 
 def valToJson : Val → Json

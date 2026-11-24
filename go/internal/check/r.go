@@ -158,6 +158,8 @@ func formulaRefs(f m.Formula) []varRef {
 		return []varRef{{kind: 2, votes: f.Votes, value: f.Value, hasX: true}}
 	case m.FTie:
 		return []varRef{{kind: 2, votes: f.Votes}}
+	case m.FTruth:
+		return []varRef{{kind: 3, v: f.Var}}
 	case m.FNot, m.FAnd, m.FOr:
 		var out []varRef
 		for _, sub := range f.Subs {
@@ -171,7 +173,9 @@ func formulaRefs(f m.Formula) []varRef {
 func formulaRefRefs(referrer string, f m.Formula) []ref {
 	var out []ref
 	for _, r := range formulaRefs(f) {
-		if r.kind == 2 {
+		if r.kind == 3 {
+			out = append(out, ref{referrer: referrer, kind: "fact", id: r.v})
+		} else if r.kind == 2 {
 			for _, v := range r.votes {
 				out = append(out, ref{referrer: referrer, kind: "variable", id: v})
 			}
@@ -275,6 +279,9 @@ func allRefs(s *m.Scenario) []ref {
 			add("goal:"+g.ID, "item", i)
 		}
 		for _, f := range g.RequiresKnowledge {
+			add("goal:"+g.ID, "fact", f)
+		}
+		for _, f := range g.Conceals {
 			add("goal:"+g.ID, "fact", f)
 		}
 		if g.Condition != nil {

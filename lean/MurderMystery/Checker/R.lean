@@ -85,6 +85,7 @@ def formulaRefs (referrer : String) (f : Formula) : List Ref :=
     | .asBool v => [⟨referrer, "variable", v, none⟩]
     | .asEq v _ => [⟨referrer, "variable", v, none⟩]
     | .inTally vs _ => vs.map fun v => ⟨referrer, "variable", v, none⟩
+    | .asFact f => [⟨referrer, "fact", f, none⟩]
 
 def allRefs (s : Scenario) : List Ref :=
   let edgeRefs (tbl kind : String) (es : List Edge) : List Ref :=
@@ -127,6 +128,7 @@ def allRefs (s : Scenario) : List Ref :=
       ⟨s!"goal:{g.id}", "character", g.owner, none⟩
       :: (g.requiresItems.map (fun i => ⟨s!"goal:{g.id}", "item", i, none⟩)
       ++ g.requiresKnowledge.map (fun f => ⟨s!"goal:{g.id}", "fact", f, none⟩)
+      ++ g.conceals.map (fun f => ⟨s!"goal:{g.id}", "fact", f, none⟩)
       ++ (g.condition.map (formulaRefs s!"goal:{g.id}")).getD []))
   ++ s.choices.map (fun c => ⟨s!"choice:{c.id}", "character", c.owner, none⟩)
   ++ s.constraints.flatMap (formulaRefs "constraint")
@@ -208,6 +210,7 @@ def formulaTypeErrors (s : Scenario) (referrer : String) (f : Formula) : List RI
         | none => [rerr .R009 [referrer, v, x]]
         | some vs => if vs.contains x then [] else [rerr .R009 [referrer, v, x]]
     | .inTally _ _ => []
+    | .asFact _ => []
 
 def tallyErrors (s : Scenario) (referrer : String) (f : Formula) : List RIssue :=
   f.refs.flatMap fun

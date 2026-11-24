@@ -144,7 +144,8 @@ type ClaimCheck struct {
 	Truth, Found, OK   bool
 }
 
-// FormulaView は論理式。Kind は "const" / "var" / "eq" / "plurality" / "tie" / "not" / "and" / "or"。
+// FormulaView は論理式。Kind は "const" / "var" / "eq" / "plurality" / "tie" / "not" / "and" / "or" / "truth"。
+// truth では Var が知識 ID、Const がその真偽。
 type FormulaView struct {
 	Kind  string
 	Const bool
@@ -155,7 +156,7 @@ type FormulaView struct {
 }
 
 func formulaView(f m.Formula) FormulaView {
-	v := FormulaView{Kind: [...]string{"const", "var", "eq", "plurality", "tie", "not", "and", "or"}[f.Kind],
+	v := FormulaView{Kind: [...]string{"const", "var", "eq", "plurality", "tie", "not", "and", "or", "truth"}[f.Kind],
 		Const: f.Const, Var: f.Var, Value: f.Value, Votes: f.Votes}
 	for _, g := range f.Subs {
 		v.Subs = append(v.Subs, formulaView(g))
@@ -169,12 +170,26 @@ type Knowledge struct {
 	Obtainable bool
 }
 
+// TagView はタグのアイテムの個数の要求と、終了時に使い切られていないその数。
+type TagView struct {
+	Tag          string
+	Count, Avail int
+}
+
+// Concealed は隠す知識と、それを owner 以外のプレイヤーがすでに知っているか。
+type Concealed struct {
+	Fact    FactRef
+	Exposed bool
+}
+
 // GoalView はゴール1つ。TrueIn は、ゴールが達成される選び方の数(Counted が false なら数えていない)。
 type GoalView struct {
 	ID, Owner  string
 	Items      []string
 	ItemsLost  []string // requires_items のうち、終了時に使い切られているもの
 	Knowledge  []Knowledge
+	Tagged     []TagView
+	Conceals   []Concealed
 	Condition  *FormulaView
 	Counted    bool
 	TrueIn     int
@@ -390,6 +405,14 @@ func Explain(s *m.Scenario) Report {
 		}
 		for _, f := range g.RequiresKnowledge {
 			gv.Knowledge = append(gv.Knowledge, Knowledge{ref(f), w.obtainable(f)})
+		}
+		for _, t := range g.RequiresTagged {
+			t := t
+			gv.Tagged = append(gv.Tagged, TagView{t.Tag, t.Count,
+				w.avail(func(it m.Item) bool { return contains(it.Tags, t.Tag) })})
+		}
+		for _, f := range g.Conceals {
+			gv.Conceals = append(gv.Conceals, Concealed{ref(f), w.exposed(g.Owner, f)})
 		}
 		if g.Condition != nil {
 			fv := formulaView(*g.Condition)

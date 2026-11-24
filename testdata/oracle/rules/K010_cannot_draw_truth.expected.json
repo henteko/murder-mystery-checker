@@ -1,0 +1,7 @@
+{"spec_version": "0.7.0",
+ "diagnostics":
+ [{"severity": "warning", "code": "K009", "args": ["2", "1"]},
+  {"severity": "error", "code": "K010", "args": ["1"]},
+  {"severity": "warning",
+   "code": "T009",
+   "args": ["bob", "victim", "study", "1260", "1270"]}]}

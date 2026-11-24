@@ -25,7 +25,7 @@ def gen(rng: random.Random, n: int):
     locs = [f"l{i}" for i in range(rng.randint(2, 5))]
     loc_area = {l: rng.choice(areas + [None]) for l in locs}
     s = {
-        "spec_version": "0.6.0",
+        "spec_version": "0.7.0",
         "_case": {"doc": f"ランダム生成 (seed {SEED}, #{n})"},
         "start_time": start, "end_time": end,
         "claim_tolerance": rng.choice([0, 0, 2, 5]),
@@ -51,6 +51,9 @@ def gen(rng: random.Random, n: int):
     items = [f"i{i}" for i in range(rng.randint(1, 3))]
     s["items"] = [{"id": i, "initial": ({"character": rng.choice(chars)} if rng.random() < 0.6
                                         else {"location": rng.choice(locs)})} for i in items]
+    for it in s["items"]:  # タグ (0.7.0)
+        if rng.random() < 0.5:
+            it["tags"] = rng.sample(["ta", "tb"], k=rng.randint(1, 2))
     facts = [f"f{i}" for i in range(rng.randint(2, 5))]
     false_facts = set(rng.sample(facts, k=rng.randint(0, 1)))
     s["facts"] = []
@@ -133,8 +136,8 @@ def gen(rng: random.Random, n: int):
                            "claimed_at": actual + rng.choice([0, 0, 1, 3, 10])})
     # 手がかり・真相・断言
     s["clues"] = []
-    for k in range(rng.randint(0, 2)):
-        cl = {"id": f"cl{k}", "reveals": [rng.choice(facts)]}
+    for k in range(rng.randint(0, 4)):
+        cl = {"id": f"cl{k}", "reveals": rng.sample(facts, k=rng.randint(1, min(2, len(facts))))}
         r = rng.random()
         if r < 0.4:
             cl["location"] = rng.choice(locs)
@@ -178,15 +181,23 @@ def gen(rng: random.Random, n: int):
     if rng.random() < 0.3:
         s["choices"].append({"id": "flag", "owner": rng.choice(pcs or chars)})
     votes = [ch["id"] for ch in s["choices"] if "values" in ch]
-    # ゴールの必要な知識と達成条件 (0.6.0)
+    # ゴールの必要な知識と達成条件 (0.6.0)、タグ・隠す知識 (0.7.0)
     for g in s["goals"]:
+        if rng.random() < 0.3:
+            g["requires_tagged"] = [{"tag": rng.choice(["ta", "tb"]), "count": rng.randint(1, 2)}
+                                    for _ in range(rng.randint(1, 2))]
+        if facts and rng.random() < 0.25:
+            g["conceals"] = rng.sample(facts, k=1)
         if facts and rng.random() < 0.25:
             g["requires_knowledge"] = rng.sample(facts, k=rng.randint(1, min(2, len(facts))))
         if rng.random() < 0.3:
             opts = [{"eq": {"var": votes[0], "value": rng.choice(values)}},
                     {"not": {"eq": {"var": votes[-1], "value": rng.choice(values)}}},
                     {"plurality": {"votes": votes, "value": rng.choice(values)}},
-                    {"const": rng.random() < 0.5}]
+                    {"const": rng.random() < 0.5},
+                    {"truth": rng.choice(facts)},
+                    {"or": [{"and": [{"truth": rng.choice(facts)}, {"eq": {"var": votes[0], "value": rng.choice(values)}}]},
+                            {"not": {"truth": rng.choice(facts)}}]}]
             others = [h["id"] for h in s["goals"] if h is not g]
             if others:
                 opts.append({"var": rng.choice(others)})
@@ -208,6 +219,8 @@ def gen(rng: random.Random, n: int):
                         {"id": "end_lose", "condition": {"not": win}}]
     if rng.random() < 0.3 and s["endings"]:
         s["endings"].pop(rng.randrange(len(s["endings"])))
+    if rng.random() < 0.5:  # 探索フェイズ (0.7.0)
+        s["exploration"] = {"draws_per_player": rng.randint(0, 2)}
     s["constraints"] = []
     if rng.random() < 0.3 and s["goals"]:
         s["constraints"].append(rng.choice([{"var": s["goals"][0]["id"]},

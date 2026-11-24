@@ -526,6 +526,10 @@ func parseFormula(j *node) (Formula, error) {
 		f := Formula{Kind: FTie, Votes: r.strsReq(v, "votes")}
 		return f, r.err
 	}
+	if v := field(j, "truth"); v != nil {
+		s, err := asStr("truth", v)
+		return Formula{Kind: FTruth, Var: s}, err
+	}
 	if v := field(j, "not"); v != nil {
 		sub, err := parseFormula(v)
 		return Formula{Kind: FNot, Subs: []Formula{sub}}, err
@@ -615,8 +619,11 @@ func ParseScenario(data []byte) (*Scenario, error) {
 				if err != nil {
 					return x, err
 				}
-				x.Initial, err = parseHolder(in)
-				return x, err
+				if x.Initial, err = parseHolder(in); err != nil {
+					return x, err
+				}
+				x.Tags = r.strs(i, "tags")
+				return x, r.err
 			})
 			return
 		},
@@ -684,6 +691,18 @@ func ParseScenario(data []byte) (*Scenario, error) {
 				if r.err != nil {
 					return x, r.err
 				}
+				tr, err := list(g, "requires_tagged", false, func(t *node) (TagReq, error) {
+					var r p
+					x := TagReq{Tag: r.str(t, "tag"), Count: r.nat(t, "count")}
+					return x, r.err
+				})
+				if err != nil {
+					return x, err
+				}
+				x.RequiresTagged = tr
+				if x.Conceals = r.strs(g, "conceals"); r.err != nil {
+					return x, r.err
+				}
 				if c := field(g, "condition"); c != nil {
 					f, err := parseFormula(c)
 					if err != nil {
@@ -726,5 +745,46 @@ func ParseScenario(data []byte) (*Scenario, error) {
 			return nil, err
 		}
 	}
+	if x := field(j, "exploration"); x != nil {
+		var r p
+		n := r.nat(x, "draws_per_player")
+		if r.err != nil {
+			return nil, r.err
+		}
+		s.Exploration = &n
+	}
+	resolveTruth(s)
 	return s, nil
+}
+
+// resolveTruth は {"truth": f} の値を facts から決める(最初に見つかった f の truth。なければ false)。
+func resolveTruth(s *Scenario) {
+	truth := func(id string) bool {
+		for _, f := range s.Facts {
+			if f.ID == id {
+				return f.Truth
+			}
+		}
+		return false
+	}
+	var walk func(f *Formula)
+	walk = func(f *Formula) {
+		if f.Kind == FTruth {
+			f.Const = truth(f.Var)
+		}
+		for i := range f.Subs {
+			walk(&f.Subs[i])
+		}
+	}
+	for i := range s.Constraints {
+		walk(&s.Constraints[i])
+	}
+	for i := range s.Endings {
+		walk(&s.Endings[i].Condition)
+	}
+	for i := range s.Goals {
+		if s.Goals[i].Condition != nil {
+			walk(s.Goals[i].Condition)
+		}
+	}
 }

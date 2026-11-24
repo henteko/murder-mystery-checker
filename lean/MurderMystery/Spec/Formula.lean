@@ -30,6 +30,7 @@ def Formula.eval (σ : Assignment) : Formula → Bool
   | .eq v x => σ v == .str x
   | .plurality votes x => winners (votes.map σ) == [.str x]
   | .tie votes => (winners (votes.map σ)).length ≥ 2
+  | .truth _ b => b
   | .not f => !f.eval σ
   | .and fs => (fs.attach.map fun ⟨f, _⟩ => f.eval σ).all id
   | .or fs => (fs.attach.map fun ⟨f, _⟩ => f.eval σ).any id
@@ -39,6 +40,7 @@ inductive VarRef where
   | asBool (v : Id)
   | asEq (v : Id) (value : String)
   | inTally (votes : List Id) (value : Option String)
+  | asFact (f : Id)
 
 def Formula.refs : Formula → List VarRef
   | .const _ => []
@@ -46,6 +48,7 @@ def Formula.refs : Formula → List VarRef
   | .eq v x => [.asEq v x]
   | .plurality vs x => [.inTally vs (some x)]
   | .tie vs => [.inTally vs none]
+  | .truth f _ => [.asFact f]
   | .not f => f.refs
   | .and fs => (fs.attach.map fun ⟨f, _⟩ => f.refs).flatten
   | .or fs => (fs.attach.map fun ⟨f, _⟩ => f.refs).flatten

@@ -1,5 +1,7 @@
-{"spec_version": "0.6.0",
+{"spec_version": "0.7.0",
  "diagnostics":
  [{"severity": "error",
+   "event": "e01",
    "code": "R002",
-   "args": ["goal:g0", "variable", "no_such_var"]}]}
+   "args": ["event:e01", "character", "ghost"]},
+  {"severity": "error", "code": "R005", "args": ["travel", "l0", "l0"]}]}

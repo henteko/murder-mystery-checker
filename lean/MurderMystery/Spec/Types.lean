@@ -53,6 +53,8 @@ def Holder.render : Holder → String
 structure Item where
   id : Id
   initial : Holder
+  /-- 静的なタグ(イベントで変わらない) -/
+  tags : List String := []
   deriving Repr, DecidableEq, Inhabited
 
 structure Fact where
@@ -133,6 +135,8 @@ inductive Formula where
   | eq (v : Id) (value : String)
   | plurality (votes : List Id) (value : String)
   | tie (votes : List Id)
+  /-- 知識 f が真か。値 b は入力の読み込み時に facts から決める(§1.9) -/
+  | truth (f : Id) (b : Bool)
   | not (f : Formula)
   | and (fs : List Formula)
   | or (fs : List Formula)
@@ -148,6 +152,8 @@ def Formula.decEq : (a b : Formula) → Decidable (a = b)
   | .plurality x v, .plurality y w =>
     if h : x = y ∧ v = w then isTrue (by rw [h.1, h.2]) else isFalse (by intro e; cases e; exact h ⟨rfl, rfl⟩)
   | .tie x, .tie y => if h : x = y then isTrue (h ▸ rfl) else isFalse (by intro e; cases e; exact h rfl)
+  | .truth x v, .truth y w =>
+    if h : x = y ∧ v = w then isTrue (by rw [h.1, h.2]) else isFalse (by intro e; cases e; exact h ⟨rfl, rfl⟩)
   | .not f, .not g => match Formula.decEq f g with
     | isTrue h => isTrue (h ▸ rfl)
     | isFalse h => isFalse (by intro e; cases e; exact h rfl)
@@ -157,22 +163,30 @@ def Formula.decEq : (a b : Formula) → Decidable (a = b)
   | .or fs, .or gs => match Formula.decEqList fs gs with
     | isTrue h => isTrue (h ▸ rfl)
     | isFalse h => isFalse (by intro e; cases e; exact h rfl)
-  | .const _, .var _ | .const _, .eq _ _ | .const _, .plurality _ _ | .const _, .tie _ | .const _, .not _
-  | .const _, .and _ | .const _, .or _
-  | .var _, .const _ | .var _, .eq _ _ | .var _, .plurality _ _ | .var _, .tie _ | .var _, .not _
-  | .var _, .and _ | .var _, .or _
-  | .eq _ _, .const _ | .eq _ _, .var _ | .eq _ _, .plurality _ _ | .eq _ _, .tie _ | .eq _ _, .not _
-  | .eq _ _, .and _ | .eq _ _, .or _
-  | .plurality _ _, .const _ | .plurality _ _, .var _ | .plurality _ _, .eq _ _ | .plurality _ _, .tie _
-  | .plurality _ _, .not _ | .plurality _ _, .and _ | .plurality _ _, .or _
-  | .tie _, .const _ | .tie _, .var _ | .tie _, .eq _ _ | .tie _, .plurality _ _ | .tie _, .not _
-  | .tie _, .and _ | .tie _, .or _
-  | .not _, .const _ | .not _, .var _ | .not _, .eq _ _ | .not _, .plurality _ _ | .not _, .tie _
-  | .not _, .and _ | .not _, .or _
-  | .and _, .const _ | .and _, .var _ | .and _, .eq _ _ | .and _, .plurality _ _ | .and _, .tie _
-  | .and _, .not _ | .and _, .or _
-  | .or _, .const _ | .or _, .var _ | .or _, .eq _ _ | .or _, .plurality _ _ | .or _, .tie _
-  | .or _, .not _ | .or _, .and _ => isFalse (by intro e; cases e)
+  | .const _, .var _ | .const _, .eq _ _ | .const _, .plurality _ _
+  | .const _, .tie _ | .const _, .truth _ _ | .const _, .not _
+  | .const _, .and _ | .const _, .or _ | .var _, .const _
+  | .var _, .eq _ _ | .var _, .plurality _ _ | .var _, .tie _
+  | .var _, .truth _ _ | .var _, .not _ | .var _, .and _
+  | .var _, .or _ | .eq _ _, .const _ | .eq _ _, .var _
+  | .eq _ _, .plurality _ _ | .eq _ _, .tie _ | .eq _ _, .truth _ _
+  | .eq _ _, .not _ | .eq _ _, .and _ | .eq _ _, .or _
+  | .plurality _ _, .const _ | .plurality _ _, .var _ | .plurality _ _, .eq _ _
+  | .plurality _ _, .tie _ | .plurality _ _, .truth _ _ | .plurality _ _, .not _
+  | .plurality _ _, .and _ | .plurality _ _, .or _ | .tie _, .const _
+  | .tie _, .var _ | .tie _, .eq _ _ | .tie _, .plurality _ _
+  | .tie _, .truth _ _ | .tie _, .not _ | .tie _, .and _
+  | .tie _, .or _ | .truth _ _, .const _ | .truth _ _, .var _
+  | .truth _ _, .eq _ _ | .truth _ _, .plurality _ _ | .truth _ _, .tie _
+  | .truth _ _, .not _ | .truth _ _, .and _ | .truth _ _, .or _
+  | .not _, .const _ | .not _, .var _ | .not _, .eq _ _
+  | .not _, .plurality _ _ | .not _, .tie _ | .not _, .truth _ _
+  | .not _, .and _ | .not _, .or _ | .and _, .const _
+  | .and _, .var _ | .and _, .eq _ _ | .and _, .plurality _ _
+  | .and _, .tie _ | .and _, .truth _ _ | .and _, .not _
+  | .and _, .or _ | .or _, .const _ | .or _, .var _
+  | .or _, .eq _ _ | .or _, .plurality _ _ | .or _, .tie _
+  | .or _, .truth _ _ | .or _, .not _ | .or _, .and _ => isFalse (by intro e; cases e)
 
 def Formula.decEqList : (a b : List Formula) → Decidable (a = b)
   | [], [] => isTrue rfl
@@ -192,6 +206,10 @@ structure Goal where
   requiresItems : List Id := []
   /-- 終了時に入手可能でなければならない知識 -/
   requiresKnowledge : List Id := []
+  /-- タグ t のアイテムを k 個以上、終了時に owner が持つ(必要条件) -/
+  requiresTagged : List (String × Nat) := []
+  /-- ほかのプレイヤーに知られてはいけない知識 -/
+  conceals : List Id := []
   /-- 達成条件(ゴールが真 ⇔ この式が真) -/
   condition : Option Formula := none
   deriving Repr, DecidableEq, Inhabited
@@ -232,6 +250,8 @@ structure Scenario where
   choices : List Choice := []
   constraints : List Formula := []
   endings : List Ending := []
+  /-- 探索フェイズで1人が引ける探索カードの枚数(§1.10) -/
+  exploration : Option Nat := none
   deriving Repr, Inhabited
 
 end MurderMystery

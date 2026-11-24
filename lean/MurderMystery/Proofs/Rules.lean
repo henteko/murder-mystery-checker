@@ -236,6 +236,15 @@ theorem hasCode_K008 : hasCode c (issuesK008 s) ↔ c = "K008" ∧ PostViolates 
   simp only [PostViolates]
   simp only [Classical.not_forall, Classical.not_imp, exists_prop, Nat.not_le]
 
+theorem hasCode_K010 : hasCode c (issuesK010 s) ↔ c = "K010" ∧ PostViolates s "K010" := by
+  rw [hasCode_single (X := "K010") (by
+      unfold issuesK010; intro x hx; split at hx
+      · split at hx
+        · cases hx
+        · simp at hx; subst hx; rfl
+      · cases hx) c, Ne, issuesK010_nil]
+  simp only [PostViolates, Classical.not_forall, Classical.not_imp, exists_prop]
+
 theorem hasCode_A001 : hasCode c (issuesA s) ↔ c = "A001" ∧ PostViolates s "A001" := by
   rw [hasCode_single (X := "A001") (by unfold issuesA; intro x hx; simp at hx; grind) c, Ne, issuesA_nil]
   simp only [PostViolates]
@@ -320,20 +329,20 @@ theorem hasCode_H : hasCode c (issuesH s) ↔
 theorem hasCode_postErrors : hasCode c (postErrors s) ↔ PostViolates s c := by
   unfold postErrors
   simp only [hasCode_append, hasCode_K003, hasCode_K004K005, hasCode_K006, hasCode_K007, hasCode_K008,
-    hasCode_H, hasCode_A001]
+    hasCode_H, hasCode_A001, hasCode_K010]
   constructor
-  · rintro ((((((⟨rfl, h⟩ | (⟨rfl, h⟩ | ⟨rfl, h⟩)) | ⟨rfl, h⟩) | ⟨rfl, h⟩) | ⟨rfl, h⟩) |
-      (⟨rfl, h⟩ | ⟨rfl, h⟩ | ⟨rfl, h⟩ | ⟨rfl, h⟩)) | ⟨rfl, h⟩) <;> exact h
+  · rintro (((((((⟨rfl, h⟩ | (⟨rfl, h⟩ | ⟨rfl, h⟩)) | ⟨rfl, h⟩) | ⟨rfl, h⟩) | ⟨rfl, h⟩) |
+      (⟨rfl, h⟩ | ⟨rfl, h⟩ | ⟨rfl, h⟩ | ⟨rfl, h⟩)) | ⟨rfl, h⟩) | ⟨rfl, h⟩) <;> exact h
   · intro h
     unfold PostViolates at h
     split at h <;> first
       | (simp only [PostViolates]; simp only [true_and]; grind)
       | exact absurd h id
 
-theorem hasCode_postWarnings (h : hasCode c (postWarnings s)) :
+theorem hasCode_warningsTH (h : hasCode c (warningsT009 s ++ warningsH s)) :
     c = "T009" ∨ c = "H003" ∨ c = "H005" ∨ c = "H007" := by
   obtain ⟨x, hx, rfl⟩ := h
-  unfold postWarnings warningsT009 warningsH at hx
+  unfold warningsT009 warningsH at hx
   simp only [List.mem_append, List.mem_flatMap, List.mem_filterMap] at hx
   rcases hx with ⟨_, _, _, _, _, _, hx⟩ | ((⟨h, _, hx⟩ | ⟨b, _, i, _, hx⟩))
   · split at hx
@@ -356,6 +365,19 @@ theorem hasCode_postWarnings (h : hasCode c (postWarnings s)) :
     · simp only [Option.some.injEq] at hx; subst hx; simp
     · cases hx
 
+
+theorem hasCode_postWarnings (h : hasCode c (postWarnings s)) :
+    c = "T009" ∨ c = "H003" ∨ c = "H005" ∨ c = "H007" ∨ c = "K009" := by
+  unfold postWarnings at h
+  rcases (hasCode_append c _ _).mp h with h | h
+  · rcases hasCode_warningsTH s c h with h | h | h | h <;> simp [h]
+  · obtain ⟨x, hx, rfl⟩ := h
+    unfold warningsK009 at hx
+    split at hx
+    · split at hx
+      · simp at hx; subst hx; simp
+      · cases hx
+    · cases hx
 end
 
 /-! ## 検出結果の列(`Diag`) -/
@@ -403,12 +425,12 @@ theorem hasCodeD_checkEvents (s : Scenario) (c : String) :
     exact ⟨_, ⟨st, hst, List.mem_map.mpr ⟨x, hx, rfl⟩⟩, hc⟩
 
 /-- 警告のコード。 -/
-def warningCodes : List String := ["T009", "T012", "H003", "H005", "H007", "G006", "G008", "G009"]
+def warningCodes : List String := ["T009", "T012", "H003", "H005", "H007", "K009", "G006", "G008", "G009"]
 
 theorem errorCode_not_warning {c : String} (hc : c ∈ errorCodes) : c ∉ warningCodes := by
   simp only [errorCodes, List.mem_cons, List.not_mem_nil, or_false] at hc
   rcases hc with h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h |
-    h | h | h | h | h | h | h | h | h | h <;> subst h <;> decide
+    h | h | h | h | h | h | h | h | h | h | h <;> subst h <;> decide
 
 theorem hasCodeD_checkPost (s : Scenario) (c : String) (hc : c ∈ errorCodes) :
     hasCodeD c (checkPost s) ↔ PostViolates s c := by
@@ -417,7 +439,7 @@ theorem hasCodeD_checkPost (s : Scenario) (c : String) (hc : c ∈ errorCodes) :
   simp only [hasCodeD_append, hasCodeD_map c _ (fun x => err x.1 x.2) (fun _ => rfl),
     hasCodeD_map c _ (fun x => warn x.1 x.2) (fun _ => rfl), hasCode_postErrors]
   have h1 : ¬ hasCode c (postWarnings s) := fun h => by
-    rcases hasCode_postWarnings s c h with rfl | rfl | rfl | rfl <;> simp [warningCodes] at hw
+    rcases hasCode_postWarnings s c h with rfl | rfl | rfl | rfl | rfl <;> simp [warningCodes] at hw
   have h2 : ¬ hasCodeD c (checkT012 s) := fun h => by
     rw [hasCodeD_single (X := "T012") (fun d hd => by
       simp only [checkT012, List.mem_flatMap, List.mem_map] at hd
@@ -611,7 +633,7 @@ end
 theorem rIssue_code_ne (c : String) (hc : c ∈ errorCodes) (rc : RCode) : c ≠ rc.str := by
   simp only [errorCodes, List.mem_cons, List.not_mem_nil, or_false] at hc
   cases rc <;> rcases hc with h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h |
-    h | h | h | h | h | h | h | h | h | h | h | h <;> subst h <;> decide
+    h | h | h | h | h | h | h | h | h | h | h | h | h <;> subst h <;> decide
 
 /-- **定理 1 (規則ごと)**: R 群以外の error 規則 c について、判定器がコード c の検出結果を出す ⇔
 R 群の違反がなく、規則 c の違反条件が成り立つ。 -/

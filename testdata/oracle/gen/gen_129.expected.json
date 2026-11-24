@@ -1,7 +1,8 @@
-{"spec_version": "0.6.0",
+{"spec_version": "0.7.0",
  "diagnostics":
- [{"severity": "error",
-   "event": "e09",
-   "code": "R002",
-   "args": ["event:e09", "character", "ghost"]},
-  {"severity": "error", "code": "R005", "args": ["travel", "l0", "l0"]}]}
+ [{"severity": "error", "code": "K008", "args": ["f_claim", "1118", "1108"]},
+  {"severity": "warning", "code": "K009", "args": ["3", "1"]},
+  {"severity": "error",
+   "event": "e00",
+   "code": "T011",
+   "args": ["c1", "l1", "l4"]}]}

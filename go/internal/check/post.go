@@ -227,12 +227,96 @@ func (w *world) checkT012() []Diag {
 	return out
 }
 
+// playerCount はプレイヤー(NPC 以外)の数。
+func (w *world) playerCount() int {
+	n := 0
+	for _, c := range w.s.Characters {
+		if !c.NPC {
+			n++
+		}
+	}
+	return n
+}
+
+// clueOnly は手がかりからしか手に入らない真相の知識: どのプレイヤーも終了時に知らず、どれかの手がかりが明かす。
+func (w *world) clueOnly() []string {
+	var out []string
+	for _, f := range w.s.SolutionFacts {
+		known := false
+		for _, c := range w.s.Characters {
+			if !c.NPC && w.final.Knows(c.ID, f) {
+				known = true
+				break
+			}
+		}
+		if known {
+			continue
+		}
+		for _, cl := range w.s.Clues {
+			if contains(cl.Reveals, f) {
+				out = append(out, f)
+				break
+			}
+		}
+	}
+	return out
+}
+
+// coverable は、d 枚以内の手がかりで ns の知識をすべて明かせるか(Post.lean の coverable と同じ探索)。
+func coverable(cl []m.Clue, ns []string, d int) bool {
+	if len(ns) == 0 {
+		return true
+	}
+	if d == 0 {
+		return false
+	}
+	f := ns[0]
+	for _, c := range cl {
+		if !contains(c.Reveals, f) {
+			continue
+		}
+		var rest []string
+		for _, x := range ns {
+			if !contains(c.Reveals, x) {
+				rest = append(rest, x)
+			}
+		}
+		if coverable(cl, rest, d-1) {
+			return true
+		}
+	}
+	return false
+}
+
+// warningsK009 / issuesK010 は探索フェイズの検査 (§4.4)。
+func (w *world) warningsK009() []issue {
+	if w.s.Exploration == nil {
+		return nil
+	}
+	d := *w.s.Exploration * w.playerCount()
+	if d < len(w.s.Clues) {
+		return []issue{iss("K009", strconv.Itoa(len(w.s.Clues)), strconv.Itoa(d))}
+	}
+	return nil
+}
+
+func (w *world) issuesK010() []issue {
+	if w.s.Exploration == nil {
+		return nil
+	}
+	d := *w.s.Exploration * w.playerCount()
+	if coverable(w.s.Clues, w.clueOnly(), d) {
+		return nil
+	}
+	return []issue{iss("K010", strconv.Itoa(d))}
+}
+
 func (w *world) checkPost() []Diag {
 	var out []Diag
-	for _, x := range w.postErrors() {
+	for _, x := range append(w.postErrors(), w.issuesK010()...) {
 		out = append(out, errD(x.code, x.args, nil))
 	}
-	for _, x := range append(w.warningsT009(), w.warningsH()...) {
+	for _, x := range append(append(w.warningsT009(), w.warningsH()...), w.warningsK009()...) {
 		out = append(out, warnD(x.code, x.args, nil))
 	}
 	return append(out, w.checkT012()...)

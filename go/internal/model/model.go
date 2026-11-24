@@ -64,6 +64,7 @@ func (h Holder) Render() string {
 type Item struct {
 	ID      string
 	Initial Holder
+	Tags    []string
 }
 
 // Fact は知識。
@@ -180,6 +181,16 @@ type Goal struct {
 	RequiresKnowledge []string
 	// Condition は達成条件(ゴール ⇔ Condition)。nil なら条件なし
 	Condition *Formula
+	// RequiresTagged はタグ Tag のアイテムを Count 個以上持つこと(必要条件)
+	RequiresTagged []TagReq
+	// Conceals はほかのプレイヤーに知られてはいけない知識
+	Conceals []string
+}
+
+// TagReq はタグのついたアイテムの個数の要求。
+type TagReq struct {
+	Tag   string
+	Count int
 }
 
 // Choice はプレイヤーの選択。Values が nil なら真偽値の選択。
@@ -201,6 +212,8 @@ const (
 	FNot
 	FAnd
 	FOr
+	// FTruth は知識 Var が真か。Const に読み込み時の値を入れる(§1.9)
+	FTruth
 )
 
 // Formula は論理式 (§1.9)。
@@ -247,4 +260,6 @@ type Scenario struct {
 	Choices          []Choice
 	Constraints      []Formula
 	Endings          []Ending
+	// Exploration は探索フェイズで1人が引ける枚数。nil なら探索の検査をしない
+	Exploration *int
 }

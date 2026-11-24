@@ -1,32 +1,31 @@
 {
- "spec_version": "0.6.0",
+ "spec_version": "0.7.0",
  "_case": {
   "doc": "ランダム生成 (seed 20261124, #57)"
  },
- "start_time": 1072,
- "end_time": 1172,
- "claim_tolerance": 5,
+ "start_time": 654,
+ "end_time": 689,
+ "claim_tolerance": 2,
  "characters": [
   {
-   "id": "c0"
+   "id": "c0",
+   "npc": true
   },
   {
    "id": "c1"
   },
   {
    "id": "c2"
-  },
-  {
-   "id": "c3"
   }
  ],
  "areas": [
   {
-   "id": "a0"
+   "id": "a0",
+   "internal_minutes": 1
   },
   {
    "id": "a1",
-   "internal_minutes": 2
+   "internal_minutes": 1
   }
  ],
  "locations": [
@@ -36,75 +35,66 @@
   },
   {
    "id": "l1",
-   "area": "a0"
+   "area": "a0",
+   "public": true
   },
   {
    "id": "l2",
-   "area": "a1"
+   "area": "a0"
   }
  ],
- "travel": [
+ "travel": [],
+ "perception": [
+  {
+   "from": "l0",
+   "to": "l2",
+   "bidirectional": true
+  },
   {
    "from": "l0",
    "to": "l1",
-   "minutes": 5,
-   "bidirectional": true
-  },
-  {
-   "from": "l0",
-   "to": "l2",
-   "minutes": 8,
-   "bidirectional": false
-  },
-  {
-   "from": "l1",
-   "to": "l2",
-   "minutes": 1,
    "bidirectional": true
   }
  ],
- "perception": [],
  "placements": [
   {
    "character": "c0",
-   "location": "l1"
+   "location": "l2"
   },
   {
    "character": "c1",
-   "location": "l1"
+   "location": "l2"
   },
   {
    "character": "c2",
-   "location": "l0"
-  },
-  {
-   "character": "c3",
-   "location": "l1"
+   "location": "l2"
   }
  ],
  "items": [
   {
    "id": "i0",
    "initial": {
-    "location": "l0"
-   }
+    "character": "c0"
+   },
+   "tags": [
+    "tb",
+    "ta"
+   ]
   },
   {
    "id": "i1",
    "initial": {
-    "character": "c0"
-   }
-  },
-  {
-   "id": "i2",
-   "initial": {
-    "location": "l1"
+    "character": "c1"
    }
   }
  ],
  "facts": [
   {
-   "id": "f0"
+   "id": "f0",
+   "truth": false,
+   "contradicted_by": [
+    "f1"
+   ]
   },
   {
    "id": "f1"
@@ -115,153 +105,113 @@
   {
    "id": "f_claim",
    "about": {
-    "event": "e00",
+    "event": "e03",
     "point": "at"
    },
-   "claimed_at": 1074
+   "claimed_at": 662
   }
  ],
- "initial_knowledge": [],
+ "initial_knowledge": [
+  {
+   "character": "c2",
+   "fact": "f2"
+  },
+  {
+   "character": "c1",
+   "fact": "f2"
+  },
+  {
+   "character": "c1",
+   "fact": "f1"
+  }
+ ],
  "events": [
   {
+   "id": "e02",
+   "at": 662,
+   "kind": "move",
+   "character": "c1",
+   "to": "l1",
+   "arrive": 670
+  },
+  {
    "id": "e00",
-   "at": 1073,
-   "kind": "tell",
-   "from": "c3",
-   "to": "c0",
-   "facts": [
-    "f0"
-   ]
+   "at": 654,
+   "kind": "move",
+   "character": "c0",
+   "to": "l1",
+   "arrive": 666
   },
   {
    "id": "e03",
-   "at": 1083,
-   "kind": "move",
-   "character": "c3",
-   "to": "l0",
-   "arrive": 1086
+   "at": 662,
+   "kind": "consume",
+   "character": "c2",
+   "item": "i1"
   },
   {
    "id": "e01",
-   "at": 1075,
-   "kind": "move",
-   "character": "c1",
-   "to": "l2",
-   "arrive": 1078,
-   "requires": [
-    "f2"
-   ]
-  },
-  {
-   "id": "e02",
-   "at": 1078,
-   "kind": "tell",
-   "from": "c1",
-   "to": "c2",
-   "facts": [
-    "f2"
+   "at": 657,
+   "kind": "scene",
+   "location": "l1",
+   "participants": [
+    "c0"
    ],
-   "requires": [
-    "f1"
-   ]
-  },
-  {
-   "id": "e04",
-   "at": 1086,
-   "kind": "move",
-   "character": "c1",
-   "to": "l0",
-   "arrive": 1086
-  }
- ],
- "clues": [
-  {
-   "id": "cl0",
    "reveals": [
     "f2"
-   ],
-   "item": "i2",
-   "location": "l2"
-  },
-  {
-   "id": "cl1",
-   "reveals": [
-    "f1"
-   ],
-   "item": "i2"
+   ]
   }
  ],
- "solution_facts": [
-  "f1"
- ],
+ "clues": [],
+ "solution_facts": [],
  "assertions": [
   {
    "id": "as0",
    "kind": "absent",
-   "location": "l1",
-   "at": 1082,
-   "characters": [
-    "c3"
-   ]
-  },
-  {
-   "id": "as1",
-   "kind": "absent",
-   "location": "l2",
-   "at": 1116,
-   "characters": [
-    "c3"
-   ]
-  }
- ],
- "handouts": [
-  {
-   "character": "c2",
-   "items": []
-  },
-  {
-   "character": "c1",
    "location": "l0",
+   "at": 683,
+   "characters": [
+    "c1"
+   ]
+  }
+ ],
+ "handouts": [],
+ "board": [
+  {
+   "location": "l1",
    "items": []
   },
   {
-   "character": "c0",
-   "location": "l1"
+   "location": "l2",
+   "items": []
   }
  ],
- "board": [],
  "goals": [
   {
    "id": "g0",
-   "owner": "c0"
+   "owner": "c1",
+   "requires_tagged": [
+    {
+     "tag": "ta",
+     "count": 1
+    }
+   ]
   },
   {
    "id": "g1",
-   "owner": "c1",
+   "owner": "c2",
+   "requires_tagged": [
+    {
+     "tag": "ta",
+     "count": 2
+    }
+   ],
    "condition": {
     "eq": {
      "var": "v0",
-     "value": "p"
+     "value": "q"
     }
    }
-  },
-  {
-   "id": "g2",
-   "owner": "c2",
-   "requires_knowledge": [
-    "f0"
-   ],
-   "condition": {
-    "const": false
-   }
-  },
-  {
-   "id": "g3",
-   "owner": "c3",
-   "requires_knowledge": [
-    "f0",
-    "f2"
-   ]
   }
  ],
  "choices": [
@@ -270,32 +220,43 @@
    "owner": "c1",
    "values": [
     "p",
-    "q"
+    "q",
+    "r"
    ]
   },
   {
    "id": "v1",
-   "owner": "c0",
+   "owner": "c2",
    "values": [
     "p",
-    "q"
+    "q",
+    "r"
    ]
   },
   {
    "id": "v2",
-   "owner": "c0",
+   "owner": "c1",
    "values": [
     "p",
-    "q"
+    "q",
+    "r"
    ]
+  },
+  {
+   "id": "flag",
+   "owner": "c2"
   }
  ],
  "endings": [
   {
    "id": "end_p",
    "condition": {
-    "eq": {
-     "var": "v0",
+    "plurality": {
+     "votes": [
+      "v0",
+      "v1",
+      "v2"
+     ],
      "value": "p"
     }
    }
@@ -303,9 +264,38 @@
   {
    "id": "end_q",
    "condition": {
-    "eq": {
-     "var": "v0",
+    "plurality": {
+     "votes": [
+      "v0",
+      "v1",
+      "v2"
+     ],
      "value": "q"
+    }
+   }
+  },
+  {
+   "id": "end_r",
+   "condition": {
+    "plurality": {
+     "votes": [
+      "v0",
+      "v1",
+      "v2"
+     ],
+     "value": "r"
+    }
+   }
+  },
+  {
+   "id": "end_tie",
+   "condition": {
+    "tie": {
+     "votes": [
+      "v0",
+      "v1",
+      "v2"
+     ]
     }
    }
   }

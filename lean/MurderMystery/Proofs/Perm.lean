@@ -241,15 +241,17 @@ theorem checkRaw_perm_of_R (hR : checkR s = []) :
     unfold checkEvents; rw [htrace]; rfl
   have hP : checkPost { s with events := l' } = checkPost s := by
     simp only [checkPost, postErrors, postWarnings, warningsT009, issuesK003, issuesK004K005, issuesK006,
-      issuesK007, issuesK008, issuesH, warningsH, issuesA, checkT012, hfinal, hfind, hseg, hwhere, hobt, hobtF, hheld, hack, hsorted]
+      issuesK007, issuesK008, issuesH, warningsH, issuesA, checkT012, issuesK010, warningsK009,
+      Scenario.clueOnly, Scenario.draws, Scenario.playerCount, hfinal, hfind, hseg, hwhere, hobt, hobtF, hheld, hack, hsorted]
     rfl
   have hG : checkG { s with events := l' } = checkG s := by
     have hd : Scenario.derivedConstraints { s with events := l' } = s.derivedConstraints := by
-      simp only [Scenario.derivedConstraints, Scenario.itemConstraints, Scenario.knowledgeConstraints, Scenario.conditionConstraints, hfinal, hobtF]
+      simp only [Scenario.derivedConstraints, Scenario.itemConstraints, Scenario.knowledgeConstraints, Scenario.conditionConstraints, Scenario.tagConstraints, Scenario.avail,
+        Scenario.concealConstraints, Scenario.exposed, hfinal, hobtF]; try rfl
     have hsat : Scenario.satisfies { s with events := l' } = s.satisfies := by
       funext v; unfold Scenario.satisfies Scenario.effectiveConstraints; rw [hd]; rfl
     have hctx : Scenario.gctx { s with events := l' } = s.gctx := by
-      unfold Scenario.gctx; rw [hsat]; rfl
+      rw [Scenario.gctx_eq, Scenario.gctx_eq, hsat]; rfl
     unfold checkG; rw [hctx]; rfl
   rw [hE, hP, hG]
 

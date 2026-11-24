@@ -87,6 +87,7 @@ def PostViolates (c : String) : Prop :=
   | "H004" => ∃ h ∈ s.handouts, ∃ ks, h.knows = some ks ∧ ∃ f ∈ ks, E.knows h.character f = false
   | "H006" => ∃ b ∈ s.board, ∃ i ∈ b.items, E.holder i ≠ .place b.location
   | "A001" => ∃ a ∈ s.assertions, ∃ c ∈ a.characters, a.kind.violated (s.whereAt c a.time) a.location = true
+  | "K010" => ∃ n, s.exploration = some n ∧ ¬ s.CanDraw n
   | _ => False
 
 /-! ## G 群 (§4.7) -/
@@ -116,7 +117,7 @@ end
 def errorCodes : List String :=
   ["T001", "T002", "T003", "T004", "T005", "T006", "T007", "T008", "T010", "T011",
    "I001", "I002", "I003", "I004", "K001", "K002",
-   "K003", "K004", "K005", "K006", "K007", "K008", "H001", "H002", "H004", "H006", "A001",
+   "K003", "K004", "K005", "K006", "K007", "K008", "K010", "H001", "H002", "H004", "H006", "A001",
    "G001", "G002", "G003", "G004", "G005", "G007"]
 
 end MurderMystery

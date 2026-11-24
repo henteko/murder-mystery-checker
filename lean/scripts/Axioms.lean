@@ -30,6 +30,9 @@ open MurderMystery
 -- 定理 7: 導出制約
 #print axioms realizable_iff
 #print axioms derived_iff
+#print axioms tags_sound
+-- K010: 探索の被覆の判定
+#print axioms coverable_iff
 -- 定理 8: 区間の整合
 #print axioms segments_consistent
 -- 定理 9: 移動時間の決定性

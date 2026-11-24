@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.6.0",
+  "spec_version": "0.7.0",
   "note": "オタサーの姫殺人事件〜六角館の殺人編〜 (the-hexagon-house-murders) のモデル化サンプル。移動時間は推定値。",
   "start_time": 1020,
   "end_time": 1940,
@@ -177,7 +177,11 @@
       "initial": {
         "character": "kaichou"
       },
-      "note": "カイチョウの私物の万年筆(凶器)"
+      "note": "カイチョウの私物の万年筆(凶器)",
+      "tags": [
+        "private_kaichou",
+        "blood_hime"
+      ]
     },
     {
       "id": "watch",
@@ -185,7 +189,10 @@
       "initial": {
         "character": "kaichou"
       },
-      "note": "会長の私物の腕時計"
+      "note": "会長の私物の腕時計",
+      "tags": [
+        "private_kaichou"
+      ]
     },
     {
       "id": "scenario",
@@ -201,7 +208,10 @@
       "initial": {
         "character": "hime"
       },
-      "note": "ヒメの私物のタバコ"
+      "note": "ヒメの私物のタバコ",
+      "tags": [
+        "private_hime"
+      ]
     },
     {
       "id": "lip_cream",
@@ -209,7 +219,10 @@
       "initial": {
         "character": "hime"
       },
-      "note": "ヒメの私物のリップクリーム"
+      "note": "ヒメの私物のリップクリーム",
+      "tags": [
+        "private_hime"
+      ]
     },
     {
       "id": "sleeping_pill",
@@ -225,7 +238,10 @@
       "initial": {
         "location": "room_kurose"
       },
-      "note": "クロセの私物の手帳"
+      "note": "クロセの私物の手帳",
+      "tags": [
+        "private_kurose"
+      ]
     },
     {
       "id": "table_clock",
@@ -499,6 +515,29 @@
     {
       "id": "f_hime_has_scenario",
       "note": "ヒメの部屋に「六角館の殺人」シナリオがある"
+    },
+    {
+      "id": "f_culprit_kurose",
+      "truth": false,
+      "note": "仮説: クロセがヒメを殺害した(真相ではない。投票の条件のため)"
+    },
+    {
+      "id": "f_culprit_shimeji",
+      "truth": false,
+      "note": "仮説: シメジがヒメを殺害した(真相ではない。投票の条件のため)"
+    },
+    {
+      "id": "f_culprit_ushirokawada",
+      "truth": false,
+      "note": "仮説: ウシロカワダがヒメを殺害した(真相ではない。投票の条件のため)"
+    },
+    {
+      "id": "f_secret_kurose",
+      "note": "クロセの秘密: カイチョウが好き"
+    },
+    {
+      "id": "f_secret_shimeji",
+      "note": "シメジの秘密: ヒメのストーカー"
     }
   ],
   "initial_knowledge": [
@@ -537,6 +576,14 @@
     {
       "character": "ushirokawada",
       "fact": "f_spy_exists"
+    },
+    {
+      "character": "kurose",
+      "fact": "f_secret_kurose"
+    },
+    {
+      "character": "shimeji",
+      "fact": "f_secret_shimeji"
     }
   ],
   "events": [
@@ -1605,7 +1652,8 @@
         "f_hime_stabbed",
         "f_saw_handover",
         "f_corridor_0110",
-        "f_kaichou_absent_0100"
+        "f_kaichou_absent_0100",
+        "f_secret_kurose"
       ]
     },
     {
@@ -1626,7 +1674,8 @@
         "f_someone_smoked",
         "f_smoke_alibi_0050",
         "f_hime_dead_0130",
-        "f_bloody_pen"
+        "f_bloody_pen",
+        "f_secret_shimeji"
       ]
     },
     {
@@ -1678,54 +1727,235 @@
       "name": "クロセ: カイチョウを守る",
       "owner": "kurose",
       "condition": {
-        "not": {
-          "eq": {
-            "var": "c_culprit_vote_top",
-            "value": "kaichou"
+        "or": [
+          {
+            "and": [
+              {
+                "truth": "f_culprit_kaichou"
+              },
+              {
+                "not": {
+                  "eq": {
+                    "var": "c_culprit_vote_top",
+                    "value": "kaichou"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "not": {
+                  "truth": "f_culprit_kaichou"
+                }
+              },
+              {
+                "or": [
+                  {
+                    "and": [
+                      {
+                        "truth": "f_culprit_kurose"
+                      },
+                      {
+                        "eq": {
+                          "var": "c_culprit_vote_top",
+                          "value": "kurose"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "and": [
+                      {
+                        "truth": "f_culprit_shimeji"
+                      },
+                      {
+                        "eq": {
+                          "var": "c_culprit_vote_top",
+                          "value": "shimeji"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "and": [
+                      {
+                        "truth": "f_culprit_ushirokawada"
+                      },
+                      {
+                        "eq": {
+                          "var": "c_culprit_vote_top",
+                          "value": "ushirokawada"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
-        }
-      }
+        ]
+      },
+      "note": "カイチョウが犯人なら、カイチョウを犯人投票で最多にしない。犯人でなければ、真犯人を最多にする"
     },
     {
       "id": "g_kurose_two_kaichou_items",
       "name": "クロセ: カイチョウの私物を2つ手に入れる",
       "owner": "kurose",
-      "requires_items": [
-        "watch",
-        "fountain_pen"
-      ]
+      "requires_tagged": [
+        {
+          "tag": "private_kaichou",
+          "count": 2
+        }
+      ],
+      "conceals": [
+        "f_secret_kurose"
+      ],
+      "note": "カイチョウが好きなことがバレないように、カイチョウの私物アイテムを2つ入手する"
     },
     {
       "id": "g_shimeji_culprit_most_voted",
       "name": "シメジ: 犯人に最多票を集める",
       "owner": "shimeji",
       "condition": {
-        "eq": {
-          "var": "c_culprit_vote_top",
-          "value": "kaichou"
-        }
-      }
+        "or": [
+          {
+            "and": [
+              {
+                "truth": "f_culprit_kaichou"
+              },
+              {
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "kaichou"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "truth": "f_culprit_kurose"
+              },
+              {
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "kurose"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "truth": "f_culprit_shimeji"
+              },
+              {
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "shimeji"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "truth": "f_culprit_ushirokawada"
+              },
+              {
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "ushirokawada"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "note": "真犯人を犯人投票で最多にする(真犯人は truth で参照)"
     },
     {
       "id": "g_shimeji_ritual_items",
       "name": "シメジ: 儀式の品を集める",
       "owner": "shimeji",
-      "requires_items": [
-        "fountain_pen",
-        "lip_cream",
-        "cigarettes"
-      ]
+      "requires_tagged": [
+        {
+          "tag": "blood_hime",
+          "count": 1
+        },
+        {
+          "tag": "private_hime",
+          "count": 2
+        }
+      ],
+      "conceals": [
+        "f_secret_shimeji"
+      ],
+      "note": "ストーカーだとバレないように、ヒメの血がついたアイテムとヒメの私物アイテムを2つ手にする"
     },
     {
       "id": "g_ushiro_culprit_most_voted",
       "name": "ウシロカワダ: 犯人に最多票を集める",
       "owner": "ushirokawada",
       "condition": {
-        "eq": {
-          "var": "c_culprit_vote_top",
-          "value": "kaichou"
-        }
-      }
+        "or": [
+          {
+            "and": [
+              {
+                "truth": "f_culprit_kaichou"
+              },
+              {
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "kaichou"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "truth": "f_culprit_kurose"
+              },
+              {
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "kurose"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "truth": "f_culprit_shimeji"
+              },
+              {
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "shimeji"
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "truth": "f_culprit_ushirokawada"
+              },
+              {
+                "eq": {
+                  "var": "c_culprit_vote_top",
+                  "value": "ushirokawada"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "note": "真犯人を犯人投票で最多にする(真犯人は truth で参照)"
     },
     {
       "id": "g_ushiro_find_spy",
@@ -1839,5 +2069,8 @@
         ]
       }
     }
-  ]
+  ],
+  "exploration": {
+    "draws_per_player": 3
+  }
 }

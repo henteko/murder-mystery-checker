@@ -1,0 +1,175 @@
+{
+  "_case": {
+    "doc": "2人がタグのアイテムを取り合い、合わせた数が足りないと同時には達成できない。両方達成のエンディングは G003",
+    "expect": [
+      "G003"
+    ]
+  },
+  "spec_version": "0.7.0",
+  "start_time": 1260,
+  "end_time": 1320,
+  "characters": [
+    {
+      "id": "alice"
+    },
+    {
+      "id": "bob"
+    }
+  ],
+  "areas": [
+    {
+      "id": "house",
+      "internal_minutes": 5
+    }
+  ],
+  "locations": [
+    {
+      "id": "hall",
+      "area": "house"
+    },
+    {
+      "id": "study",
+      "area": "house"
+    }
+  ],
+  "placements": [
+    {
+      "character": "alice",
+      "location": "hall"
+    },
+    {
+      "character": "bob",
+      "location": "study"
+    }
+  ],
+  "items": [
+    {
+      "id": "knife",
+      "initial": {
+        "character": "alice"
+      },
+      "tags": [
+        "shiny"
+      ]
+    },
+    {
+      "id": "ring",
+      "initial": {
+        "location": "hall"
+      },
+      "tags": [
+        "shiny"
+      ]
+    }
+  ],
+  "facts": [
+    {
+      "id": "f_secret"
+    },
+    {
+      "id": "f_meeting"
+    }
+  ],
+  "initial_knowledge": [
+    {
+      "character": "alice",
+      "fact": "f_secret"
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "at": 1270,
+      "kind": "move",
+      "character": "bob",
+      "to": "hall",
+      "arrive": 1275
+    },
+    {
+      "id": "e2",
+      "at": 1280,
+      "kind": "scene",
+      "location": "hall",
+      "participants": [
+        "alice",
+        "bob"
+      ],
+      "reveals": [
+        "f_meeting"
+      ]
+    },
+    {
+      "id": "e3",
+      "at": 1285,
+      "kind": "transfer",
+      "from": "alice",
+      "to": "bob",
+      "item": "knife"
+    }
+  ],
+  "solution_facts": [
+    "f_secret"
+  ],
+  "goals": [
+    {
+      "id": "g_alice",
+      "owner": "alice",
+      "requires_tagged": [
+        {
+          "tag": "shiny",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "g_bob",
+      "owner": "bob",
+      "requires_tagged": [
+        {
+          "tag": "shiny",
+          "count": 2
+        }
+      ]
+    }
+  ],
+  "choices": [
+    {
+      "id": "c_vote",
+      "owner": "bob",
+      "values": [
+        "alice",
+        "bob"
+      ]
+    }
+  ],
+  "endings": [
+    {
+      "id": "end_both",
+      "condition": {
+        "and": [
+          {
+            "var": "g_alice"
+          },
+          {
+            "var": "g_bob"
+          }
+        ]
+      }
+    },
+    {
+      "id": "end_other",
+      "condition": {
+        "not": {
+          "and": [
+            {
+              "var": "g_alice"
+            },
+            {
+              "var": "g_bob"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

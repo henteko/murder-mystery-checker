@@ -1,10 +1,10 @@
 {
- "spec_version": "0.6.0",
+ "spec_version": "0.7.0",
  "_case": {
   "doc": "ランダム生成 (seed 20261124, #114)"
  },
- "start_time": 910,
- "end_time": 1029,
+ "start_time": 1007,
+ "end_time": 1044,
  "claim_tolerance": 0,
  "characters": [
   {
@@ -16,95 +16,84 @@
   },
   {
    "id": "c2"
+  },
+  {
+   "id": "c3"
   }
  ],
  "areas": [
   {
    "id": "a0",
-   "internal_minutes": 5
+   "internal_minutes": 4
+  },
+  {
+   "id": "a1"
   }
  ],
  "locations": [
   {
-   "id": "l0",
-   "area": "a0"
+   "id": "l0"
   },
   {
    "id": "l1",
    "area": "a0"
   },
   {
-   "id": "l2",
-   "public": true
-  },
-  {
-   "id": "l3",
-   "area": "a0"
+   "id": "l2"
   }
  ],
  "travel": [
   {
-   "from": "l0",
+   "from": "l1",
    "to": "l2",
-   "minutes": 5,
-   "bidirectional": true
+   "minutes": 3,
+   "bidirectional": false
   },
   {
-   "from": "l1",
-   "to": "l3",
-   "minutes": 6,
+   "from": "l0",
+   "to": "l2",
+   "minutes": 3,
    "bidirectional": true
   },
   {
    "from": "l0",
    "to": "l1",
-   "minutes": 7,
+   "minutes": 6,
    "bidirectional": true
   }
  ],
- "perception": [
+ "area_travel": [
   {
-   "from": "l1",
-   "to": "l2",
-   "bidirectional": true
-  },
-  {
-   "from": "l0",
-   "to": "l3",
+   "from": "a0",
+   "to": "a1",
+   "minutes": 9,
    "bidirectional": true
   }
  ],
+ "perception": [],
  "placements": [
   {
    "character": "c0",
-   "location": "l1"
+   "location": "l0"
   },
   {
    "character": "c1",
-   "location": "l3"
+   "location": "l2"
   },
   {
    "character": "c2",
-   "location": "l1"
+   "location": "l2"
+  },
+  {
+   "character": "c3",
+   "location": "l2"
   }
  ],
  "items": [
   {
    "id": "i0",
    "initial": {
-    "location": "l2"
-   }
-  },
-  {
-   "id": "i1",
-   "initial": {
     "location": "l0"
-   }
-  },
-  {
-   "id": "i2",
-   "initial": {
-    "character": "c2"
    }
   }
  ],
@@ -116,89 +105,156 @@
    "id": "f1"
   },
   {
-   "id": "f2"
+   "id": "f2",
+   "truth": false,
+   "contradicted_by": [
+    "f0"
+   ]
   },
   {
    "id": "f3"
   },
   {
+   "id": "f4"
+  },
+  {
    "id": "f_claim",
    "about": {
-    "event": "e01",
+    "event": "e03",
     "point": "at"
    },
-   "claimed_at": 929
+   "claimed_at": 1015
   }
  ],
  "initial_knowledge": [
   {
-   "character": "c1",
-   "fact": "f0"
+   "character": "c2",
+   "fact": "f1"
   },
   {
-   "character": "c2",
-   "fact": "f0"
+   "character": "c1",
+   "fact": "f2"
+  },
+  {
+   "character": "c1",
+   "fact": "f1"
   }
  ],
  "events": [
   {
-   "id": "e02",
-   "at": 922,
-   "kind": "use",
-   "character": "c0",
-   "item": "i1"
+   "id": "e01",
+   "at": 1009,
+   "kind": "move",
+   "character": "c3",
+   "to": "l1",
+   "arrive": 1021
   },
   {
-   "id": "e04",
-   "at": 926,
-   "kind": "consume",
-   "character": "c2",
-   "item": "i0"
+   "id": "e07",
+   "at": 1021,
+   "kind": "learn",
+   "character": "c1",
+   "facts": [
+    "f2"
+   ],
+   "requires": [
+    "f2"
+   ]
+  },
+  {
+   "id": "e06",
+   "at": 1020,
+   "kind": "die",
+   "character": "c3"
   },
   {
    "id": "e00",
-   "at": 911,
+   "at": 1008,
    "kind": "transfer",
    "from": "c1",
-   "to": "c0",
-   "item": "i2"
-  },
-  {
-   "id": "e01",
-   "at": 919,
-   "kind": "use",
-   "character": "c2",
-   "item": "i1"
+   "to": "c2",
+   "item": "i0"
   },
   {
    "id": "e03",
-   "at": 925,
-   "kind": "consume",
-   "character": "c2",
-   "item": "i2"
-  }
- ],
- "clues": [
-  {
-   "id": "cl0",
-   "reveals": [
+   "at": 1012,
+   "kind": "tell",
+   "from": "c3",
+   "to": "c2",
+   "facts": [
     "f2"
-   ],
-   "item": "i2",
-   "location": "l2"
+   ]
+  },
+  {
+   "id": "e04",
+   "at": 1017,
+   "kind": "learn",
+   "character": "c0",
+   "facts": [
+    "f2"
+   ]
+  },
+  {
+   "id": "e02",
+   "at": 1011,
+   "kind": "tell",
+   "from": "c0",
+   "to": "c2",
+   "facts": [
+    "f2"
+   ]
+  },
+  {
+   "id": "e05",
+   "at": 1017,
+   "kind": "move",
+   "character": "c1",
+   "to": "l1",
+   "arrive": 1029
   }
  ],
- "solution_facts": [],
- "assertions": [],
+ "clues": [],
+ "solution_facts": [
+  "f1",
+  "f4"
+ ],
+ "assertions": [
+  {
+   "id": "as0",
+   "kind": "absent",
+   "location": "l0",
+   "at": 1040,
+   "characters": [
+    "c0"
+   ]
+  },
+  {
+   "id": "as1",
+   "kind": "absent",
+   "location": "l1",
+   "at": 1033,
+   "characters": [
+    "c1"
+   ]
+  }
+ ],
  "handouts": [
   {
+   "character": "c3",
+   "items": []
+  },
+  {
    "character": "c2",
-   "location": "l1",
+   "location": "l2",
    "knows": []
   },
   {
    "character": "c1",
-   "items": []
+   "location": "l1",
+   "items": [],
+   "knows": [
+    "f3"
+   ]
   }
  ],
  "board": [],
@@ -206,40 +262,73 @@
   {
    "id": "g0",
    "owner": "c0",
+   "conceals": [
+    "f3"
+   ],
    "condition": {
-    "var": "flag"
+    "or": [
+     {
+      "and": [
+       {
+        "truth": "f3"
+       },
+       {
+        "eq": {
+         "var": "v0",
+         "value": "q"
+        }
+       }
+      ]
+     },
+     {
+      "not": {
+       "truth": "f2"
+      }
+     }
+    ]
    }
   },
   {
    "id": "g1",
-   "owner": "c2",
-   "requires_items": [
-    "i0"
-   ]
+   "owner": "c2"
+  },
+  {
+   "id": "g2",
+   "owner": "c3",
+   "requires_tagged": [
+    {
+     "tag": "ta",
+     "count": 1
+    },
+    {
+     "tag": "ta",
+     "count": 1
+    }
+   ],
+   "conceals": [
+    "f1"
+   ],
+   "condition": {
+    "truth": "f3"
+   }
   }
  ],
  "choices": [
   {
    "id": "v0",
-   "owner": "c2",
+   "owner": "c0",
    "values": [
     "p",
-    "q",
-    "r"
+    "q"
    ]
   },
   {
    "id": "v1",
-   "owner": "c2",
+   "owner": "c3",
    "values": [
     "p",
-    "q",
-    "r"
+    "q"
    ]
-  },
-  {
-   "id": "flag",
-   "owner": "c0"
   }
  ],
  "endings": [

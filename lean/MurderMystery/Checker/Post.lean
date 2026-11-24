@@ -153,10 +153,42 @@ def checkT012 (s : Scenario) : List Diag :=
       (s.sortedEvents.filter fun m => m.time == o.time && m.kind.moved.contains x).map fun m =>
         warn "T012" [x, m.id] (some o.id)
 
+/-! ## 探索フェイズ: K009 (warning) / K010 (error) (§4.4) -/
+
+/-- プレイヤー(NPC 以外)の数。 -/
+def Scenario.playerCount (s : Scenario) : Nat := (s.characters.filter (!·.npc)).length
+
+/-- 探索フェイズで引ける探索カードの総数。 -/
+def Scenario.draws (s : Scenario) (n : Nat) : Nat := n * s.playerCount
+
+/-- 手がかりからしか手に入らない真相の知識: どのプレイヤーも終了時に知らず、どれかの手がかりが明かす。 -/
+def Scenario.clueOnly (s : Scenario) : List Id :=
+  s.solutionFacts.filter fun f =>
+    !s.characters.any (fun c => !c.npc && s.final.knows c.id f) && s.clues.any (·.reveals.contains f)
+
+/-- d 枚以内の手がかりで、N の知識をすべて明かせるか。 -/
+def coverable (cl : List Clue) : List Id → Nat → Bool
+  | [], _ => true
+  | _ :: _, 0 => false
+  | f :: rest, d + 1 =>
+    (cl.filter (·.reveals.contains f)).any fun c =>
+      coverable cl ((f :: rest).filter (fun x => !c.reveals.contains x)) d
+
+def warningsK009 (s : Scenario) : List Issue :=
+  match s.exploration with
+  | some n => if s.draws n < s.clues.length then [("K009", [toString s.clues.length, toString (s.draws n)])] else []
+  | none => []
+
+def issuesK010 (s : Scenario) : List Issue :=
+  match s.exploration with
+  | some n => if coverable s.clues s.clueOnly (s.draws n) then [] else [("K010", [toString (s.draws n)])]
+  | none => []
+
 def postErrors (s : Scenario) : List Issue :=
   issuesK003 s ++ issuesK004K005 s ++ issuesK006 s ++ issuesK007 s ++ issuesK008 s ++ issuesH s ++ issuesA s
+    ++ issuesK010 s
 
-def postWarnings (s : Scenario) : List Issue := warningsT009 s ++ warningsH s
+def postWarnings (s : Scenario) : List Issue := warningsT009 s ++ warningsH s ++ warningsK009 s
 
 def checkPost (s : Scenario) : List Diag :=
   (postErrors s).map (fun (c, a) => err c a) ++ (postWarnings s).map (fun (c, a) => warn c a) ++ checkT012 s

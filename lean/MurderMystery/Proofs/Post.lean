@@ -124,10 +124,66 @@ theorem issuesA_nil (s : Scenario) :
   apply forall_congr'; intro c; apply forall_congr'; intro _
   cases a.kind.violated (s.whereAt c a.time) a.location <;> simp
 
+/-- 探索の被覆の判定は、宣言的な条件と同値。 -/
+theorem coverable_iff (cl : List Clue) : ∀ (d : Nat) (N : List Id),
+    coverable cl N d = true ↔
+      ∃ cs : List Clue, (∀ c ∈ cs, c ∈ cl) ∧ cs.length ≤ d ∧ ∀ f ∈ N, ∃ c ∈ cs, f ∈ c.reveals := by
+  intro d
+  induction d with
+  | zero =>
+    intro N
+    cases N with
+    | nil => simp only [coverable, true_iff]; exact ⟨[], by simp, by simp, by simp⟩
+    | cons f rest =>
+      simp only [coverable, Bool.false_eq_true, false_iff, not_exists, not_and]
+      intro cs _ hl hc
+      obtain ⟨c, hc, _⟩ := hc f (by simp)
+      have : cs = [] := List.eq_nil_of_length_eq_zero (Nat.le_zero.mp hl)
+      subst this; simp at hc
+  | succ d ih =>
+    intro N
+    cases N with
+    | nil => simp only [coverable, true_iff]; exact ⟨[], by simp, by simp, by simp⟩
+    | cons f rest =>
+      simp only [coverable, List.any_eq_true, List.mem_filter, List.contains_iff_mem]
+      constructor
+      · rintro ⟨c, ⟨hcl, hf⟩, hcov⟩
+        obtain ⟨cs, hm, hl, hcs⟩ := (ih _).mp hcov
+        refine ⟨c :: cs, ?_, by simp; omega, ?_⟩
+        · intro x hx; simp only [List.mem_cons] at hx; rcases hx with rfl | hx
+          · exact hcl
+          · exact hm x hx
+        · intro x hx
+          by_cases hr : x ∈ c.reveals
+          · exact ⟨c, by simp, hr⟩
+          · obtain ⟨c', hc', hx'⟩ := hcs x (by simp [List.mem_filter, hx, hr])
+            exact ⟨c', by simp [hc'], hx'⟩
+      · rintro ⟨cs, hm, hl, hcs⟩
+        obtain ⟨c, hc, hf⟩ := hcs f (by simp)
+        refine ⟨c, ⟨hm c hc, hf⟩, (ih _).mpr ⟨cs.erase c, fun x hx => hm x (List.mem_of_mem_erase hx), ?_, ?_⟩⟩
+        · rw [List.length_erase_of_mem hc]; omega
+        · intro x hx
+          simp only [List.mem_filter, Bool.not_eq_eq_eq_not, Bool.not_true, List.contains_iff_mem,
+            decide_eq_false_iff_not] at hx
+          obtain ⟨hx, hr⟩ := hx
+          obtain ⟨c', hc', hx'⟩ := hcs x hx
+          have hne : c' ≠ c := fun h => by subst h; simp [hx'] at hr
+          exact ⟨c', (List.mem_erase_of_ne hne).mpr hc', hx'⟩
+
+theorem issuesK010_nil (s : Scenario) :
+    issuesK010 s = [] ↔ ∀ n, s.exploration = some n → s.CanDraw n := by
+  unfold issuesK010 Scenario.CanDraw
+  cases s.exploration with
+  | none => simp
+  | some n =>
+    simp only [Option.some.injEq, forall_eq']
+    rw [← coverable_iff]
+    cases coverable s.clues s.clueOnly (s.draws n) <;> simp
+
 theorem postErrors_nil (s : Scenario) : postErrors s = [] ↔ PostValid s := by
   unfold postErrors PostValid
   simp only [List.append_eq_nil_iff, issuesK003_nil, issuesK004K005_nil, issuesK006_nil,
-    issuesK007_nil, issuesK008_nil, issuesH_nil, issuesA_nil, and_assoc]
+    issuesK007_nil, issuesK008_nil, issuesH_nil, issuesA_nil, issuesK010_nil, and_assoc]
 
 theorem sev_checkT012 (s : Scenario) : ∀ d ∈ checkT012 s, d.sev = .warning := by
   intro d hd

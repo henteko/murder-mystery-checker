@@ -1,0 +1,5 @@
+{"spec_version": "0.7.0",
+ "diagnostics":
+ [{"severity": "error",
+   "code": "R002",
+   "args": ["goal:g_alice", "fact", "f_nothing"]}]}

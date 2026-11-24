@@ -297,6 +297,12 @@ func (n namer) formula(f check.FormulaView) string {
 			return "常に真"
 		}
 		return "常に偽"
+	case "truth":
+		v := "偽"
+		if f.Const {
+			v = "真"
+		}
+		return "「" + n.fact(f.Var) + "」が真(このシナリオでは" + v + ")"
 	case "var":
 		return n.variable(f.Var)
 	case "eq":
@@ -518,8 +524,10 @@ ul.facts li.solution { font-weight: 700; }
     <td>{{variable .ID}}{{with note "goal" .ID}}<div class="memo">{{.}}</div>{{end}}<div class="eid">{{.ID}}</div></td>
     <td>{{$lost := .ItemsLost}}{{if .Items}}<div>アイテム: {{range $i, $it := .Items}}{{if $i}}、{{end}}{{name "item" $it}}{{end}}{{if $lost}} <span class="pill error">使い切られている: {{range $i, $it := $lost}}{{if $i}}、{{end}}{{name "item" $it}}{{end}}</span>{{end}}</div>{{end}}
       {{if .Knowledge}}<div>知識:<ul class="facts">{{range .Knowledge}}<li>{{fact .Fact.ID}} {{if .Obtainable}}<span class="pill ok">入手可能</span>{{else}}<span class="pill error">入手できない</span>{{end}} <span class="eid">{{.Fact.ID}}</span></li>{{end}}</ul></div>{{end}}
+      {{range .Tagged}}<div>タグ「{{.Tag}}」のアイテムを {{.Count}} 個以上 <span class="eid">(使えるもの {{.Avail}} 個)</span>{{if lt .Avail .Count}} <span class="pill error">足りない</span>{{end}}</div>{{end}}
+      {{if .Conceals}}<div>隠す知識:<ul class="facts">{{range .Conceals}}<li>{{fact .Fact.ID}} {{if .Exposed}}<span class="pill error">ほかのプレイヤーが知っている</span>{{else}}<span class="pill ok">知られていない</span>{{end}} <span class="eid">{{.Fact.ID}}</span></li>{{end}}</ul></div>{{end}}
       {{with .Condition}}<div>達成条件: {{formula .}}</div>{{end}}
-      {{if not (or .Items .Knowledge .Condition)}}<span class="eid">(書かれていない。どの選び方でも達成・未達成の両方がありうる)</span>{{end}}</td>
+      {{if not (or .Items .Knowledge .Tagged .Conceals .Condition)}}<span class="eid">(書かれていない。どの選び方でも達成・未達成の両方がありうる)</span>{{end}}</td>
     <td>{{if .Counted}}{{.TrueIn}} / {{.OfPatterns}}{{if and .OfPatterns (eq .TrueIn 0)}} <span class="pill error">達成できない</span>{{else if and .OfPatterns (eq .TrueIn .OfPatterns)}} <span class="pill warning">必ず達成</span>{{end}}{{else}}—{{end}}</td></tr>{{end}}
   </table></div>
 </section>{{end}}

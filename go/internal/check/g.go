@@ -86,6 +86,8 @@ func eval(sigma assignment, f m.Formula) bool {
 			return len(ws) >= 2
 		}
 		return len(ws) == 1 && ws[0] == strVal(f.Value)
+	case m.FTruth:
+		return f.Const
 	case m.FNot:
 		return !eval(sigma, f.Subs[0])
 	case m.FAnd:
@@ -182,7 +184,89 @@ func (w *world) effectiveConstraints() []m.Formula {
 			out = append(out, iff(m.Formula{Kind: m.FVar, Var: g.ID}, *g.Condition))
 		}
 	}
+	// 5. requires_tagged: 使えるタグつきアイテムが足りない
+	for _, g := range s.Goals {
+		for _, t := range g.RequiresTagged {
+			if w.avail(func(it m.Item) bool { return contains(it.Tags, t.Tag) }) < t.Count {
+				out = append(out, notVar(g.ID))
+				break
+			}
+		}
+	}
+	// 6. owner の違うゴールの組で、要求の組を同時に満たせない(requires_tagged があるときだけ)
+	for i := range gs {
+		for j := i + 1; j < len(gs); j++ {
+			g1, g2 := gs[i], gs[j]
+			if g1.Owner == g2.Owner || (len(g1.RequiresTagged) == 0 && len(g2.RequiresTagged) == 0) {
+				continue
+			}
+			if w.demandsClash(g1, g2) {
+				out = append(out, m.Formula{Kind: m.FNot, Subs: []m.Formula{{Kind: m.FAnd,
+					Subs: []m.Formula{{Kind: m.FVar, Var: g1.ID}, {Kind: m.FVar, Var: g2.ID}}}}})
+			}
+		}
+	}
+	// 7. conceals の知識がすでにほかのプレイヤーに知られている
+	for _, g := range s.Goals {
+		for _, f := range g.Conceals {
+			if w.exposed(g.Owner, f) {
+				out = append(out, notVar(g.ID))
+				break
+			}
+		}
+	}
 	return out
+}
+
+// demand はゴールの要求: 条件を満たすアイテムを k 個以上。
+type demand struct {
+	pred func(m.Item) bool
+	k    int
+}
+
+func demands(g m.Goal) []demand {
+	var out []demand
+	for _, i := range g.RequiresItems {
+		i := i
+		out = append(out, demand{func(it m.Item) bool { return it.ID == i }, 1})
+	}
+	for _, t := range g.RequiresTagged {
+		t := t
+		out = append(out, demand{func(it m.Item) bool { return contains(it.Tags, t.Tag) }, t.Count})
+	}
+	return out
+}
+
+// avail は条件 p を満たし、終了時に使い切られていないアイテムの数(items の要素として数える)。
+func (w *world) avail(p func(m.Item) bool) int {
+	n := 0
+	for _, it := range w.s.Items {
+		if p(it) && w.final.Holder(it.ID).Kind != m.HolderConsumed {
+			n++
+		}
+	}
+	return n
+}
+
+func (w *world) demandsClash(g1, g2 m.Goal) bool {
+	for _, d1 := range demands(g1) {
+		for _, d2 := range demands(g2) {
+			if w.avail(func(it m.Item) bool { return d1.pred(it) || d2.pred(it) }) < d1.k+d2.k {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// exposed は、NPC と owner 以外のキャラクターが終了時に f を知っているか。
+func (w *world) exposed(owner, f string) bool {
+	for _, c := range w.s.Characters {
+		if !c.NPC && c.ID != owner && w.final.Knows(c.ID, f) {
+			return true
+		}
+	}
+	return false
 }
 
 // iff は a ⇔ b を (a ∧ b) ∨ (¬a ∧ ¬b) で表す。

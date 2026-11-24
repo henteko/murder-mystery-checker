@@ -69,6 +69,10 @@ def StepValid (s : Scenario) (st : Step) : Prop :=
 
 /-! ## 終了状態・区間に対する規則 (§4.4〜§4.6) -/
 
+/-- 1人 n 枚の探索で、手がかりからしか手に入らない真相の知識をすべて明かす手がかりの組を引ける。 -/
+def Scenario.CanDraw (s : Scenario) (n : Nat) : Prop :=
+  ∃ cs : List Clue, (∀ c ∈ cs, c ∈ s.clues) ∧ cs.length ≤ s.draws n ∧ ∀ f ∈ s.clueOnly, ∃ c ∈ cs, f ∈ c.reveals
+
 def PostValid (s : Scenario) : Prop :=
   let E := s.final
   -- K003: 真相に必要な知識は入手可能
@@ -92,7 +96,9 @@ def PostValid (s : Scenario) : Prop :=
   -- H006: 盤面の宣言は終了状態と一致する
   (∀ b ∈ s.board, ∀ i ∈ b.items, E.holder i = .place b.location) ∧
   -- A001: 真相の断言はタイムラインと一致する
-  (∀ a ∈ s.assertions, ∀ c ∈ a.characters, a.kind.violated (s.whereAt c a.time) a.location = false)
+  (∀ a ∈ s.assertions, ∀ c ∈ a.characters, a.kind.violated (s.whereAt c a.time) a.location = false) ∧
+  -- K010: 探索で引ける枚数の手がかりで、手がかりからしか手に入らない真相の知識をすべて明かせる
+  (∀ n, s.exploration = some n → s.CanDraw n)
 
 /-! ## G 群 (§4.7) -/
 

@@ -256,6 +256,32 @@ def _(s):
     s["solution_facts"].append("f_lie")
 
 
+@case("rules", "K009_leftover_cards", "探索で引ける枚数(1人1枚 × 2人)より探索カードが多い(警告)", ["K009"])
+def _(s):
+    s["facts"].append({"id": "f_extra"})
+    s["clues"] = [{"id": f"x{k}", "deck": "d", "reveals": ["f_extra"]} for k in range(3)]
+    s["exploration"] = {"draws_per_player": 1}
+
+
+@case("rules", "K010_cannot_draw_truth",
+      "真相の知識が2枚の手がかりにしかないのに、探索で1枚しか引けない", ["K010"])
+def _(s):
+    s["initial_knowledge"] = []
+    s["facts"].append({"id": "f_motive"})
+    s["solution_facts"] = ["f_secret", "f_motive"]
+    s["clues"] = [{"id": "x_secret", "deck": "d", "reveals": ["f_secret"]},
+                  {"id": "x_motive", "deck": "d", "reveals": ["f_motive"]}]
+    s["characters"].append({"id": "victim", "npc": True})
+    s["placements"].append({"character": "victim", "location": "study"})
+    s["initial_knowledge"] = [{"character": "victim", "fact": "f_secret"}]
+    s["exploration"] = {"draws_per_player": 1}
+    s["characters"] = [c for c in s["characters"]]
+    # プレイヤー2人 × 1枚 = 2枚なら足りるので、alice だけをプレイヤーにする
+    s["characters"] = [{"id": "alice"}, {"id": "bob", "npc": True}, {"id": "victim", "npc": True}]
+    s["goals"] = [{"id": "g_alice", "owner": "alice"}]
+    s["choices"][0]["owner"] = "alice"
+
+
 @case("rules", "K008_claim_time_off", "証言は 1260 と言うが、実際の移動は 1270", ["K008"])
 def _(s):
     s["facts"].append({"id": "f_claim", "about": {"event": "e1"}, "claimed_at": 1260})
@@ -526,6 +552,78 @@ def _(s):
 @case("edge", "goal_knowledge_unknown_fact", "requires_knowledge が存在しない知識を参照している", ["R002"])
 def _(s):
     s["goals"][0]["requires_knowledge"] = ["f_nothing"]
+
+
+@case("edge", "exploration_enough", "探索で引ける枚数で真相の手がかりを引き切れる(1枚に2つの知識)")
+def _(s):
+    s["initial_knowledge"] = []
+    s["facts"].append({"id": "f_motive"})
+    s["solution_facts"] = ["f_secret", "f_motive"]
+    s["clues"] = [{"id": "x_both", "deck": "d", "reveals": ["f_secret", "f_motive"]}]
+    s["exploration"] = {"draws_per_player": 1}
+
+
+@case("edge", "exploration_known_by_player",
+      "プレイヤーが知っている真相の知識はカードを引かなくてよい(K010 なし。0枚しか引けないので K009 は出る)", ["K009"])
+def _(s):
+    s["clues"] = [{"id": "x_secret", "deck": "d", "reveals": ["f_secret"]}]
+    s["exploration"] = {"draws_per_player": 0}
+
+
+@case("edge", "tagged_items", "タグのアイテムを2つ持つゴール。使えるアイテムが1つしかないと達成できない", ["G004"])
+def _(s):
+    s["items"] = [{"id": "knife", "initial": {"character": "alice"}, "tags": ["private_alice"]},
+                  {"id": "ring", "initial": {"location": "hall"}, "tags": ["private_alice"]}]
+    s["goals"][1]["requires_tagged"] = [{"tag": "private_alice", "count": 2}]
+    add_events(s, {"id": "e9", "at": 1290, "kind": "consume", "character": "bob", "item": "knife"})
+
+
+@case("edge", "tagged_items_ok", "タグのアイテムが2つ残っていれば達成できる")
+def _(s):
+    s["items"] = [{"id": "knife", "initial": {"character": "alice"}, "tags": ["private_alice"]},
+                  {"id": "ring", "initial": {"location": "hall"}, "tags": ["private_alice"]}]
+    s["goals"][1]["requires_tagged"] = [{"tag": "private_alice", "count": 2}]
+
+
+@case("edge", "tagged_clash",
+      "2人がタグのアイテムを取り合い、合わせた数が足りないと同時には達成できない。両方達成のエンディングは G003", ["G003"])
+def _(s):
+    s["items"] = [{"id": "knife", "initial": {"character": "alice"}, "tags": ["shiny"]},
+                  {"id": "ring", "initial": {"location": "hall"}, "tags": ["shiny"]}]
+    s["goals"][0]["requires_tagged"] = [{"tag": "shiny", "count": 1}]
+    s["goals"][1]["requires_tagged"] = [{"tag": "shiny", "count": 2}]
+    s["endings"] = [
+        {"id": "end_both", "condition": {"and": [{"var": "g_alice"}, {"var": "g_bob"}]}},
+        {"id": "end_other", "condition": {"not": {"and": [{"var": "g_alice"}, {"var": "g_bob"}]}}},
+    ]
+
+
+@case("edge", "conceals_exposed", "隠したい知識をほかのプレイヤーがすでに知っていると達成できない", ["G004"])
+def _(s):
+    s["goals"][1]["conceals"] = ["f_meeting"]
+
+
+@case("edge", "conceals_ok", "隠したい知識を本人しか知らなければ達成できる")
+def _(s):
+    s["goals"][0]["conceals"] = ["f_secret"]
+
+
+@case("edge", "truth_condition", "真相によって分かれる条件: f_secret が真なので alice への投票で達成")
+def _(s):
+    s["goals"][0]["condition"] = {"or": [
+        {"and": [{"truth": "f_secret"}, {"eq": {"var": "c_vote", "value": "alice"}}]},
+        {"and": [{"not": {"truth": "f_secret"}}, {"eq": {"var": "c_vote", "value": "bob"}}]}]}
+
+
+@case("edge", "truth_false_fact", "偽の知識の truth は偽。常に偽の条件のゴールは達成できない", ["G004"])
+def _(s):
+    s["facts"].append({"id": "f_lie", "truth": False, "contradicted_by": ["f_meeting"]})
+    s["goals"][0]["condition"] = {"truth": "f_lie"}
+
+
+@case("edge", "truth_unknown_fact", "truth が存在しない知識を参照している", ["R002"])
+def _(s):
+    s["goals"][0]["condition"] = {"truth": "f_nothing"}
 
 
 @case("edge", "plurality_and_tie", "plurality と tie でエンディングを分ける。どの票でもちょうど1つ")
