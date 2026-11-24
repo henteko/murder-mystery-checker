@@ -1,8 +1,9 @@
 {
-  "spec_version": "0.2.0",
+  "spec_version": "0.3.0",
   "note": "オタサーの姫殺人事件〜六角館の殺人編〜 (the-hexagon-house-murders) のモデル化サンプル。移動時間は推定値。",
   "start_time": 1020,
   "end_time": 1940,
+  "claim_tolerance": 5,
   "characters": [
     {
       "id": "kaichou"
@@ -209,6 +210,125 @@
   ],
   "facts": [
     {
+      "id": "f_hime_ideal_idol",
+      "note": "ヒメは品行方正で完璧なアイドルだ(カイチョウの思い込み)",
+      "truth": false,
+      "contradicted_by": [
+        "f_hime_smokes",
+        "f_hime_joined_mid"
+      ]
+    },
+    {
+      "id": "f_hime_said_going_room",
+      "note": "21:00 ヒメは気分が悪いので自室に戻ると言った(実際は喫煙所へ行った)",
+      "truth": false,
+      "contradicted_by": [
+        "f_someone_smoked",
+        "f_lipcream_at_smoking"
+      ]
+    },
+    {
+      "id": "f_tbl_kc_0050",
+      "note": "時系列表 0:50 ヒメの部屋に向かう",
+      "about": {
+        "event": "kaichou_14"
+      },
+      "claimed_at": 1490
+    },
+    {
+      "id": "f_tbl_kc_0100",
+      "note": "時系列表 01:00 ヒメを殺害",
+      "about": {
+        "event": "kaichou_16"
+      },
+      "claimed_at": 1500
+    },
+    {
+      "id": "f_tbl_kc_0115",
+      "note": "時系列表 01:15 自室に戻る",
+      "about": {
+        "event": "kaichou_19",
+        "point": "arrive"
+      },
+      "claimed_at": 1515
+    },
+    {
+      "id": "f_tbl_ku_0100",
+      "note": "時系列表 1:00 カイチョウの部屋に侵入、カイチョウの腕時計を盗む",
+      "about": {
+        "event": "kurose_08",
+        "point": "arrive"
+      },
+      "claimed_at": 1500
+    },
+    {
+      "id": "f_tbl_ku_0110",
+      "note": "時系列表 01:10 自室に戻る途中にウシロカワダと廊下で会う",
+      "about": {
+        "event": "kurose_12"
+      },
+      "claimed_at": 1510
+    },
+    {
+      "id": "f_tbl_s_2135",
+      "note": "時系列表 21:35 タバコを吸ってくると大広間を出る",
+      "about": {
+        "event": "shimeji_07"
+      },
+      "claimed_at": 1295
+    },
+    {
+      "id": "f_tbl_s_0050",
+      "note": "時系列表 0:50 喫煙所に行くとウシロカワダが先にいた",
+      "about": {
+        "event": "shimeji_12"
+      },
+      "claimed_at": 1490
+    },
+    {
+      "id": "f_tbl_s_0130",
+      "note": "時系列表 01:30 ヒメの部屋へ行き、死体を発見する",
+      "about": {
+        "event": "shimeji_13",
+        "point": "arrive"
+      },
+      "claimed_at": 1530
+    },
+    {
+      "id": "f_tbl_s_0140",
+      "note": "時系列表 01:40 自室に戻る",
+      "about": {
+        "event": "shimeji_17",
+        "point": "arrive"
+      },
+      "claimed_at": 1540
+    },
+    {
+      "id": "f_tbl_u_0040",
+      "note": "時系列表 0:40 喫煙所に行くと、ヒメのリップクリームを拾う",
+      "about": {
+        "event": "ushirokawada_08",
+        "point": "arrive"
+      },
+      "claimed_at": 1480
+    },
+    {
+      "id": "f_tbl_u_0050",
+      "note": "時系列表 0:50 喫煙所にシメジがやってくる",
+      "about": {
+        "event": "shimeji_12"
+      },
+      "claimed_at": 1490
+    },
+    {
+      "id": "f_tbl_u_0110",
+      "note": "時系列表 01:10 自室に戻る途中、カイチョウの部屋から出てくるクロセと会う",
+      "about": {
+        "event": "kurose_12"
+      },
+      "claimed_at": 1510
+    },
+    {
       "id": "f_only_five",
       "note": "孤島にはサークルメンバー5人以外誰もいない(事前知識)"
     },
@@ -234,11 +354,19 @@
     },
     {
       "id": "f_saw_handover",
-      "note": "8/10 18:20 神社でヒメとカイチョウが何かを渡しているのを見た"
+      "note": "8/10 18:20 神社でヒメとカイチョウが何かを渡しているのを見た",
+      "about": {
+        "event": "kaichou_05"
+      },
+      "claimed_at": 1100
     },
     {
       "id": "f_smoking_empty_2135",
-      "note": "8/10 21:35 喫煙所に行ったが誰も居なかった"
+      "note": "8/10 21:35 喫煙所に行ったが誰も居なかった",
+      "about": {
+        "event": "shimeji_07"
+      },
+      "claimed_at": 1295
     },
     {
       "id": "f_someone_smoked",
@@ -250,7 +378,11 @@
     },
     {
       "id": "f_smoke_alibi_0050",
-      "note": "8/11 0:50 喫煙所でシメジとウシロカワダが会う"
+      "note": "8/11 0:50 喫煙所でシメジとウシロカワダが会う",
+      "about": {
+        "event": "shimeji_12"
+      },
+      "claimed_at": 1490
     },
     {
       "id": "f_hime_smokes",
@@ -266,15 +398,27 @@
     },
     {
       "id": "f_kaichou_absent_0100",
-      "note": "1:00 カイチョウの部屋にカイチョウが居なかった"
+      "note": "1:00 カイチョウの部屋にカイチョウが居なかった",
+      "about": {
+        "event": "kurose_09"
+      },
+      "claimed_at": 1500
     },
     {
       "id": "f_corridor_0110",
-      "note": "8/11 01:10 廊下でクロセとウシロカワダが会う"
+      "note": "8/11 01:10 廊下でクロセとウシロカワダが会う",
+      "about": {
+        "event": "kurose_12"
+      },
+      "claimed_at": 1510
     },
     {
       "id": "f_kurose_left_kaichou_room",
-      "note": "01:10 クロセがカイチョウの部屋から幸せそうに出てきた"
+      "note": "01:10 クロセがカイチョウの部屋から幸せそうに出てきた",
+      "about": {
+        "event": "ushirokawada_12"
+      },
+      "claimed_at": 1510
     },
     {
       "id": "f_hime_dead_0130",
@@ -286,7 +430,11 @@
     },
     {
       "id": "f_murder_at_0100",
-      "note": "落下で壊れた置き時計が 01:00 で止まっている(犯行時刻)"
+      "note": "落下で壊れた置き時計が 01:00 で止まっている(犯行時刻)",
+      "about": {
+        "event": "kaichou_16"
+      },
+      "claimed_at": 1500
     },
     {
       "id": "f_hime_joined_mid",
@@ -353,6 +501,10 @@
     {
       "character": "kaichou",
       "fact": "f_hime_stalked"
+    },
+    {
+      "character": "kaichou",
+      "fact": "f_hime_ideal_idol"
     },
     {
       "character": "ushirokawada",
@@ -677,6 +829,23 @@
       "note": "ゲーム大会"
     },
     {
+      "id": "kaichou_12",
+      "at": 1259,
+      "kind": "scene",
+      "location": "hall",
+      "participants": [
+        "kaichou",
+        "kurose",
+        "shimeji",
+        "ushirokawada",
+        "hime"
+      ],
+      "reveals": [
+        "f_hime_said_going_room"
+      ],
+      "note": "ヒメが気分が悪いので部屋に戻ると言う"
+    },
+    {
       "id": "hime_08",
       "at": 1260,
       "kind": "move",
@@ -754,7 +923,7 @@
       "arrive": 1335
     },
     {
-      "id": "kaichou_12",
+      "id": "kaichou_13",
       "at": 1440,
       "kind": "move",
       "character": "kaichou",
@@ -834,7 +1003,7 @@
       "note": "喫煙所で会う"
     },
     {
-      "id": "kaichou_13",
+      "id": "kaichou_14",
       "at": 1489,
       "kind": "move",
       "character": "kaichou",
@@ -842,7 +1011,7 @@
       "arrive": 1490
     },
     {
-      "id": "kaichou_14",
+      "id": "kaichou_15",
       "at": 1491,
       "kind": "observe",
       "character": "kaichou",
@@ -856,7 +1025,7 @@
       "note": "机の上のタバコを見る"
     },
     {
-      "id": "kaichou_15",
+      "id": "kaichou_16",
       "at": 1500,
       "kind": "scene",
       "location": "room_hime",
@@ -877,7 +1046,7 @@
       "note": "ヒメ死亡"
     },
     {
-      "id": "kaichou_16",
+      "id": "kaichou_17",
       "at": 1502,
       "kind": "drop",
       "character": "kaichou",
@@ -885,7 +1054,7 @@
       "note": "万年筆を投げ捨てる"
     },
     {
-      "id": "kaichou_17",
+      "id": "kaichou_18",
       "at": 1503,
       "kind": "pickup",
       "character": "kaichou",
@@ -893,7 +1062,7 @@
       "note": "タバコを握りつぶしたまま持ち去る"
     },
     {
-      "id": "kaichou_18",
+      "id": "kaichou_19",
       "at": 1514,
       "kind": "move",
       "character": "kaichou",
@@ -901,7 +1070,7 @@
       "arrive": 1515
     },
     {
-      "id": "kaichou_19",
+      "id": "kaichou_20",
       "at": 1516,
       "kind": "drop",
       "character": "kaichou",
@@ -909,7 +1078,7 @@
       "note": "タバコを自室の机に置く"
     },
     {
-      "id": "kaichou_20",
+      "id": "kaichou_21",
       "at": 1517,
       "kind": "observe",
       "character": "kaichou",
@@ -1053,7 +1222,7 @@
       "arrive": 1540
     },
     {
-      "id": "kaichou_21",
+      "id": "kaichou_22",
       "at": 1888,
       "kind": "move",
       "character": "kaichou",
@@ -1085,7 +1254,7 @@
       "arrive": 1890
     },
     {
-      "id": "kaichou_22",
+      "id": "kaichou_23",
       "at": 1890,
       "kind": "scene",
       "location": "dining",
@@ -1098,7 +1267,7 @@
       "note": "朝食"
     },
     {
-      "id": "kaichou_23",
+      "id": "kaichou_24",
       "at": 1928,
       "kind": "move",
       "character": "kaichou",
@@ -1130,7 +1299,7 @@
       "arrive": 1929
     },
     {
-      "id": "kaichou_24",
+      "id": "kaichou_25",
       "at": 1930,
       "kind": "scene",
       "location": "room_hime",
@@ -1144,6 +1313,54 @@
         "f_hime_stabbed"
       ],
       "note": "ヒメの死体発見"
+    },
+    {
+      "id": "kaichou_26",
+      "at": 1935,
+      "kind": "learn",
+      "character": "kaichou",
+      "facts": [
+        "f_tbl_kc_0050",
+        "f_tbl_kc_0100",
+        "f_tbl_kc_0115"
+      ],
+      "note": "ハンドアウトの時系列表(本人の記憶)"
+    },
+    {
+      "id": "kurose_16",
+      "at": 1935,
+      "kind": "learn",
+      "character": "kurose",
+      "facts": [
+        "f_tbl_ku_0100",
+        "f_tbl_ku_0110"
+      ],
+      "note": "ハンドアウトの時系列表(本人の記憶)"
+    },
+    {
+      "id": "shimeji_20",
+      "at": 1935,
+      "kind": "learn",
+      "character": "shimeji",
+      "facts": [
+        "f_tbl_s_2135",
+        "f_tbl_s_0050",
+        "f_tbl_s_0130",
+        "f_tbl_s_0140"
+      ],
+      "note": "ハンドアウトの時系列表(本人の記憶)"
+    },
+    {
+      "id": "ushirokawada_16",
+      "at": 1935,
+      "kind": "learn",
+      "character": "ushirokawada",
+      "facts": [
+        "f_tbl_u_0040",
+        "f_tbl_u_0050",
+        "f_tbl_u_0110"
+      ],
+      "note": "ハンドアウトの時系列表(本人の記憶)"
     }
   ],
   "clues": [
@@ -1201,42 +1418,42 @@
     },
     {
       "id": "x_lodge",
-      "location": "smoking_area",
+      "deck": "合宿所",
       "reveals": [
         "f_smoking_butts"
       ]
     },
     {
       "id": "x_about_hime",
-      "location": "room_hime",
+      "deck": "ヒメについて",
       "reveals": [
         "f_hime_joined_mid"
       ]
     },
     {
       "id": "x_about_kaichou",
-      "location": "room_kaichou",
+      "deck": "カイチョウについて",
       "reveals": [
         "f_kaichou_idol_otaku"
       ]
     },
     {
       "id": "x_about_kurose",
-      "location": "room_kurose",
+      "deck": "クロセについて",
       "reveals": [
         "f_island_kurose_family"
       ]
     },
     {
       "id": "x_about_shimeji",
-      "location": "room_shimeji",
+      "deck": "シメジについて",
       "reveals": [
         "f_shimeji_new_work"
       ]
     },
     {
       "id": "x_about_ushiro",
-      "location": "room_ushirokawada",
+      "deck": "ウシロカワダについて",
       "reveals": [
         "f_ushiro_past_trouble"
       ]
@@ -1275,6 +1492,48 @@
       ]
     }
   ],
+  "assertions": [
+    {
+      "id": "a_kaichou_not_in_own_room_0100",
+      "kind": "absent",
+      "location": "room_kaichou",
+      "at": 1500,
+      "characters": [
+        "kaichou"
+      ],
+      "note": "真相: クロセが01:00に侵入しておりカイチョウは自室に居なかった"
+    },
+    {
+      "id": "a_kurose_in_kaichou_room_0100",
+      "kind": "present",
+      "location": "room_kaichou",
+      "at": 1500,
+      "characters": [
+        "kurose"
+      ]
+    },
+    {
+      "id": "a_smoking_alibi_0100",
+      "kind": "present",
+      "location": "smoking_area",
+      "at": 1500,
+      "characters": [
+        "shimeji",
+        "ushirokawada"
+      ],
+      "note": "真相: シメジとウシロカワダは01:00に喫煙所にいた"
+    },
+    {
+      "id": "a_kaichou_at_scene_0100",
+      "kind": "present",
+      "location": "room_hime",
+      "at": 1500,
+      "characters": [
+        "kaichou"
+      ],
+      "note": "真相: 01:00 ヒメの部屋で犯行"
+    }
+  ],
   "solution_facts": [
     "f_bloody_pen",
     "f_murder_at_0100",
@@ -1289,6 +1548,11 @@
       "character": "kaichou",
       "items": [],
       "knows": [
+        "f_hime_ideal_idol",
+        "f_hime_said_going_room",
+        "f_tbl_kc_0050",
+        "f_tbl_kc_0100",
+        "f_tbl_kc_0115",
         "f_only_five",
         "f_locks_broken",
         "f_hime_stabbed",
@@ -1305,6 +1569,9 @@
         "watch"
       ],
       "knows": [
+        "f_hime_said_going_room",
+        "f_tbl_ku_0100",
+        "f_tbl_ku_0110",
         "f_only_five",
         "f_locks_broken",
         "f_hime_stabbed",
@@ -1319,6 +1586,11 @@
         "fountain_pen"
       ],
       "knows": [
+        "f_hime_said_going_room",
+        "f_tbl_s_2135",
+        "f_tbl_s_0050",
+        "f_tbl_s_0130",
+        "f_tbl_s_0140",
         "f_only_five",
         "f_locks_broken",
         "f_hime_stabbed",
@@ -1333,6 +1605,10 @@
       "character": "ushirokawada",
       "items": [],
       "knows": [
+        "f_hime_said_going_room",
+        "f_tbl_u_0040",
+        "f_tbl_u_0050",
+        "f_tbl_u_0110",
         "f_only_five",
         "f_locks_broken",
         "f_hime_stabbed",

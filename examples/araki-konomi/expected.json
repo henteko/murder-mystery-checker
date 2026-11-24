@@ -1,4 +1,23 @@
 {
-  "spec_version": "0.2.0",
-  "diagnostics": []
+  "spec_version": "0.3.0",
+  "diagnostics": [
+    {
+      "code": "K008",
+      "severity": "error",
+      "args": [
+        "f_s_table_1750_vending",
+        "1070",
+        "1080"
+      ]
+    },
+    {
+      "code": "K008",
+      "severity": "error",
+      "args": [
+        "f_tom_table_1810",
+        "1090",
+        "1081"
+      ]
+    }
+  ]
 }

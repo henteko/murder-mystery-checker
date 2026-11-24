@@ -28,3 +28,7 @@ testdata/oracle/ *.input.json / *.expected.json (Lean が生成)
 ## 仕様 0.2.0 (2026-11-24)
 六角館サンプル(examples/hexagon-house)のモデル化で見つかった不足 A〜I をすべて取り込んだ。
 J(知識の中身に基づく推論)は対象外のまま。詳細は docs/spec.md §10。
+
+## 仕様 0.3.0 (2026-11-24)
+荒木コノミのサンプル(examples/araki-konomi)で見つかった不足 K1〜K8 をすべて取り込んだ。
+あわせて、K003 の「入手可能」から NPC の知識を除外した。両サンプルを 0.3.0 で再モデル化済み。
