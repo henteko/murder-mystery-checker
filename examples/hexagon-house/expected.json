@@ -1,0 +1,20 @@
+{
+  "spec_version": "0.1.0",
+  "diagnostics": [
+    {
+      "code": "G008",
+      "severity": "warning",
+      "args": [
+        "hime"
+      ]
+    },
+    {
+      "code": "H003",
+      "severity": "warning",
+      "args": [
+        "ushirokawada",
+        "lip_cream"
+      ]
+    }
+  ]
+}
