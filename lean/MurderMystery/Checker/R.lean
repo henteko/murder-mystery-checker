@@ -29,15 +29,20 @@ def enumValues? (v : Id) : Option (List String) := (s.findChoice? v).bind (·.va
 
 end Scenario
 
+/-- R 群の検出結果: (コード, args, event)。すべて error。 -/
+abbrev RIssue := String × List String × Option Id
+
+def rerr (code : String) (args : List String) (event : Option Id := none) : RIssue := (code, args, event)
+
 /-! ## R001 -/
-def checkR001 (s : Scenario) : List Diag :=
+def checkR001 (s : Scenario) : List RIssue :=
   let kinds : List (String × List Id) := [
     ("character", s.characterIds), ("area", s.areaIds), ("location", s.locationIds),
     ("item", s.itemIds), ("fact", s.factIds), ("clue", s.clues.map (·.id)),
     ("event", s.eventIds), ("assertion", s.assertions.map (·.id)), ("variable", s.variableIds),
     ("ending", s.endings.map (·.id)), ("handout", s.handouts.map (·.character)),
     ("board", s.board.map (·.location))]
-  kinds.flatMap fun (k, ids) => (duplicates ids).map fun id => err "R001" [k, id]
+  kinds.flatMap fun (k, ids) => (duplicates ids).map fun id => rerr "R001" [k, id]
 
 /-! ## R002 -/
 
@@ -125,26 +130,26 @@ def Scenario.idsOfKind (s : Scenario) : String → List Id
   | "variable" => s.variableIds
   | _ => []
 
-def checkR002 (s : Scenario) : List Diag :=
+def checkR002 (s : Scenario) : List RIssue :=
   (dedup ((allRefs s).filter fun r => !(s.idsOfKind r.kind).contains r.id)).map fun r =>
-    err "R002" [r.referrer, r.kind, r.id] r.event
+    rerr "R002" [r.referrer, r.kind, r.id] r.event
 
 /-! ## R003〜R005 -/
-def checkR003 (s : Scenario) : List Diag :=
+def checkR003 (s : Scenario) : List RIssue :=
   s.characters.filterMap fun c =>
-    if (s.placements.filter (·.character == c.id)).length == 1 then none else some (err "R003" [c.id])
+    if (s.placements.filter (·.character == c.id)).length == 1 then none else some (rerr "R003" [c.id])
 
-def checkR004 (s : Scenario) : List Diag :=
-  if s.startTime > s.endTime then [err "R004" []] else []
+def checkR004 (s : Scenario) : List RIssue :=
+  if s.startTime > s.endTime then [rerr "R004" []] else []
 
-def checkEdges (tbl : String) (es : List Edge) : List Diag :=
+def checkEdges (tbl : String) (es : List Edge) : List RIssue :=
   let self := es.filter (fun e => e.src == e.dst)
   let pairs := (es.filter (fun e => e.src != e.dst)).flatMap fun e =>
     if e.bidirectional then [(e.src, e.dst), (e.dst, e.src)] else [(e.src, e.dst)]
-  self.map (fun e => err "R005" [tbl, e.src, e.dst])
-    ++ (duplicates pairs).map (fun (a, b) => err "R005" [tbl, a, b])
+  self.map (fun e => rerr "R005" [tbl, e.src, e.dst])
+    ++ (duplicates pairs).map (fun (a, b) => rerr "R005" [tbl, a, b])
 
-def checkR005 (s : Scenario) : List Diag :=
+def checkR005 (s : Scenario) : List RIssue :=
   checkEdges "travel" s.travel ++ checkEdges "area_travel" s.areaTravel ++ checkEdges "perception" s.perception
 
 /-! ## R006 -/
@@ -165,79 +170,81 @@ def eventShapeErrors (e : Event) : List String :=
   | .learn _ fs => if fs.isEmpty then ["empty_facts"] else []
   | _ => []
 
-def checkR006 (s : Scenario) : List Diag :=
-  s.events.flatMap fun e => (eventShapeErrors e).map fun r => err "R006" [r] (some e.id)
+def checkR006 (s : Scenario) : List RIssue :=
+  s.events.flatMap fun e => (eventShapeErrors e).map fun r => rerr "R006" [r] (some e.id)
 
 /-! ## R007〜R013 -/
-def checkR007 (s : Scenario) : List Diag :=
+def checkR007 (s : Scenario) : List RIssue :=
   s.clues.filterMap fun c =>
-    if c.location.isNone && c.item.isNone && c.deck.isNone then some (err "R007" [c.id]) else none
+    if c.location.isNone && c.item.isNone && c.deck.isNone then some (rerr "R007" [c.id]) else none
 
-def checkR008 (s : Scenario) : List Diag :=
+def checkR008 (s : Scenario) : List RIssue :=
   s.choices.filterMap fun c => match c.values with
-    | some vs => if vs.isEmpty || !(duplicates vs).isEmpty then some (err "R008" [c.id]) else none
+    | some vs => if vs.isEmpty || !(duplicates vs).isEmpty then some (rerr "R008" [c.id]) else none
     | none => none
 
-def formulaTypeErrors (s : Scenario) (referrer : String) (f : Formula) : List Diag :=
+def formulaTypeErrors (s : Scenario) (referrer : String) (f : Formula) : List RIssue :=
   f.refs.flatMap fun
-    | .asBool v => if (s.enumValues? v).isSome then [err "R009" [referrer, v, ""]] else []
+    | .asBool v => if (s.enumValues? v).isSome then [rerr "R009" [referrer, v, ""]] else []
     | .asEq v x =>
       if !s.variableIds.contains v then []
       else match s.enumValues? v with
-        | none => [err "R009" [referrer, v, x]]
-        | some vs => if vs.contains x then [] else [err "R009" [referrer, v, x]]
+        | none => [rerr "R009" [referrer, v, x]]
+        | some vs => if vs.contains x then [] else [rerr "R009" [referrer, v, x]]
     | .inTally _ _ => []
 
-def tallyErrors (s : Scenario) (referrer : String) (f : Formula) : List Diag :=
+def tallyErrors (s : Scenario) (referrer : String) (f : Formula) : List RIssue :=
   f.refs.flatMap fun
     | .inTally vs x =>
       let known := vs.filter s.variableIds.contains
       let enums := known.filterMap s.enumValues?
       let sets := enums.map fun vals => vals.mergeSort (fun a b => decide (a ≤ b))
-      (if vs.isEmpty then [err "R012" [referrer, "empty_votes"]] else [])
-      ++ (if known.any (fun v => (s.enumValues? v).isNone) then [err "R012" [referrer, "not_enum"]] else [])
-      ++ (if (dedup sets).length ≥ 2 then [err "R012" [referrer, "different_values"]] else [])
+      (if vs.isEmpty then [rerr "R012" [referrer, "empty_votes"]] else [])
+      ++ (if known.any (fun v => (s.enumValues? v).isNone) then [rerr "R012" [referrer, "not_enum"]] else [])
+      ++ (if (dedup sets).length ≥ 2 then [rerr "R012" [referrer, "different_values"]] else [])
       ++ (match x with
-          | some v => if enums.any (fun vals => !vals.contains v) then [err "R012" [referrer, "unknown_value"]] else []
+          | some v => if enums.any (fun vals => !vals.contains v) then [rerr "R012" [referrer, "unknown_value"]] else []
           | none => [])
     | _ => []
 
 def formulas (s : Scenario) : List (String × Formula) :=
   s.constraints.map (fun f => ("constraint", f)) ++ s.endings.map (fun e => (s!"ending:{e.id}", e.condition))
 
-def checkR009 (s : Scenario) : List Diag := (formulas s).flatMap fun (r, f) => formulaTypeErrors s r f
-def checkR012 (s : Scenario) : List Diag := (formulas s).flatMap fun (r, f) => tallyErrors s r f
+def checkR009 (s : Scenario) : List RIssue := (formulas s).flatMap fun (r, f) => formulaTypeErrors s r f
+def checkR012 (s : Scenario) : List RIssue := (formulas s).flatMap fun (r, f) => tallyErrors s r f
 
-def checkR010 (s : Scenario) : List Diag :=
+def checkR010 (s : Scenario) : List RIssue :=
   s.facts.flatMap fun f =>
-    if f.truth then (if f.contradictedBy.isEmpty then [] else [err "R010" [f.id, ""]])
+    if f.truth then (if f.contradictedBy.isEmpty then [] else [rerr "R010" [f.id, ""]])
     else f.contradictedBy.filterMap fun r => match s.findFact? r with
-      | some rf => if rf.truth then none else some (err "R010" [f.id, r])
+      | some rf => if rf.truth then none else some (rerr "R010" [f.id, r])
       | none => none
 
-def checkR011 (s : Scenario) : List Diag :=
+def checkR011 (s : Scenario) : List RIssue :=
   s.facts.flatMap fun f =>
     (match f.aboutEvent, f.claimedAt with
-      | some _, none => [err "R011" [f.id, "about_without_claimed_at"]]
-      | none, some _ => [err "R011" [f.id, "claimed_at_without_about"]]
+      | some _, none => [rerr "R011" [f.id, "about_without_claimed_at"]]
+      | none, some _ => [rerr "R011" [f.id, "claimed_at_without_about"]]
       | _, _ => [])
-    ++ (if f.aboutPoint == "at" || f.aboutPoint == "arrive" then [] else [err "R011" [f.id, "unknown_point"]])
+    ++ (if f.aboutPoint == "at" || f.aboutPoint == "arrive" then [] else [rerr "R011" [f.id, "unknown_point"]])
     ++ (match f.aboutEvent with
       | some eid =>
         if f.aboutPoint == "arrive" then
           match s.findEvent? eid with
           | some ⟨_, _, .move .., _⟩ => []
-          | some _ => [err "R011" [f.id, "arrive_on_non_move"]]
+          | some _ => [rerr "R011" [f.id, "arrive_on_non_move"]]
           | none => []
         else []
       | none => [])
 
-def checkR013 (s : Scenario) : List Diag :=
+def checkR013 (s : Scenario) : List RIssue :=
   s.assertions.filterMap fun a =>
-    if s.startTime ≤ a.time && a.time < s.endTime then none else some (err "R013" [a.id])
+    if s.startTime ≤ a.time && a.time < s.endTime then none else some (rerr "R013" [a.id])
 
-def checkR (s : Scenario) : List Diag :=
+def rIssues (s : Scenario) : List RIssue :=
   checkR001 s ++ checkR002 s ++ checkR003 s ++ checkR004 s ++ checkR005 s ++ checkR006 s ++ checkR007 s
     ++ checkR008 s ++ checkR009 s ++ checkR010 s ++ checkR011 s ++ checkR012 s ++ checkR013 s
+
+def checkR (s : Scenario) : List Diag := (rIssues s).map fun (c, a, e) => err c a e
 
 end MurderMystery

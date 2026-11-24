@@ -13,3 +13,8 @@ import MurderMystery.Proofs.Basic
 import MurderMystery.Proofs.G
 import MurderMystery.Proofs.Tally
 import MurderMystery.Proofs.Items
+import MurderMystery.Spec.Valid
+import MurderMystery.Proofs.Events
+import MurderMystery.Proofs.Post
+import MurderMystery.Proofs.Main
+import MurderMystery.Proofs.Consistency

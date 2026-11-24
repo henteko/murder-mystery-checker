@@ -358,7 +358,7 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
   - `empty_votes`: votes が空
   - `not_enum`: votes に列挙型ではない選択が含まれる
   - `different_values`: votes の選択の値の集合が一致しない
-  - `unknown_value`: plurality の value が値の集合にない
+  - `unknown_value`: plurality の value が、votes の列挙型の選択のいずれかの値の集合に含まれない(`different_values` と同時に出ることがある)
 
 ### 4.2 T: タイムライン
 
