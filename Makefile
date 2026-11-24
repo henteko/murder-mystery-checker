@@ -1,4 +1,4 @@
-.PHONY: all lean cases oracle go test diff-check clean
+.PHONY: all lean cases oracle go test diff-check live-diff fuzz clean
 
 ORACLE := lean/.lake/build/bin/oracle
 
@@ -24,6 +24,16 @@ go:
 # Go 側のテスト(ゴールデン差分テストを含む)
 test:
 	cd go && go vet ./... && go test ./...
+
+# ライブ差分テスト: その場で作ったシナリオで Go と Lean オラクルの出力を比べる(N 件、SEED は省略可)
+N ?= 500
+live-diff: lean go
+	python3 tools/oracle/live.py --oracle $(ORACLE) --mmcheck bin/mmcheck --count $(N) $(if $(SEED),--seed $(SEED))
+
+# Go のファズテスト(パニックしない、出力が正規順序で重複なし)
+FUZZTIME ?= 60s
+fuzz:
+	cd go && go test ./internal/check/ -run '^$$' -fuzz=FuzzCheck -fuzztime=$(FUZZTIME)
 
 # 入力と期待出力を作り直しても、コミット済みのものと差分がないこと(CI 用)
 diff-check: cases oracle

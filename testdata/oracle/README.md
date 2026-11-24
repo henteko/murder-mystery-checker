@@ -31,3 +31,20 @@ make diff-check  # 上の2つを実行して、コミット済みのものと差
 ## ケースを足すとき
 
 `tools/oracle/cases.py` に、土台のシナリオ(`tools/oracle/base.py`、検出結果 0 件)を変える関数を `@case(グループ, 名前, 説明, [出るコード])` で足し、`make cases oracle` を実行してコミットする。
+
+## ライブ差分テスト(`make live-diff`)
+
+ゴールデンは固定のケースしか比べないので、`tools/oracle/live.py` でその場で作ったシナリオを Go と Lean オラクルに通して比べる。
+
+- 入力の作り方: ランダム生成(gen.py)、ゴール・選択・エンディングの一部を空にしたもの、examples と手書きケースの変異(mutate.py)、壊した入力
+- 比べる内容: 入力エラーになるかどうか / 検出結果(並び順を含む)/ Go でトップレベルの配列を並べ替えても出力が変わらないこと(定理 3)
+- 件数は `N`(既定 500)、乱数の種は `SEED`(省略時は時刻)。不一致の入力は `testdata/live-failures/` に保存されるので、原因を直したら `tools/oracle/cases.py` の `regress` に回帰テストとして足す
+
+```sh
+make live-diff N=3000 SEED=2
+```
+
+Go 側だけで動くテスト(CI の Go ジョブでも実行):
+- `TestGolden`: 上のすべてのケースの期待出力と Go の出力が一致する
+- `TestPermutationInvariance`: ケースの配列を並べ替えても Go の出力が変わらない
+- `FuzzCheck`: どんな入力でもパニックせず、出力が正規順序で重複がない(`make fuzz` で探索)

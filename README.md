@@ -34,6 +34,8 @@ make lean        # 仕様・証明のビルド(証明が通らなければ失敗
 make cases       # オラクル用テストケースの入力を作る(tools/oracle)
 make oracle      # Lean オラクルで期待出力を作り、点検する
 make test        # Go のテスト(Lean オラクルの期待出力との差分テストを含む)
+make live-diff   # その場で作ったシナリオで Go と Lean オラクルを比べる(N=件数 SEED=種)
+make fuzz        # Go のファズテスト
 make diff-check  # 入力と期待出力が最新か(CI)
 ```
 
