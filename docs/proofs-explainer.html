@@ -1,0 +1,636 @@
+<title>mmcheck 証明レポート</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 事件ファイル風の単一カラム。各項目は「主張 → 図 → 一言の意味」で読む */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --fg: #1d2330;
+  --muted: #5b6576;
+  --line: #d6dbe3;
+  --accent: #1f6f78;
+  --accent-soft: #e2f0f1;
+  --ok: #2f7d4a;
+  --ok-soft: #e4f2e8;
+  --bad: #b23a3a;
+  --bad-soft: #f8e6e5;
+  --warn: #9a6200;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161d; --surface: #1a2029; --fg: #e6e9ef; --muted: #9aa4b5; --line: #2e3643;
+    --accent: #5fc0c9; --accent-soft: #173238; --ok: #6cc68a; --ok-soft: #173222;
+    --bad: #ef7d7d; --bad-soft: #3a1d1f; --warn: #e0a64a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161d; --surface: #1a2029; --fg: #e6e9ef; --muted: #9aa4b5; --line: #2e3643;
+  --accent: #5fc0c9; --accent-soft: #173238; --ok: #6cc68a; --ok-soft: #173222;
+  --bad: #ef7d7d; --bad-soft: #3a1d1f; --warn: #e0a64a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body);
+  font-size: 16px; line-height: 1.8;
+}
+.wrap {
+  max-width: 860px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 80px;
+  display: flex; flex-direction: column; gap: 56px;
+}
+header { display: flex; flex-direction: column; gap: 12px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-size: clamp(28px, 5vw, 40px); font-weight: 900; line-height: 1.3; margin: 0; text-wrap: balance; }
+h2 { font-size: 24px; font-weight: 900; margin: 0; text-wrap: balance; }
+h3 { font-size: 18px; font-weight: 700; margin: 0; text-wrap: balance; line-height: 1.5; }
+p { margin: 0; max-width: 65ch; }
+.lead { font-size: 17px; color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 20px; }
+.section-head { display: flex; flex-direction: column; gap: 6px; border-bottom: 2px solid var(--fg); padding-bottom: 10px; }
+.section-head p { color: var(--muted); }
+.item {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 22px; display: flex; flex-direction: column; gap: 14px; min-width: 0;
+}
+.item-head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.num {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--accent);
+  border: 1px solid var(--accent); border-radius: 4px; padding: 0 6px; flex: none;
+}
+.num.bad { color: var(--bad); border-color: var(--bad); }
+.meaning { background: var(--accent-soft); border-radius: 6px; padding: 10px 14px; font-size: 15px; }
+.fix { background: var(--ok-soft); border-radius: 6px; padding: 10px 14px; font-size: 15px; }
+.fix b, .meaning b { font-weight: 700; }
+code, .code { font-family: var(--font-mono); font-size: .88em; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.fig-scroll { overflow-x: auto; }
+figure svg { display: block; width: 100%; max-width: 100%; height: auto; min-width: 520px; color: var(--fg); font-family: var(--font-body); }
+figcaption { font-size: 13px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.mini { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; background: var(--surface); min-width: 0; }
+.mini h3 { font-size: 16px; }
+.mini p { font-size: 15px; color: var(--muted); }
+.toc { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.toc a { display: block; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); text-decoration: none; }
+.toc a:hover, .toc a:focus-visible { border-color: var(--accent); outline: none; }
+.toc .k { font-family: var(--font-mono); font-size: 12px; color: var(--muted); display: block; }
+.toc strong { font-size: 16px; }
+ul.plain { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; max-width: 65ch; }
+table { border-collapse: collapse; font-size: 14px; width: 100%; }
+th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+th { color: var(--muted); font-weight: 500; }
+td.mono { font-family: var(--font-mono); }
+.table-scroll { overflow-x: auto; }
+
+/* SVG パーツ(ページのトークンで塗る) */
+svg .box { fill: var(--surface); stroke: currentColor; stroke-width: 1.2; }
+svg .box-soft { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+svg .box-ac { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; }
+svg .box-ok { fill: var(--ok-soft); stroke: var(--ok); stroke-width: 1.4; }
+svg .box-bad { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 1.4; }
+svg .ln { stroke: currentColor; stroke-width: 1.4; fill: none; }
+svg .ln-ac { stroke: var(--accent); stroke-width: 1.8; fill: none; }
+svg .ln-dash { stroke: var(--muted); stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
+svg .t { fill: currentColor; font-size: 13px; }
+svg .ts { fill: var(--muted); font-size: 11.5px; }
+svg .tb { fill: currentColor; font-size: 13px; font-weight: 700; }
+svg .tac { fill: var(--accent); font-size: 13px; font-weight: 700; }
+svg .tok { fill: var(--ok); font-size: 13px; font-weight: 700; }
+svg .tbad { fill: var(--bad); font-size: 13px; font-weight: 700; }
+svg .mono { font-family: var(--font-mono); }
+svg .dot { fill: var(--accent); }
+svg .fill-ac { fill: var(--accent); }
+svg .fill-fg { fill: currentColor; }
+svg .fill-bad { fill: var(--bad); }
+svg .fill-ok { fill: var(--ok); }
+svg .area-all { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; }
+@media (prefers-reduced-motion: no-preference) { .toc a { transition: border-color .15s; } }
+</style>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">mmcheck · 仕様 0.5.0 · Lean 4</span>
+  <h1>マーダーミステリー判定器の証明と、見つかった反例</h1>
+  <p class="lead">判定器が仕様どおりに動くことを、Lean で11個の定理として証明しました。証明の途中で、テストでは気づけなかった不具合が5件見つかり、仕様を直しています。このページは、それぞれを図で説明します。</p>
+</header>
+
+<section aria-labelledby="s-what">
+  <div class="section-head">
+    <span class="eyebrow">前提</span>
+    <h2 id="s-what">テストと証明の違い</h2>
+  </div>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 640 190" role="img" aria-label="テストは用意したいくつかのシナリオだけを確かめるが、証明はありうるすべてのシナリオについて確かめる">
+      <rect class="box-soft" x="20" y="30" width="280" height="120" rx="8"/>
+      <text class="tb" x="160" y="20" text-anchor="middle">テスト</text>
+      <circle class="dot" cx="70" cy="70" r="6"/>
+      <circle class="dot" cx="150" cy="110" r="6"/>
+      <circle class="dot" cx="230" cy="60" r="6"/>
+      <circle class="dot" cx="200" cy="125" r="6"/>
+      <circle class="dot" cx="95" cy="125" r="6"/>
+      <text class="ts" x="160" y="174" text-anchor="middle">用意した例(点)だけを確かめる。点の間は分からない</text>
+      <rect class="area-all" x="340" y="30" width="280" height="120" rx="8"/>
+      <text class="tb" x="480" y="20" text-anchor="middle">証明</text>
+      <text class="tac" x="480" y="85" text-anchor="middle">ありうるすべての</text>
+      <text class="tac" x="480" y="105" text-anchor="middle">シナリオ</text>
+      <text class="ts" x="480" y="174" text-anchor="middle">全体を一度に確かめる。成り立たない例があると進まない</text>
+    </svg>
+    </div>
+    <figcaption>証明は「すべての場合で成り立つ」ことを示すので、1つでも例外があると完成しません。この性質のおかげで、反例が見つかりました。</figcaption>
+  </figure>
+  <nav class="toc" aria-label="目次">
+    <a href="#codes"><span class="k">早見表</span><strong>規則コードの読み方</strong></a>
+    <a href="#proved"><span class="k">第1部</span><strong>証明された11の約束</strong></a>
+    <a href="#counter"><span class="k">第2部</span><strong>見つかった5つの反例</strong></a>
+    <a href="#how"><span class="k">補足</span><strong>反例が見つかった経緯</strong></a>
+    <a href="#limits"><span class="k">第3部</span><strong>まだ保証していないこと</strong></a>
+  </nav>
+</section>
+
+<section id="codes" aria-labelledby="s-codes">
+  <div class="section-head">
+    <span class="eyebrow">早見表</span>
+    <h2 id="s-codes">規則コードの読み方</h2>
+    <p>判定器の指摘は <code>T003</code> のような「英字1文字 + 番号3桁」で表します。英字は何を調べる規則かを表すグループ、番号はグループ内の通し番号です。</p>
+  </div>
+  <div class="grid2">
+    <div class="mini"><span class="num">R</span><h3>構造(Reference)</h3><p>ID の重複、存在しないものの参照、書き方の誤りなど、シナリオファイルそのものが壊れていないか。</p></div>
+    <div class="mini"><span class="num">T</span><h3>タイムライン(Time)</h3><p>移動時間、同時に2か所にいないか、その場所にいるか、死亡後に行動していないか。</p></div>
+    <div class="mini"><span class="num">I</span><h3>所持品(Item)</h3><p>持っていない物を渡していないか、使い切った物を使っていないか。</p></div>
+    <div class="mini"><span class="num">K</span><h3>知識・手がかり(Knowledge)</h3><p>知らないことを話していないか、真相にたどり着けるか、証言の時刻が合っているか。</p></div>
+    <div class="mini"><span class="num">H</span><h3>ハンドアウト・盤面(Handout)</h3><p>配るハンドアウトや盤面の記述が、タイムラインの結果と合っているか。</p></div>
+    <div class="mini"><span class="num">A</span><h3>真相の断言(Assertion)</h3><p>「18:00 に屋上には誰もいない」のような真相の主張が、タイムラインと合っているか。</p></div>
+    <div class="mini"><span class="num">G</span><h3>ゴール・エンディング(Goal)</h3><p>どの選び方でもエンディングが1つに決まるか、達成できないゴールはないか。</p></div>
+  </div>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 640 150" role="img" aria-label="検査の順番。まずR001、次に残りのR群、最後にT・I・K・H・A・G群。前の段で違反があればそこで止まる">
+      <defs><marker id="a0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="fill-fg"/></marker></defs>
+      <rect class="box-soft" x="10" y="30" width="100" height="46" rx="6"/><text class="t" x="60" y="58" text-anchor="middle">シナリオ</text>
+      <line class="ln" x1="112" y1="53" x2="146" y2="53" marker-end="url(#a0)"/>
+      <rect class="box" x="150" y="30" width="120" height="46" rx="6"/><text class="tb mono" x="210" y="52" text-anchor="middle">R001</text><text class="ts" x="210" y="68" text-anchor="middle">ID の重複</text>
+      <line class="ln" x1="272" y1="53" x2="306" y2="53" marker-end="url(#a0)"/>
+      <rect class="box" x="310" y="30" width="120" height="46" rx="6"/><text class="tb mono" x="370" y="52" text-anchor="middle">R002〜R013</text><text class="ts" x="370" y="68" text-anchor="middle">残りの構造</text>
+      <line class="ln" x1="432" y1="53" x2="466" y2="53" marker-end="url(#a0)"/>
+      <rect class="box-ac" x="470" y="30" width="160" height="46" rx="6"/><text class="tac mono" x="550" y="52" text-anchor="middle">T I K H A G</text><text class="ts" x="550" y="68" text-anchor="middle">内容の検査</text>
+      <line class="ln-dash" x1="210" y1="78" x2="210" y2="112"/>
+      <line class="ln-dash" x1="370" y1="78" x2="370" y2="112"/>
+      <text class="tbad" x="210" y="130" text-anchor="middle">違反あり → R001 だけ出す</text>
+      <text class="tbad" x="370" y="130" text-anchor="middle" dx="40">違反あり → R だけ出す</text>
+    </svg>
+    </div>
+    <figcaption>ファイルが壊れていると内容を正しく読めないので、構造の検査を先に行い、違反があればそこで止めます。</figcaption>
+  </figure>
+  <p>重大度は2種類です。<b>error</b> はシナリオの矛盾で、直す必要があります。<b>warning</b> は記載漏れなど、確認を勧めるものです。下の表で warning の規則には「警告」と付けています。</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>コード</th><th>何を指摘するか</th></tr></thead>
+    <tbody>
+      <tr><th colspan="2">R 構造</th></tr>
+      <tr><td class="mono">R001</td><td>同じ種類の ID が重複している</td></tr>
+      <tr><td class="mono">R002</td><td>存在しない ID を参照している</td></tr>
+      <tr><td class="mono">R003</td><td>キャラクターの初期配置がない、または2つ以上ある</td></tr>
+      <tr><td class="mono">R004</td><td>開始時刻が終了時刻より後</td></tr>
+      <tr><td class="mono">R005</td><td>移動時間・知覚の表に、同じ場所どうしや重複したエントリがある</td></tr>
+      <tr><td class="mono">R006</td><td>イベントの書き方の誤り(到着が出発より前、自分に渡す など)</td></tr>
+      <tr><td class="mono">R007</td><td>手がかりに場所もアイテムも山札もない</td></tr>
+      <tr><td class="mono">R008</td><td>選択肢の値が空、または重複している</td></tr>
+      <tr><td class="mono">R009</td><td>エンディング条件などの論理式の型の誤り</td></tr>
+      <tr><td class="mono">R010</td><td>知識の真偽の指定の誤り(偽の知識で否定している など)</td></tr>
+      <tr><td class="mono">R011</td><td>証言の書き方の誤り(到着時刻を指すのに移動ではない など)</td></tr>
+      <tr><td class="mono">R012</td><td>投票の集計の書き方の誤り</td></tr>
+      <tr><td class="mono">R013</td><td>真相の断言の時刻がシナリオの時間外</td></tr>
+      <tr><th colspan="2">T タイムライン</th></tr>
+      <tr><td class="mono">T001</td><td>イベントの時刻がシナリオの時間外</td></tr>
+      <tr><td class="mono">T002</td><td>徒歩で行けない場所へ移動している(経路がない)</td></tr>
+      <tr><td class="mono">T003</td><td>移動時間が足りない</td></tr>
+      <tr><td class="mono">T004</td><td>今いる場所へ移動している</td></tr>
+      <tr><td class="mono">T005</td><td>同じ人が同じ時刻に2つのイベントに参加している</td></tr>
+      <tr><td class="mono">T006</td><td>移動中の人が行動している</td></tr>
+      <tr><td class="mono">T007</td><td>場面や観察の対象者が、その場所にいない</td></tr>
+      <tr><td class="mono">T008</td><td>物を渡す・話す2人が別の場所にいる</td></tr>
+      <tr><td class="mono">T009</td><td>警告: 2人が同じ部屋に居合わせたのに、互いに気づいた記述がない</td></tr>
+      <tr><td class="mono">T010</td><td>死亡した人が行動している</td></tr>
+      <tr><td class="mono">T011</td><td>その場所からは見えない・聞こえないものを観察している</td></tr>
+      <tr><td class="mono">T012</td><td>警告: 観察される人が同じ時刻に移動を始めている(反例3)</td></tr>
+      <tr><th colspan="2">I 所持品</th></tr>
+      <tr><td class="mono">I001</td><td>持っていない物を渡す・使う・置く</td></tr>
+      <tr><td class="mono">I002</td><td>使い切った物を扱っている</td></tr>
+      <tr><td class="mono">I003</td><td>その場所にない物を拾っている</td></tr>
+      <tr><td class="mono">I004</td><td>同じ時刻に同じ物を2つのイベントで扱っている</td></tr>
+      <tr><th colspan="2">K 知識・手がかり</th></tr>
+      <tr><td class="mono">K001</td><td>知らないことを話している</td></tr>
+      <tr><td class="mono">K002</td><td>行動に必要な知識を持っていない</td></tr>
+      <tr><td class="mono">K003</td><td>真相に必要な知識がプレイヤーに手に入らない</td></tr>
+      <tr><td class="mono">K004</td><td>手がかりの物が使い切られて失われている</td></tr>
+      <tr><td class="mono">K005</td><td>手がかりの物が、書かれた場所にない</td></tr>
+      <tr><td class="mono">K006</td><td>嘘・思い込みを見破る手段がプレイヤーにない</td></tr>
+      <tr><td class="mono">K007</td><td>真相が偽の知識に依存している</td></tr>
+      <tr><td class="mono">K008</td><td>証言の時刻が、実際の出来事の時刻とずれている</td></tr>
+      <tr><th colspan="2">H ハンドアウト・盤面</th></tr>
+      <tr><td class="mono">H001</td><td>ハンドアウトの居場所が、タイムラインの結果と違う</td></tr>
+      <tr><td class="mono">H002</td><td>ハンドアウトの持ち物を、実際には持っていない</td></tr>
+      <tr><td class="mono">H003</td><td>警告: 持っている物がハンドアウトに書かれていない</td></tr>
+      <tr><td class="mono">H004</td><td>ハンドアウトに、知りえない情報が書かれている</td></tr>
+      <tr><td class="mono">H005</td><td>警告: 知っている情報がハンドアウトに書かれていない</td></tr>
+      <tr><td class="mono">H006</td><td>盤面に置いた物が、実際にはその場所にない</td></tr>
+      <tr><td class="mono">H007</td><td>警告: その場所にある物が盤面に書かれていない</td></tr>
+      <tr><th colspan="2">A 真相の断言</th></tr>
+      <tr><td class="mono">A001</td><td>真相の「いた / いなかった」がタイムラインと矛盾する</td></tr>
+      <tr><th colspan="2">G ゴール・エンディング</th></tr>
+      <tr><td class="mono">G001</td><td>どのエンディングにもならない選び方がある</td></tr>
+      <tr><td class="mono">G002</td><td>2つのエンディングが同時に成り立つ選び方がある</td></tr>
+      <tr><td class="mono">G003</td><td>どう選んでも到達しないエンディングがある</td></tr>
+      <tr><td class="mono">G004</td><td>どう選んでも達成できないゴールがある</td></tr>
+      <tr><td class="mono">G005</td><td>制約が矛盾していて、選び方が1つもない</td></tr>
+      <tr><td class="mono">G006</td><td>警告: 必ず達成されるゴール、または実質的に選べない選択がある</td></tr>
+      <tr><td class="mono">G007</td><td>選び方の組み合わせが多すぎて数え上げられない(約100万通り超)</td></tr>
+      <tr><td class="mono">G008</td><td>警告: ゴールを1つも持たないプレイヤーキャラクターがいる</td></tr>
+      <tr><td class="mono">G009</td><td>警告: どう選んでも選ばれない選択肢の値がある</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="proved" aria-labelledby="s-proved">
+  <div class="section-head">
+    <span class="eyebrow">第1部</span>
+    <h2 id="s-proved">証明された11の約束</h2>
+    <p>どの定理も、Lean の標準の公理だけに依存しています(定理6のみ、具体例の計算に Lean のコンパイラを使います)。</p>
+  </div>
+
+  <article class="item">
+    <div class="item-head"><span class="num">定理1</span><h3>判定器は見逃さないし、誤検出もしない</h3></div>
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 640 210" role="img" aria-label="判定器がエラーを出さないことと、仕様の正しさの定義を満たすことは同値。規則ごとにも同値">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fill-ac"/></marker>
+        </defs>
+        <rect class="box" x="20" y="20" width="230" height="70" rx="8"/>
+        <text class="tb" x="135" y="50" text-anchor="middle">判定器の出力</text>
+        <text class="t" x="135" y="72" text-anchor="middle">error が1件もない</text>
+        <rect class="box" x="390" y="20" width="230" height="70" rx="8"/>
+        <text class="tb" x="505" y="50" text-anchor="middle">仕様の「正しい」の定義</text>
+        <text class="t" x="505" y="72" text-anchor="middle">すべての条件を満たす</text>
+        <line class="ln-ac" x1="258" y1="55" x2="382" y2="55" marker-start="url(#a1)" marker-end="url(#a1)"/>
+        <text class="tac" x="320" y="45" text-anchor="middle">同値</text>
+        <rect class="box-soft" x="20" y="120" width="600" height="72" rx="8"/>
+        <text class="ts" x="40" y="142">規則ごとの例</text>
+        <text class="t mono" x="40" y="168">T003 が出る</text>
+        <line class="ln-ac" x1="150" y1="164" x2="200" y2="164" marker-start="url(#a1)" marker-end="url(#a1)"/>
+        <text class="t" x="212" y="168">R 群の違反がなく、徒歩の移動で「到着 − 出発 &lt; 必要な移動時間」</text>
+      </svg>
+      </div>
+      <figcaption>左右が同じ意味であることを証明しました。R 群以外の error 規則 33 個すべてについて、規則ごとにも成り立ちます。</figcaption>
+    </figure>
+    <p class="meaning"><b>意味:</b> 「移動時間が足りない」と言われたら本当に足りていないし、足りていなければ必ず言われます。</p>
+  </article>
+
+  <article class="item">
+    <div class="item-head"><span class="num">定理2</span><h3>どんな選び方でもエンディングはちょうど1つ</h3></div>
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 640 230" role="img" aria-label="プレイヤーの選択の組み合わせをすべて並べ、どのマスにもエンディングがちょうど1つ入ることを示す表">
+        <text class="ts" x="170" y="22" text-anchor="middle">トムの投票</text>
+        <text class="ts" x="20" y="130" transform="rotate(-90 20 130)" text-anchor="middle">ソウスケの投票</text>
+        <g>
+          <text class="t" x="110" y="45" text-anchor="middle">ツムギ</text>
+          <text class="t" x="190" y="45" text-anchor="middle">ソウスケ</text>
+          <text class="t" x="270" y="45" text-anchor="middle">トム</text>
+          <text class="t" x="50" y="84" text-anchor="middle">ツムギ</text>
+          <text class="t" x="50" y="134" text-anchor="middle">ソウスケ</text>
+          <text class="t" x="50" y="184" text-anchor="middle">トム</text>
+          <rect class="box-ok" x="75" y="55" width="70" height="44" rx="4"/><text class="tok" x="110" y="83" text-anchor="middle">E1</text>
+          <rect class="box-ok" x="155" y="55" width="70" height="44" rx="4"/><text class="tok" x="190" y="83" text-anchor="middle">E4</text>
+          <rect class="box-ok" x="235" y="55" width="70" height="44" rx="4"/><text class="tok" x="270" y="83" text-anchor="middle">E4</text>
+          <rect class="box-ok" x="75" y="105" width="70" height="44" rx="4"/><text class="tok" x="110" y="133" text-anchor="middle">E4</text>
+          <rect class="box-ok" x="155" y="105" width="70" height="44" rx="4"/><text class="tok" x="190" y="133" text-anchor="middle">E2</text>
+          <rect class="box-ok" x="235" y="105" width="70" height="44" rx="4"/><text class="tok" x="270" y="133" text-anchor="middle">E4</text>
+          <rect class="box-ok" x="75" y="155" width="70" height="44" rx="4"/><text class="tok" x="110" y="183" text-anchor="middle">E4</text>
+          <rect class="box-ok" x="155" y="155" width="70" height="44" rx="4"/><text class="tok" x="190" y="183" text-anchor="middle">E4</text>
+          <rect class="box-ok" x="235" y="155" width="70" height="44" rx="4"/><text class="tok" x="270" y="183" text-anchor="middle">E3</text>
+        </g>
+        <rect class="box-bad" x="360" y="55" width="70" height="44" rx="4"/><text class="tbad" x="395" y="83" text-anchor="middle">なし</text>
+        <text class="t" x="445" y="75">エンディングが0個</text>
+        <text class="tbad mono" x="445" y="94">G001</text>
+        <rect class="box-bad" x="360" y="125" width="70" height="44" rx="4"/><text class="tbad" x="395" y="153" text-anchor="middle">E1+E2</text>
+        <text class="t" x="445" y="145">エンディングが2個</text>
+        <text class="tbad mono" x="445" y="164">G002</text>
+        <text class="ts" x="360" y="215">この2つが出なければ、左の表の</text>
+        <text class="ts" x="360" y="230" dy="-2">どのマスも必ず1つになる</text>
+      </svg>
+      </div>
+      <figcaption>判定器は選択の組み合わせを全部数え上げます。数え上げに漏れがないことと、G001・G002 が出ない ⇔ どのマスもちょうど1つ、を証明しました(表の値は説明用の例)。</figcaption>
+    </figure>
+  </article>
+
+  <article class="item">
+    <div class="item-head"><span class="num">定理3</span><h3>書く順番を変えても結果は同じ</h3></div>
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 640 190" role="img" aria-label="入力ファイルの配列の順番が違っても、判定器の出力は完全に同じ">
+        <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="fill-fg"/></marker></defs>
+        <rect class="box" x="20" y="20" width="170" height="64" rx="6"/>
+        <text class="ts" x="35" y="40">入力 A の characters</text>
+        <text class="t mono" x="35" y="66">alice, bob, carol</text>
+        <rect class="box" x="20" y="106" width="170" height="64" rx="6"/>
+        <text class="ts" x="35" y="126">入力 B の characters</text>
+        <text class="t mono" x="35" y="152">carol, alice, bob</text>
+        <rect class="box-ac" x="250" y="63" width="110" height="64" rx="6"/>
+        <text class="tac" x="305" y="100" text-anchor="middle">判定器</text>
+        <line class="ln" x1="192" y1="52" x2="246" y2="85" marker-end="url(#a3)"/>
+        <line class="ln" x1="192" y1="138" x2="246" y2="105" marker-end="url(#a3)"/>
+        <line class="ln" x1="362" y1="95" x2="416" y2="95" marker-end="url(#a3)"/>
+        <rect class="box-ok" x="420" y="45" width="200" height="100" rx="6"/>
+        <text class="tok" x="520" y="72" text-anchor="middle">同じ出力</text>
+        <text class="t mono" x="440" y="98">G008 [alice]</text>
+        <text class="t mono" x="440" y="120">T009 [bob, carol, …]</text>
+      </svg>
+      </div>
+      <figcaption>トップレベルの 20 個の配列のどれを並べ替えても、出力は1文字も変わりません。出力は決まった順に並び、同じ指摘が2回出ることもありません。</figcaption>
+    </figure>
+  </article>
+
+  <article class="item">
+    <div class="item-head"><span class="num">定理4</span><h3>同じ時刻の出来事は、どちらを先に処理しても同じ</h3></div>
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 640 220" role="img" aria-label="同時刻の独立な2つのイベントは、どちらの順で処理しても同じ状態にたどり着く">
+        <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="fill-fg"/></marker></defs>
+        <rect class="box" x="20" y="85" width="110" height="46" rx="6"/><text class="tb" x="75" y="113" text-anchor="middle">10:00 の前</text>
+        <rect class="box" x="265" y="20" width="110" height="46" rx="6"/><text class="t" x="320" y="48" text-anchor="middle">途中の状態</text>
+        <rect class="box" x="265" y="150" width="110" height="46" rx="6"/><text class="t" x="320" y="178" text-anchor="middle">途中の状態</text>
+        <rect class="box-ok" x="510" y="85" width="110" height="46" rx="6"/><text class="tok" x="565" y="113" text-anchor="middle">同じ状態</text>
+        <line class="ln" x1="132" y1="98" x2="261" y2="48" marker-end="url(#a4)"/>
+        <line class="ln" x1="132" y1="118" x2="261" y2="168" marker-end="url(#a4)"/>
+        <line class="ln" x1="377" y1="48" x2="506" y2="98" marker-end="url(#a4)"/>
+        <line class="ln" x1="377" y1="168" x2="506" y2="118" marker-end="url(#a4)"/>
+        <text class="t" x="150" y="58">A が B に鍵を渡す</text>
+        <text class="t" x="150" y="178">C が D に話す</text>
+        <text class="t" x="400" y="58">C が D に話す</text>
+        <text class="t" x="400" y="178">A が B に鍵を渡す</text>
+      </svg>
+      </div>
+      <figcaption>条件は、同じ人・同じ物が関わらないこと(T005・I004 が出ない)と、T012 が出ないことです。このとき、最後の状態も、各イベントの検出結果も同じになります。</figcaption>
+    </figure>
+  </article>
+
+  <article class="item">
+    <div class="item-head"><span class="num">定理8</span><h3>居場所の区間は重ならず、「その時刻の居場所」と一致する</h3></div>
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 640 170" role="img" aria-label="執事の居場所の区間。書斎、移動中、台所の順に並び、重ならない">
+        <line class="ln" x1="40" y1="110" x2="610" y2="110"/>
+        <g class="ts">
+          <text x="40" y="132" text-anchor="middle" class="ts">20:30</text>
+          <text x="250" y="132" text-anchor="middle" class="ts">21:00</text>
+          <text x="355" y="132" text-anchor="middle" class="ts">21:05</text>
+          <text x="610" y="132" text-anchor="middle" class="ts">22:00</text>
+        </g>
+        <line class="ln" x1="250" y1="104" x2="250" y2="116"/>
+        <line class="ln" x1="355" y1="104" x2="355" y2="116"/>
+        <rect class="box-ac" x="40" y="60" width="210" height="36" rx="4"/>
+        <text class="tac" x="145" y="83" text-anchor="middle">書斎</text>
+        <rect class="box-soft" x="250" y="60" width="105" height="36" rx="4" style="stroke-dasharray:5 4"/>
+        <text class="ts" x="302" y="83" text-anchor="middle">移動中</text>
+        <rect class="box-ac" x="355" y="60" width="255" height="36" rx="4"/>
+        <text class="tac" x="482" y="83" text-anchor="middle">台所</text>
+        <text class="t" x="40" y="40">執事: 21:00 に書斎を出て、21:05 に台所に着く</text>
+        <text class="ts" x="40" y="158">「21:02 の居場所」= 移動中。21:02 までの出来事をすべてたどった結果と一致する</text>
+      </svg>
+      </div>
+      <figcaption>出発 ≤ 到着(R006)、開始時刻以降に出発(T001)、出発時に移動中でない(T006)、という条件の下で、区間が時刻順に並んで重ならないことと、居場所の答えが出来事をたどった結果と一致することを証明しました。</figcaption>
+    </figure>
+  </article>
+
+  <div class="grid2">
+    <div class="mini"><span class="num">定理5</span><h3>知識は減らない</h3><p>一度知ったことを、時間が進んで忘れることはない。</p></div>
+    <div class="mini"><span class="num">定理6</span><h3>仕様は矛盾していない</h3><p>「正しい」と判定されるシナリオが少なくとも1つ存在する。条件が厳しすぎて全部エラーになる、ということはない。</p></div>
+    <div class="mini"><span class="num">定理7</span><h3>同じ物を2人は持てない</h3><p>「A も B も指輪を持つ」ゴールは同時に達成できない。判定器はこの組を正しく割り出す。</p></div>
+    <div class="mini"><span class="num">定理9</span><h3>移動時間は1つに決まる</h3><p>表に重複(R005)がなければ、「書斎→台所は何分か」の答えは1つで、表の書き順によらない。</p></div>
+    <div class="mini"><span class="num">定理10</span><h3>投票は「単独最多」か「同数」か</h3><p>票があれば、どの選択肢でも、単独最多か同数のどちらか一方だけが成り立つ。</p></div>
+    <div class="mini"><span class="num">定理11</span><h3>死亡は取り消されない</h3><p>一度死亡したキャラクターは生き返らず、死亡時刻もぶれない。</p></div>
+  </div>
+</section>
+
+<section id="counter" aria-labelledby="s-counter">
+  <div class="section-head">
+    <span class="eyebrow">第2部</span>
+    <h2 id="s-counter">見つかった5つの反例</h2>
+    <p>どれも「同じ内容なのに、書き方(順番・名前)で結果が変わる」か「定理の言い方が少し違っていた」ものです。すべて仕様か定理を直して解消しました。</p>
+  </div>
+
+  <article class="item">
+    <div class="item-head"><span class="num bad">反例1</span><h3>出力の並び順が、完全には決まっていなかった</h3></div>
+    <p>出力は「コード → イベント → 内容 → witness の位置」の順に並べていました。ここまで同じで、重大度など他の部分だけが違う2件があると、どちらを先に出すかが決まっていませんでした。</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>コード</th><th>イベント</th><th>内容</th><th>witness の位置</th><th>その他</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">X</td><td class="mono">e1</td><td class="mono">[a]</td><td class="mono">[0, 1]</td><td>重大度 error</td></tr>
+        <tr><td class="mono">X</td><td class="mono">e1</td><td class="mono">[a]</td><td class="mono">[0, 1]</td><td>重大度 warning</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>このとき、入力の書き順が出力の順に残る可能性がありました(定理3が成り立たない)。</p>
+    <p class="fix"><b>直し方:</b> 比べる項目に「重大度」と「witness の値」を足し、どの2件も必ず順番が決まるようにしました。通常の出力は変わりません。</p>
+  </article>
+
+  <article class="item">
+    <div class="item-head"><span class="num bad">反例2</span><h3>イベント ID が重複すると、並べ替えで R011 が変わる</h3></div>
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 640 210" role="img" aria-label="同じIDのイベントが2つあるとき、最初に見つかった方だけを見ていたため、配列の順でR011が出たり出なかったりした">
+        <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="fill-fg"/></marker></defs>
+        <text class="ts" x="20" y="22">証言 g:「e1 の到着時刻は 18:00」</text>
+        <text class="tb" x="20" y="52">順 A</text>
+        <rect class="box-ac" x="70" y="35" width="150" height="28" rx="4"/><text class="t mono" x="82" y="54">e1: 移動</text>
+        <rect class="box-soft" x="230" y="35" width="150" height="28" rx="4"/><text class="t mono" x="242" y="54">e1: 知識を得る</text>
+        <line class="ln" x1="388" y1="49" x2="438" y2="49" marker-end="url(#a5)"/>
+        <rect class="box-ok" x="445" y="33" width="175" height="32" rx="4"/><text class="tok" x="532" y="54" text-anchor="middle">R011 なし</text>
+        <text class="tb" x="20" y="112">順 B</text>
+        <rect class="box-ac" x="70" y="95" width="150" height="28" rx="4"/><text class="t mono" x="82" y="114">e1: 知識を得る</text>
+        <rect class="box-soft" x="230" y="95" width="150" height="28" rx="4"/><text class="t mono" x="242" y="114">e1: 移動</text>
+        <line class="ln" x1="388" y1="109" x2="438" y2="109" marker-end="url(#a5)"/>
+        <rect class="box-bad" x="445" y="93" width="175" height="32" rx="4"/><text class="tbad" x="532" y="114" text-anchor="middle">R011 あり</text>
+        <text class="ts" x="70" y="152">色の付いた方 = 判定器が「最初に見つかった e1」として見ていた方</text>
+        <text class="ts" x="70" y="174">移動なら「到着時刻」がある → OK / 移動でなければ到着時刻がない → R011</text>
+        <text class="ts" x="70" y="196">どちらも R001(ID の重複)は出る。違うのは R011 だけ</text>
+      </svg>
+      </div>
+      <figcaption>内容は同じでも、ファイル内の順番だけで R011 が出たり出なかったりしました(オラクルで確認)。</figcaption>
+    </figure>
+    <p class="fix"><b>直し方:</b> 同じ ID のイベントのどれか1つでも移動でなければ R011 を出すようにしました。その後、反例5の修正で「ID の重複があれば R001 だけを出す」にもなっています。</p>
+  </article>
+
+  <article class="item">
+    <div class="item-head"><span class="num bad">反例3</span><h3>観察される人が、同じ時刻に立ち去る(T012 を新設)</h3></div>
+    <p>同じ時刻のイベントは、ID の辞書順(<code>a</code> → <code>z</code>)に処理する決まりです。ID は作者が自由に付けるラベルなのに、ここで結果が変わりました。</p>
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 640 250" role="img" aria-label="21時に執事が出ていくのとメイドが執事を見るのが同時刻。IDの順で処理順が変わり、T007が出たり出なかったりする">
+        <defs><marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="fill-fg"/></marker></defs>
+        <text class="tb" x="20" y="24">どちらも 21:00 のイベント</text>
+        <text class="ts" x="20" y="50">ケース1: ID が e_butler_leaves と e_maid_sees(b &lt; m なので移動が先)</text>
+        <rect class="box" x="20" y="62" width="170" height="40" rx="6"/><text class="t" x="105" y="80" text-anchor="middle">① 執事が書斎を出る</text><text class="ts" x="105" y="96" text-anchor="middle">(21:02 台所着)</text>
+        <line class="ln" x1="192" y1="82" x2="226" y2="82" marker-end="url(#a6)"/>
+        <rect class="box" x="230" y="62" width="200" height="40" rx="6"/><text class="t" x="330" y="80" text-anchor="middle">② メイドが書斎をのぞく</text><text class="ts" x="330" y="96" text-anchor="middle">執事はもう移動中</text>
+        <line class="ln" x1="432" y1="82" x2="466" y2="82" marker-end="url(#a6)"/>
+        <rect class="box-bad" x="470" y="62" width="150" height="40" rx="6"/><text class="tbad" x="545" y="80" text-anchor="middle">T007</text><text class="ts" x="545" y="96" text-anchor="middle">執事が書斎にいない</text>
+        <text class="ts" x="20" y="140">ケース2: メイドの ID を a_maid_sees に変える(a &lt; e なので観察が先)</text>
+        <rect class="box" x="20" y="152" width="170" height="40" rx="6"/><text class="t" x="105" y="170" text-anchor="middle">① メイドがのぞく</text><text class="ts" x="105" y="186" text-anchor="middle">執事はまだ書斎</text>
+        <line class="ln" x1="192" y1="172" x2="226" y2="172" marker-end="url(#a6)"/>
+        <rect class="box" x="230" y="152" width="200" height="40" rx="6"/><text class="t" x="330" y="170" text-anchor="middle">② 執事が書斎を出る</text><text class="ts" x="330" y="186" text-anchor="middle">(21:02 台所着)</text>
+        <line class="ln" x1="432" y1="172" x2="466" y2="172" marker-end="url(#a6)"/>
+        <rect class="box-ok" x="470" y="152" width="150" height="40" rx="6"/><text class="tok" x="545" y="177" text-anchor="middle">問題なし</text>
+        <text class="ts" x="20" y="232">シナリオの内容は同じ。違うのはメイドのイベントの名前だけ</text>
+      </svg>
+      </div>
+      <figcaption>見られる側(observe の targets)は参加者ではないので、同時刻の重複チェック T005 にかかりませんでした。そのため、この組み合わせだけ処理順の影響を受けます(定理4の例外)。</figcaption>
+    </figure>
+    <p class="fix"><b>直し方:</b> この状況を警告 <code>T012</code> として知らせるようにしました。観察か出発を1分ずらせば解消します。「T012 が出ない ⇔ 定理4の条件が成り立つ」も証明しました。</p>
+    <p class="meaning"><b>実例:</b> 「荒木コノミの真相」で1件見つかりました。コノミの転落(18:00)とツムギの遺体発見(18:00)が同時刻です。たまたま ID の順で転落が先だったので、問題が表に出ていませんでした。</p>
+  </article>
+
+  <article class="item">
+    <div class="item-head"><span class="num bad">反例4</span><h3>「その時刻の居場所」の意味が2通りあった(定理8の言い直し)</h3></div>
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 640 220" role="img" aria-label="10時に場面とXの移動が同時にあるとき、場面の処理前の状態ではXは部屋にいるが、10時の居場所は移動中になる">
+        <defs><marker id="a7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="fill-fg"/></marker></defs>
+        <line class="ln" x1="40" y1="70" x2="610" y2="70"/>
+        <line class="ln" x1="320" y1="58" x2="320" y2="82"/>
+        <text class="tb" x="320" y="46" text-anchor="middle">10:00</text>
+        <text class="t" x="40" y="94">X は広間にいる</text>
+        <text class="ts" x="460" y="94">移動中 → 書斎へ</text>
+        <rect class="box" x="160" y="110" width="150" height="40" rx="6"/><text class="t" x="235" y="135" text-anchor="middle">① 場面(X が参加)</text>
+        <rect class="box" x="330" y="110" width="150" height="40" rx="6"/><text class="t" x="405" y="135" text-anchor="middle">② X が移動を始める</text>
+        <line class="ln" x1="312" y1="130" x2="326" y2="130" marker-end="url(#a7)"/>
+        <rect class="box-ac" x="40" y="168" width="270" height="36" rx="6"/><text class="tac" x="175" y="191" text-anchor="middle">場面を処理する直前: X は広間</text>
+        <rect class="box-bad" x="330" y="168" width="290" height="36" rx="6"/><text class="tbad" x="475" y="191" text-anchor="middle">「10:00 の居場所」: 移動中</text>
+      </svg>
+      </div>
+      <figcaption>元の定理は「各イベントの時点の居場所と、その時刻の居場所が一致する」と言っていましたが、同じ時刻にあとから移動するとずれます。判定器の不具合ではなく、定理の言い方の問題でした。</figcaption>
+    </figure>
+    <p class="fix"><b>直し方:</b> 「時刻 t までの出来事をすべて処理した後の居場所と一致する」と言い直して証明しました。判定器の動きは変えていません。</p>
+  </article>
+
+  <article class="item">
+    <div class="item-head"><span class="num bad">反例5</span><h3>ID が重複すると、並べ替えで R009・R010 が変わる</h3></div>
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 640 200" role="img" aria-label="同じIDの真の知識と偽の知識の順を入れ替えると、R010が出たり出なかったりした">
+        <defs><marker id="a8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="fill-fg"/></marker></defs>
+        <text class="ts" x="20" y="22">偽の知識 f:「否定するのは知識 x」/ 知識 x が2回書かれている</text>
+        <text class="tb" x="20" y="54">順 A</text>
+        <rect class="box-ac" x="70" y="37" width="150" height="28" rx="4"/><text class="t mono" x="82" y="56">x: 真</text>
+        <rect class="box-soft" x="230" y="37" width="150" height="28" rx="4"/><text class="t mono" x="242" y="56">x: 偽</text>
+        <line class="ln" x1="388" y1="51" x2="438" y2="51" marker-end="url(#a8)"/>
+        <rect class="box-ok" x="445" y="35" width="175" height="32" rx="4"/><text class="tok" x="532" y="56" text-anchor="middle">R010 なし</text>
+        <text class="tb" x="20" y="114">順 B</text>
+        <rect class="box-ac" x="70" y="97" width="150" height="28" rx="4"/><text class="t mono" x="82" y="116">x: 偽</text>
+        <rect class="box-soft" x="230" y="97" width="150" height="28" rx="4"/><text class="t mono" x="242" y="116">x: 真</text>
+        <line class="ln" x1="388" y1="111" x2="438" y2="111" marker-end="url(#a8)"/>
+        <rect class="box-bad" x="445" y="95" width="175" height="32" rx="4"/><text class="tbad" x="532" y="116" text-anchor="middle">R010 あり</text>
+        <text class="ts" x="70" y="156">判定器は最初に見つかった x(色付き)の真偽を見ていた</text>
+        <text class="ts" x="70" y="178">選択肢の ID が重複したときも、R009 が同じように変わった</text>
+      </svg>
+      </div>
+      <figcaption>反例2と同じ種類の問題が、別の規則にも残っていました。並べ替え不変性を全配列に広げる証明の途中で見つかりました。</figcaption>
+    </figure>
+    <p class="fix"><b>直し方:</b> ID の重複(R001)があるときは、R001 だけを出すようにしました(仕様 0.5.0)。ID が重複していると「どれのことか」が決まらないので、他の検査には意味がないためです。</p>
+  </article>
+</section>
+
+<section id="how" aria-labelledby="s-how">
+  <div class="section-head">
+    <span class="eyebrow">補足</span>
+    <h2 id="s-how">反例が見つかった経緯</h2>
+    <p>Lean が「証明できません」とエラーを出したのではありません。証明を組み立てる段階で、必要な条件を漏れなく洗い出した結果「ここで詰まる」と分かり、そこから反例を作りました。</p>
+  </div>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 640 300" role="img" aria-label="反例3が見つかった流れ。仕様の定理4を証明しようとして、各検査が読む情報を洗い出し、観察の対象者が守られていないと気づき、オラクルで具体例を確認し、前提を足して証明を完成した">
+      <defs><marker id="a9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="fill-fg"/></marker></defs>
+      <rect class="box" x="20" y="14" width="600" height="40" rx="6"/>
+      <text class="tb" x="36" y="39">1. 仕様書の定理4を証明すると決める</text>
+      <text class="ts" x="604" y="39" text-anchor="end">「T005・I004 がなければ順序に依存しない」</text>
+      <line class="ln" x1="320" y1="56" x2="320" y2="68" marker-end="url(#a9)"/>
+      <rect class="box" x="20" y="72" width="600" height="40" rx="6"/>
+      <text class="tb" x="36" y="97">2. 各検査が「状態のどこを読むか」を全部書き出す</text>
+      <text class="ts" x="604" y="97" text-anchor="end">証明には漏れなく必要</text>
+      <line class="ln" x1="320" y1="114" x2="320" y2="126" marker-end="url(#a9)"/>
+      <rect class="box-bad" x="20" y="130" width="600" height="40" rx="6"/>
+      <text class="tbad" x="36" y="155">3. T007 は観察の対象者の位置も読む。対象者は T005 で守られていない</text>
+      <line class="ln" x1="320" y1="172" x2="320" y2="184" marker-end="url(#a9)"/>
+      <rect class="box" x="20" y="188" width="600" height="40" rx="6"/>
+      <text class="tb" x="36" y="213">4. オラクルで具体例を作り、結果が変わることを確認</text>
+      <text class="ts" x="604" y="213" text-anchor="end">ID だけ違う 2 件で T007 の有無が変わる</text>
+      <line class="ln" x1="320" y1="230" x2="320" y2="242" marker-end="url(#a9)"/>
+      <rect class="box-ok" x="20" y="246" width="600" height="40" rx="6"/>
+      <text class="tok" x="36" y="271">5. 前提を足し、T012 を新設して Lean で証明を完成</text>
+      <text class="ts" x="604" y="271" text-anchor="end">「T012 が出ない ⇔ 前提が成り立つ」も証明</text>
+    </svg>
+    </div>
+    <figcaption>元の前提のまま Lean で書いていれば、「検査結果が変わらない」を示す補題(stepIssues_congr)の、観察の対象者の位置のところで必ず詰まっていました。そこを先回りした形です。</figcaption>
+  </figure>
+
+  <article class="item">
+    <h3>なぜ反例3は普通のテストでは気づきにくいか</h3>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>方法</th><th>見つけられたか</th><th>理由</th></tr></thead>
+      <tbody>
+        <tr><td>普通のテスト(入力 → 期待する出力)</td><td>見つけにくい</td><td>どちらの ID の付け方でも、出力は単体ではもっともらしい。問題は「名前しか違わない 2 件で結果が違う」という 2 件の関係にある</td></tr>
+        <tr><td>差分テスト(Lean と試作判定器の比較)</td><td>見つからなかった</td><td>両方が同じ仕様を実装しているので、同じ答えを返す。仕様そのものの問題は拾えない(1,000 件以上回していた)</td></tr>
+        <tr><td>性質を書くテスト(ID を付け替えても結果は同じ)</td><td>見つけられた可能性はある</td><td>その性質を思いつく必要がある。さらに「観察・その対象者の移動・同じ分」がそろう入力はまれで、狙った変異を足すまでほとんど作られていなかった</td></tr>
+        <tr><td><b>証明</b></td><td><b>見つかった</b></td><td>定理4を証明すると決めたので問いが立ち、読む情報を漏れなく挙げる必要があった。直した後は「これ以外に順序で結果が変わるケースはない」と言える</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="meaning"><b>実際の影響:</b> 「荒木コノミの真相」は、転落と遺体発見がどちらも 18:00 なのに、ID の順(<code>konomi_05</code> &lt; <code>tsumugi_05</code>)がたまたまよかったので合格していました。テストを書いていても、この「合格」を正解として固定していたはずです。</p>
+  </article>
+
+  <article class="item">
+    <h3>他の反例も同じ流れで見つかった</h3>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>反例</th><th>証明で必要だったこと</th><th>そこで気づいたこと</th></tr></thead>
+      <tbody>
+        <tr><td>1 出力の順序</td><td>「重複がない」を示すには、どの 2 件も必ず前後が決まる必要がある</td><td>キーが同じで中身が違う 2 件の順序が決まらない</td></tr>
+        <tr><td>2・5 ID の重複</td><td>「並べ替えても同じ」を示すには、ID による検索の結果が 1 つに決まる必要がある</td><td>ID が重複すると「最初に見つかったもの」が並び順で変わる</td></tr>
+        <tr><td>3 観察と同時の出発</td><td>各検査が読む情報をすべて挙げる必要がある</td><td>観察の対象者が守られていない</td></tr>
+        <tr><td>4 居場所の定義</td><td>定理8の主張を式で書く必要がある</td><td>同じ時刻の扱いが 2 通りある</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>5 件とも、見つけた後はオラクル(Lean の判定器)で具体例を作り、本当に起きることを確かめてから直しています。今後はこれらの具体例を回帰テストとして固定し、テストでも守ります。</p>
+    <p class="fix"><b>まとめ:</b> Lean で証明しようとした結果、証明に必要な条件を全部洗い出すことになり、そこで抜けが見つかりました。</p>
+  </article>
+</section>
+
+<section id="limits" aria-labelledby="s-limits">
+  <div class="section-head">
+    <span class="eyebrow">第3部</span>
+    <h2 id="s-limits">まだ保証していないこと</h2>
+  </div>
+  <ul class="plain">
+    <li>warning(記載漏れ、遭遇の認知など)が、出るべきときに必ず出ること。</li>
+    <li>R 群(構造の検査)の条件を、判定器とは別の命題として書くこと。</li>
+    <li>検出結果に添える情報(どのキャラクター、どの時刻か)が正しいこと。</li>
+    <li>配列の要素の中の配列(場面の参加者、選択肢の値など)の並べ替え。</li>
+    <li>仕様書の日本語の説明と Lean の定義が同じ意味であること。これは証明では確かめられないので、レビューと差分テスト(Lean と Go の出力の比較)で確かめます。</li>
+  </ul>
+</section>
+
+</div>
