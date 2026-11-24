@@ -1,0 +1,19 @@
+{"spec_version": "0.5.0",
+ "diagnostics":
+ [{"witness":
+   {"v1": "p", "v0": "p", "g3": false, "g2": false, "g1": false, "g0": true},
+   "severity": "error",
+   "code": "G001",
+   "args": []},
+  {"severity": "warning", "code": "G006", "args": ["g0"]},
+  {"severity": "error", "event": "e04", "code": "K001", "args": ["c3", "f0"]},
+  {"severity": "error", "event": "e05", "code": "K001", "args": ["c1", "f2"]},
+  {"severity": "error", "event": "e00", "code": "K002", "args": ["c0", "f0"]},
+  {"severity": "warning",
+   "code": "T009",
+   "args": ["c1", "c3", "l1", "1112", "1146"]},
+  {"severity": "warning",
+   "code": "T009",
+   "args": ["c2", "c3", "l1", "1138", "1146"]},
+  {"severity": "error", "event": "e01", "code": "T010", "args": ["c0", "e00"]},
+  {"severity": "error", "event": "e04", "code": "T010", "args": ["c0", "e00"]}]}

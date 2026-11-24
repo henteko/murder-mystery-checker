@@ -1,0 +1,345 @@
+{
+ "spec_version": "0.5.0",
+ "_case": {
+  "doc": "ランダム生成 (seed 20261124, #86)"
+ },
+ "start_time": 898,
+ "end_time": 986,
+ "claim_tolerance": 0,
+ "characters": [
+  {
+   "id": "c0"
+  },
+  {
+   "id": "c1",
+   "npc": true
+  },
+  {
+   "id": "c2"
+  }
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "internal_minutes": 4
+  }
+ ],
+ "locations": [
+  {
+   "id": "l0",
+   "area": "a0",
+   "public": true
+  },
+  {
+   "id": "l1"
+  },
+  {
+   "id": "l2",
+   "area": "a0"
+  },
+  {
+   "id": "l3",
+   "public": true
+  }
+ ],
+ "travel": [],
+ "perception": [
+  {
+   "from": "l2",
+   "to": "l3",
+   "bidirectional": false
+  }
+ ],
+ "placements": [
+  {
+   "character": "c0",
+   "location": "l3"
+  },
+  {
+   "character": "c1",
+   "location": "l1"
+  },
+  {
+   "character": "c2",
+   "location": "l3"
+  }
+ ],
+ "items": [
+  {
+   "id": "i0",
+   "initial": {
+    "character": "c1"
+   }
+  },
+  {
+   "id": "i1",
+   "initial": {
+    "location": "l0"
+   }
+  }
+ ],
+ "facts": [
+  {
+   "id": "f0"
+  },
+  {
+   "id": "f1",
+   "truth": false,
+   "contradicted_by": [
+    "f0"
+   ]
+  },
+  {
+   "id": "f2"
+  },
+  {
+   "id": "f3"
+  },
+  {
+   "id": "f4"
+  },
+  {
+   "id": "f_claim",
+   "about": {
+    "event": "e09",
+    "point": "at"
+   },
+   "claimed_at": 931
+  }
+ ],
+ "initial_knowledge": [
+  {
+   "character": "c0",
+   "fact": "f2"
+  }
+ ],
+ "events": [
+  {
+   "id": "e08",
+   "at": 925,
+   "kind": "move",
+   "character": "c1",
+   "to": "l0",
+   "arrive": 937,
+   "mode": "fall",
+   "fatal": true
+  },
+  {
+   "id": "e10",
+   "at": 933,
+   "kind": "observe",
+   "character": "c0",
+   "location": "l3",
+   "target_location": "l2",
+   "targets": [
+    "c1",
+    "c2"
+   ],
+   "facts": [
+    "f2"
+   ]
+  },
+  {
+   "id": "e00",
+   "at": 903,
+   "kind": "consume",
+   "character": "c1",
+   "item": "i1"
+  },
+  {
+   "id": "e09",
+   "at": 930,
+   "kind": "pickup",
+   "character": "c2",
+   "item": "i0",
+   "requires": [
+    "f0"
+   ]
+  },
+  {
+   "id": "e03",
+   "at": 911,
+   "kind": "use",
+   "character": "c1",
+   "item": "i1"
+  },
+  {
+   "id": "e01",
+   "at": 903,
+   "kind": "die",
+   "character": "c2"
+  },
+  {
+   "id": "e05",
+   "at": 919,
+   "kind": "scene",
+   "location": "l0",
+   "participants": [
+    "c2"
+   ]
+  },
+  {
+   "id": "e04",
+   "at": 914,
+   "kind": "learn",
+   "character": "c0",
+   "facts": [
+    "f3"
+   ]
+  },
+  {
+   "id": "e07",
+   "at": 925,
+   "kind": "scene",
+   "location": "l3",
+   "participants": [
+    "c0"
+   ],
+   "reveals": [
+    "f0"
+   ]
+  },
+  {
+   "id": "e06",
+   "at": 920,
+   "kind": "learn",
+   "character": "c1",
+   "facts": [
+    "f1"
+   ]
+  },
+  {
+   "id": "e02",
+   "at": 908,
+   "kind": "move",
+   "character": "c2",
+   "to": "l0",
+   "arrive": 911
+  }
+ ],
+ "clues": [
+  {
+   "id": "cl0",
+   "reveals": [
+    "f1"
+   ],
+   "item": "i1"
+  },
+  {
+   "id": "cl1",
+   "reveals": [
+    "f3"
+   ],
+   "item": "i1"
+  }
+ ],
+ "solution_facts": [
+  "f0",
+  "f4"
+ ],
+ "assertions": [
+  {
+   "id": "as0",
+   "kind": "present",
+   "location": "l1",
+   "at": 985,
+   "characters": [
+    "c1"
+   ]
+  },
+  {
+   "id": "as1",
+   "kind": "present",
+   "location": "l1",
+   "at": 931,
+   "characters": [
+    "c0"
+   ]
+  }
+ ],
+ "handouts": [
+  {
+   "character": "c2",
+   "items": [
+    "i0"
+   ]
+  },
+  {
+   "character": "c0",
+   "location": "l3"
+  }
+ ],
+ "board": [],
+ "goals": [
+  {
+   "id": "g0",
+   "owner": "c0"
+  },
+  {
+   "id": "g1",
+   "owner": "c2"
+  }
+ ],
+ "choices": [
+  {
+   "id": "v0",
+   "owner": "c2",
+   "values": [
+    "p",
+    "q",
+    "r"
+   ]
+  },
+  {
+   "id": "v1",
+   "owner": "c2",
+   "values": [
+    "p",
+    "q",
+    "r"
+   ]
+  },
+  {
+   "id": "v2",
+   "owner": "c2",
+   "values": [
+    "p",
+    "q",
+    "r"
+   ]
+  }
+ ],
+ "endings": [
+  {
+   "id": "end_win",
+   "condition": {
+    "and": [
+     {
+      "var": "g0"
+     },
+     {
+      "eq": {
+       "var": "v0",
+       "value": "p"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "end_lose",
+   "condition": {
+    "not": {
+     "var": "g0"
+    }
+   }
+  }
+ ],
+ "constraints": [
+  {
+   "not": {
+    "var": "g0"
+   }
+  }
+ ]
+}

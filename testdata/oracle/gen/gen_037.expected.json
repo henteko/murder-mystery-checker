@@ -1,0 +1,15 @@
+{"spec_version": "0.5.0",
+ "diagnostics":
+ [{"severity": "error", "code": "A001", "args": ["as0", "c0", "present", "l1"]},
+  {"severity": "error",
+   "event": "e02",
+   "code": "I001",
+   "args": ["c0", "i0", "character:c1"]},
+  {"severity": "error", "event": "e03", "code": "K002", "args": ["c1", "f2"]},
+  {"severity": "error",
+   "event": "e04",
+   "code": "T002",
+   "args": ["c1", "l3", "l0"]},
+  {"severity": "error", "event": "e01", "code": "T005", "args": ["c0", "e00"]},
+  {"severity": "error", "event": "e02", "code": "T006", "args": ["c0", "e01"]},
+  {"severity": "error", "event": "e04", "code": "T010", "args": ["c1", "e03"]}]}

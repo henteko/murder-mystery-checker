@@ -1,0 +1,278 @@
+{
+ "spec_version": "0.5.0",
+ "_case": {
+  "doc": "ランダム生成 (seed 20261124, #83)"
+ },
+ "start_time": 1129,
+ "end_time": 1188,
+ "claim_tolerance": 0,
+ "characters": [
+  {
+   "id": "c0"
+  },
+  {
+   "id": "c1"
+  },
+  {
+   "id": "c2"
+  },
+  {
+   "id": "c3"
+  }
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "internal_minutes": 4
+  }
+ ],
+ "locations": [
+  {
+   "id": "l0",
+   "area": "a0",
+   "public": true
+  },
+  {
+   "id": "l1",
+   "area": "a0"
+  },
+  {
+   "id": "l2",
+   "public": true
+  }
+ ],
+ "travel": [
+  {
+   "from": "l1",
+   "to": "l2",
+   "minutes": 1,
+   "bidirectional": true
+  },
+  {
+   "from": "l0",
+   "to": "l1",
+   "minutes": 5,
+   "bidirectional": true
+  }
+ ],
+ "perception": [],
+ "placements": [
+  {
+   "character": "c0",
+   "location": "l1"
+  },
+  {
+   "character": "c1",
+   "location": "l2"
+  },
+  {
+   "character": "c2",
+   "location": "l2"
+  },
+  {
+   "character": "c3",
+   "location": "l1"
+  }
+ ],
+ "items": [
+  {
+   "id": "i0",
+   "initial": {
+    "character": "c2"
+   }
+  },
+  {
+   "id": "i1",
+   "initial": {
+    "character": "c1"
+   }
+  },
+  {
+   "id": "i2",
+   "initial": {
+    "location": "l2"
+   }
+  }
+ ],
+ "facts": [
+  {
+   "id": "f0"
+  },
+  {
+   "id": "f1"
+  },
+  {
+   "id": "f2",
+   "truth": false,
+   "contradicted_by": [
+    "f0"
+   ]
+  },
+  {
+   "id": "f3"
+  },
+  {
+   "id": "f4"
+  },
+  {
+   "id": "f_claim",
+   "about": {
+    "event": "e04",
+    "point": "at"
+   },
+   "claimed_at": 1155
+  }
+ ],
+ "initial_knowledge": [],
+ "events": [
+  {
+   "id": "e05",
+   "at": 1148,
+   "kind": "move",
+   "character": "c3",
+   "to": "l2",
+   "arrive": 1153
+  },
+  {
+   "id": "e02",
+   "at": 1140,
+   "kind": "learn",
+   "character": "c3",
+   "facts": [
+    "f2"
+   ],
+   "requires": [
+    "f0"
+   ]
+  },
+  {
+   "id": "e00",
+   "at": 1131,
+   "kind": "die",
+   "character": "c0"
+  },
+  {
+   "id": "e03",
+   "at": 1140,
+   "kind": "die",
+   "character": "c2"
+  },
+  {
+   "id": "e01",
+   "at": 1139,
+   "kind": "die",
+   "character": "c2"
+  },
+  {
+   "id": "e04",
+   "at": 1145,
+   "kind": "transfer",
+   "from": "c2",
+   "to": "c0",
+   "item": "i2"
+  }
+ ],
+ "clues": [
+  {
+   "id": "cl0",
+   "reveals": [
+    "f4"
+   ],
+   "deck": "deck"
+  },
+  {
+   "id": "cl1",
+   "reveals": [
+    "f4"
+   ],
+   "item": "i2",
+   "location": "l0"
+  }
+ ],
+ "solution_facts": [],
+ "assertions": [],
+ "handouts": [
+  {
+   "character": "c0",
+   "location": "l1",
+   "items": [
+    "i2"
+   ]
+  },
+  {
+   "character": "c1",
+   "location": "l2",
+   "items": [
+    "i1"
+   ]
+  },
+  {
+   "character": "c2",
+   "location": "l2"
+  }
+ ],
+ "board": [
+  {
+   "location": "l0",
+   "items": []
+  }
+ ],
+ "goals": [
+  {
+   "id": "g0",
+   "owner": "c0"
+  },
+  {
+   "id": "g2",
+   "owner": "c2"
+  },
+  {
+   "id": "g3",
+   "owner": "c3"
+  }
+ ],
+ "choices": [
+  {
+   "id": "v0",
+   "owner": "c2",
+   "values": [
+    "p",
+    "q"
+   ]
+  },
+  {
+   "id": "v1",
+   "owner": "c1",
+   "values": [
+    "p",
+    "q"
+   ]
+  }
+ ],
+ "endings": [
+  {
+   "id": "end_q",
+   "condition": {
+    "plurality": {
+     "votes": [
+      "v0",
+      "v1"
+     ],
+     "value": "q"
+    }
+   }
+  },
+  {
+   "id": "end_tie",
+   "condition": {
+    "tie": {
+     "votes": [
+      "v0",
+      "v1"
+     ]
+    }
+   }
+  }
+ ],
+ "constraints": []
+}

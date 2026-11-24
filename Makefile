@@ -1,4 +1,6 @@
-.PHONY: all lean oracle go test diff-check clean
+.PHONY: all lean cases oracle go test diff-check clean
+
+ORACLE := lean/.lake/build/bin/oracle
 
 all: lean go
 
@@ -6,9 +8,15 @@ all: lean go
 lean:
 	cd lean && lake build
 
-# Lean オラクルで testdata/oracle/*.expected.json を再生成する(Phase 3 で実装)
+# テストケースの入力を作り直す(手書き: tools/oracle/cases.py、ランダム生成: tools/oracle/gen.py)
+cases:
+	python3 tools/oracle/cases.py
+	python3 tools/oracle/gen.py
+
+# Lean オラクルで期待出力(testdata/oracle/**/*.expected.json, examples/*/expected.json)を作り直し、点検する
 oracle: lean
-	@echo "TODO(Phase 3): generate testdata/oracle from Lean oracle"
+	python3 tools/oracle/regen.py $(ORACLE)
+	python3 tools/oracle/check.py
 
 go:
 	cd go && go build -o ../bin/mmcheck ./cmd/mmcheck
@@ -17,9 +25,10 @@ go:
 test:
 	cd go && go vet ./... && go test ./...
 
-# オラクル再生成後にコミット済みのゴールデンとの差分がないこと(CI 用)
-diff-check: oracle
-	git diff --exit-code -- testdata/oracle
+# 入力と期待出力を作り直しても、コミット済みのものと差分がないこと(CI 用)
+diff-check: cases oracle
+	@test -z "$$(git status --porcelain -- testdata/oracle examples)" || \
+		(git status --porcelain -- testdata/oracle examples; echo "testdata/oracle or examples is out of date: run make cases oracle and commit"; exit 1)
 
 clean:
 	rm -rf bin lean/.lake/build

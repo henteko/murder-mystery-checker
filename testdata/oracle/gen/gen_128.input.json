@@ -1,0 +1,320 @@
+{
+ "spec_version": "0.5.0",
+ "_case": {
+  "doc": "ランダム生成 (seed 20261124, #128)"
+ },
+ "start_time": 1155,
+ "end_time": 1249,
+ "claim_tolerance": 0,
+ "characters": [
+  {
+   "id": "c0"
+  },
+  {
+   "id": "c1",
+   "npc": true
+  }
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "internal_minutes": 2
+  }
+ ],
+ "locations": [
+  {
+   "id": "l0",
+   "area": "a0"
+  },
+  {
+   "id": "l1",
+   "area": "a0"
+  },
+  {
+   "id": "l2",
+   "public": true
+  }
+ ],
+ "travel": [
+  {
+   "from": "l0",
+   "to": "l2",
+   "minutes": 1,
+   "bidirectional": true
+  },
+  {
+   "from": "l1",
+   "to": "l2",
+   "minutes": 2,
+   "bidirectional": false
+  },
+  {
+   "from": "l0",
+   "to": "l1",
+   "minutes": 8,
+   "bidirectional": true
+  }
+ ],
+ "perception": [],
+ "placements": [
+  {
+   "character": "c0",
+   "location": "l2"
+  },
+  {
+   "character": "c1",
+   "location": "l1"
+  }
+ ],
+ "items": [
+  {
+   "id": "i0",
+   "initial": {
+    "character": "c0"
+   }
+  },
+  {
+   "id": "i1",
+   "initial": {
+    "character": "c1"
+   }
+  },
+  {
+   "id": "i2",
+   "initial": {
+    "character": "c1"
+   }
+  }
+ ],
+ "facts": [
+  {
+   "id": "f0",
+   "truth": false,
+   "contradicted_by": [
+    "f4"
+   ]
+  },
+  {
+   "id": "f1"
+  },
+  {
+   "id": "f2"
+  },
+  {
+   "id": "f3"
+  },
+  {
+   "id": "f4"
+  },
+  {
+   "id": "f_claim",
+   "about": {
+    "event": "e07",
+    "point": "at"
+   },
+   "claimed_at": 1178
+  }
+ ],
+ "initial_knowledge": [
+  {
+   "character": "c1",
+   "fact": "f4"
+  },
+  {
+   "character": "c1",
+   "fact": "f2"
+  },
+  {
+   "character": "c1",
+   "fact": "f3"
+  }
+ ],
+ "events": [
+  {
+   "id": "e11",
+   "at": 1183,
+   "kind": "tell",
+   "from": "c0",
+   "to": "c1",
+   "facts": [
+    "f4"
+   ],
+   "requires": [
+    "f4"
+   ]
+  },
+  {
+   "id": "e00",
+   "at": 1163,
+   "kind": "move",
+   "character": "c1",
+   "to": "l2",
+   "arrive": 1163
+  },
+  {
+   "id": "e08",
+   "at": 1178,
+   "kind": "pickup",
+   "character": "c1",
+   "item": "i2"
+  },
+  {
+   "id": "e05",
+   "at": 1172,
+   "kind": "observe",
+   "character": "c1",
+   "location": "l2",
+   "target_location": "l1",
+   "targets": [],
+   "facts": [
+    "f2"
+   ]
+  },
+  {
+   "id": "e07",
+   "at": 1177,
+   "kind": "pickup",
+   "character": "c0",
+   "item": "i0"
+  },
+  {
+   "id": "e02",
+   "at": 1166,
+   "kind": "consume",
+   "character": "c0",
+   "item": "i0"
+  },
+  {
+   "id": "e09",
+   "at": 1181,
+   "kind": "move",
+   "character": "c1",
+   "to": "l0",
+   "arrive": 1182,
+   "mode": "carried",
+   "fatal": false
+  },
+  {
+   "id": "e03",
+   "at": 1171,
+   "kind": "use",
+   "character": "c0",
+   "item": "i2"
+  },
+  {
+   "id": "e06",
+   "at": 1174,
+   "kind": "die",
+   "character": "c0"
+  },
+  {
+   "id": "e10",
+   "at": 1183,
+   "kind": "pickup",
+   "character": "c1",
+   "item": "i0"
+  },
+  {
+   "id": "e04",
+   "at": 1172,
+   "kind": "drop",
+   "character": "c0",
+   "item": "i0"
+  },
+  {
+   "id": "e01",
+   "at": 1165,
+   "kind": "consume",
+   "character": "c1",
+   "item": "i0",
+   "requires": [
+    "f2"
+   ]
+  }
+ ],
+ "clues": [
+  {
+   "id": "cl0",
+   "reveals": [
+    "f1"
+   ],
+   "deck": "deck"
+  },
+  {
+   "id": "cl1",
+   "reveals": [
+    "f0"
+   ],
+   "deck": "deck"
+  }
+ ],
+ "solution_facts": [],
+ "assertions": [],
+ "handouts": [
+  {
+   "character": "c0",
+   "location": "l2",
+   "items": [],
+   "knows": [
+    "f4"
+   ]
+  }
+ ],
+ "board": [
+  {
+   "location": "l0",
+   "items": []
+  }
+ ],
+ "goals": [
+  {
+   "id": "g0",
+   "owner": "c0"
+  }
+ ],
+ "choices": [
+  {
+   "id": "v0",
+   "owner": "c0",
+   "values": [
+    "p",
+    "q"
+   ]
+  }
+ ],
+ "endings": [
+  {
+   "id": "end_p",
+   "condition": {
+    "plurality": {
+     "votes": [
+      "v0"
+     ],
+     "value": "p"
+    }
+   }
+  },
+  {
+   "id": "end_q",
+   "condition": {
+    "plurality": {
+     "votes": [
+      "v0"
+     ],
+     "value": "q"
+    }
+   }
+  },
+  {
+   "id": "end_tie",
+   "condition": {
+    "tie": {
+     "votes": [
+      "v0"
+     ]
+    }
+   }
+  }
+ ],
+ "constraints": []
+}

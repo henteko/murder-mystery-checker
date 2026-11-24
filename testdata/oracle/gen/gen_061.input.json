@@ -1,0 +1,190 @@
+{
+ "spec_version": "0.5.0",
+ "_case": {
+  "doc": "ランダム生成 (seed 20261124, #61)"
+ },
+ "start_time": 1022,
+ "end_time": 1053,
+ "claim_tolerance": 2,
+ "characters": [
+  {
+   "id": "c0",
+   "npc": true
+  },
+  {
+   "id": "c1"
+  }
+ ],
+ "areas": [
+  {
+   "id": "a0",
+   "internal_minutes": 3
+  }
+ ],
+ "locations": [
+  {
+   "id": "l0"
+  },
+  {
+   "id": "l1",
+   "area": "a0",
+   "public": true
+  },
+  {
+   "id": "l2"
+  },
+  {
+   "id": "l3"
+  },
+  {
+   "id": "l4",
+   "area": "a0",
+   "public": true
+  }
+ ],
+ "travel": [],
+ "perception": [],
+ "placements": [
+  {
+   "character": "c0",
+   "location": "l0"
+  },
+  {
+   "character": "c1",
+   "location": "l3"
+  }
+ ],
+ "items": [
+  {
+   "id": "i0",
+   "initial": {
+    "character": "c1"
+   }
+  },
+  {
+   "id": "i1",
+   "initial": {
+    "character": "c1"
+   }
+  }
+ ],
+ "facts": [
+  {
+   "id": "f0"
+  },
+  {
+   "id": "f1"
+  },
+  {
+   "id": "f2"
+  },
+  {
+   "id": "f3"
+  },
+  {
+   "id": "f4"
+  }
+ ],
+ "initial_knowledge": [
+  {
+   "character": "c1",
+   "fact": "f1"
+  }
+ ],
+ "events": [
+  {
+   "id": "e02",
+   "at": 1024,
+   "kind": "transfer",
+   "from": "c0",
+   "to": "c1",
+   "item": "i0"
+  },
+  {
+   "id": "e00",
+   "at": 1023,
+   "kind": "transfer",
+   "from": "c1",
+   "to": "c0",
+   "item": "i0"
+  },
+  {
+   "id": "e03",
+   "at": 1026,
+   "kind": "scene",
+   "location": "l0",
+   "participants": [
+    "c0"
+   ],
+   "requires": [
+    "f1"
+   ]
+  },
+  {
+   "id": "e04",
+   "at": 1034,
+   "kind": "die",
+   "character": "c1"
+  },
+  {
+   "id": "e01",
+   "at": 1024,
+   "kind": "die",
+   "character": "c1"
+  }
+ ],
+ "clues": [],
+ "solution_facts": [
+  "f2",
+  "f4"
+ ],
+ "assertions": [],
+ "handouts": [
+  {
+   "character": "c0",
+   "location": "l0"
+  }
+ ],
+ "board": [],
+ "goals": [
+  {
+   "id": "g0",
+   "owner": "c1",
+   "requires_items": [
+    "i1"
+   ]
+  }
+ ],
+ "choices": [
+  {
+   "id": "v0",
+   "owner": "c1",
+   "values": [
+    "p",
+    "q",
+    "r"
+   ]
+  }
+ ],
+ "endings": [
+  {
+   "id": "end_p",
+   "condition": {
+    "eq": {
+     "var": "v0",
+     "value": "p"
+    }
+   }
+  },
+  {
+   "id": "end_r",
+   "condition": {
+    "eq": {
+     "var": "v0",
+     "value": "r"
+    }
+   }
+  }
+ ],
+ "constraints": []
+}

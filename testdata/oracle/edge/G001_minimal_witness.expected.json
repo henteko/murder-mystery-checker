@@ -1,0 +1,6 @@
+{"spec_version": "0.5.0",
+ "diagnostics":
+ [{"witness": {"g_bob": false, "g_alice": false, "c_vote": "alice"},
+   "severity": "error",
+   "code": "G001",
+   "args": []}]}

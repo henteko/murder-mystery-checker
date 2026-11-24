@@ -1,0 +1,17 @@
+{"spec_version": "0.5.0",
+ "diagnostics":
+ [{"severity": "error", "code": "A001", "args": ["as0", "c1", "present", "l1"]},
+  {"witness": {"v0": "p", "g0": false, "flag": false},
+   "severity": "error",
+   "code": "G001",
+   "args": []},
+  {"severity": "error",
+   "event": "e00",
+   "code": "I001",
+   "args": ["c0", "i0", "location:l1"]},
+  {"severity": "error",
+   "event": "e01",
+   "code": "I001",
+   "args": ["c1", "i0", "location:l1"]},
+  {"severity": "error", "event": "e02", "code": "I002", "args": ["c0", "i0"]},
+  {"severity": "error", "event": "e01", "code": "K002", "args": ["c1", "f0"]}]}

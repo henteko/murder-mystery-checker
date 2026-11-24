@@ -1,0 +1,64 @@
+{
+  "spec_version": "0.5.0",
+  "diagnostics": [
+    {
+      "code": "A001",
+      "severity": "error",
+      "args": [
+        "a1",
+        "alice",
+        "absent",
+        "study"
+      ]
+    },
+    {
+      "code": "G001",
+      "severity": "error",
+      "args": [],
+      "witness": {
+        "c_vote": "alice",
+        "g_alice": false,
+        "g_bob": false
+      }
+    },
+    {
+      "code": "I001",
+      "severity": "error",
+      "event": "e3",
+      "args": [
+        "alice",
+        "poison",
+        "character:bob"
+      ]
+    },
+    {
+      "code": "K002",
+      "severity": "error",
+      "event": "e3",
+      "args": [
+        "alice",
+        "poison_in_tea"
+      ]
+    },
+    {
+      "code": "K008",
+      "severity": "error",
+      "args": [
+        "alice_moved_1265",
+        "1265",
+        "1270"
+      ]
+    },
+    {
+      "code": "T003",
+      "severity": "error",
+      "event": "e1",
+      "args": [
+        "alice",
+        "hall",
+        "study",
+        "5"
+      ]
+    }
+  ]
+}

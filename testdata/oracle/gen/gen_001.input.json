@@ -1,0 +1,332 @@
+{
+ "spec_version": "0.5.0",
+ "_case": {
+  "doc": "ランダム生成 (seed 20261124, #1)"
+ },
+ "start_time": 808,
+ "end_time": 842,
+ "claim_tolerance": 0,
+ "characters": [
+  {
+   "id": "c0"
+  },
+  {
+   "id": "c1"
+  },
+  {
+   "id": "c2"
+  }
+ ],
+ "areas": [
+  {
+   "id": "a0"
+  }
+ ],
+ "locations": [
+  {
+   "id": "l0"
+  },
+  {
+   "id": "l1"
+  },
+  {
+   "id": "l2"
+  },
+  {
+   "id": "l3"
+  }
+ ],
+ "travel": [
+  {
+   "from": "l0",
+   "to": "l3",
+   "minutes": 6,
+   "bidirectional": true
+  }
+ ],
+ "perception": [],
+ "placements": [
+  {
+   "character": "c0",
+   "location": "l0"
+  },
+  {
+   "character": "c1",
+   "location": "l3"
+  },
+  {
+   "character": "c2",
+   "location": "l2"
+  }
+ ],
+ "items": [
+  {
+   "id": "i0",
+   "initial": {
+    "location": "l1"
+   }
+  },
+  {
+   "id": "i1",
+   "initial": {
+    "location": "l1"
+   }
+  },
+  {
+   "id": "i2",
+   "initial": {
+    "character": "c2"
+   }
+  }
+ ],
+ "facts": [
+  {
+   "id": "f0"
+  },
+  {
+   "id": "f1"
+  },
+  {
+   "id": "f2"
+  },
+  {
+   "id": "f3"
+  },
+  {
+   "id": "f4"
+  },
+  {
+   "id": "f_claim",
+   "about": {
+    "event": "e06",
+    "point": "at"
+   },
+   "claimed_at": 839
+  }
+ ],
+ "initial_knowledge": [],
+ "events": [
+  {
+   "id": "e03",
+   "at": 819,
+   "kind": "move",
+   "character": "c0",
+   "to": "l1",
+   "arrive": 831,
+   "requires": [
+    "f0"
+   ]
+  },
+  {
+   "id": "e01",
+   "at": 811,
+   "kind": "move",
+   "character": "c0",
+   "to": "l2",
+   "arrive": 819
+  },
+  {
+   "id": "e09",
+   "at": 834,
+   "kind": "pickup",
+   "character": "c2",
+   "item": "i1"
+  },
+  {
+   "id": "e08",
+   "at": 831,
+   "kind": "learn",
+   "character": "c1",
+   "facts": [
+    "f4"
+   ]
+  },
+  {
+   "id": "e02",
+   "at": 811,
+   "kind": "use",
+   "character": "c2",
+   "item": "i0"
+  },
+  {
+   "id": "e06",
+   "at": 829,
+   "kind": "scene",
+   "location": "l1",
+   "participants": [
+    "c0"
+   ]
+  },
+  {
+   "id": "e04",
+   "at": 827,
+   "kind": "drop",
+   "character": "c1",
+   "item": "i0"
+  },
+  {
+   "id": "e00",
+   "at": 809,
+   "kind": "move",
+   "character": "c2",
+   "to": "l3",
+   "arrive": 812,
+   "mode": "carried",
+   "fatal": true
+  },
+  {
+   "id": "e07",
+   "at": 830,
+   "kind": "observe",
+   "character": "c2",
+   "location": "l3",
+   "target_location": "l2",
+   "targets": [
+    "c0"
+   ],
+   "facts": [
+    "f4"
+   ]
+  },
+  {
+   "id": "e05",
+   "at": 829,
+   "kind": "transfer",
+   "from": "c1",
+   "to": "c0",
+   "item": "i2"
+  }
+ ],
+ "clues": [],
+ "solution_facts": [
+  "f3"
+ ],
+ "assertions": [
+  {
+   "id": "as0",
+   "kind": "absent",
+   "location": "l3",
+   "at": 830,
+   "characters": [
+    "c2"
+   ]
+  }
+ ],
+ "handouts": [
+  {
+   "character": "c1",
+   "location": "l3"
+  }
+ ],
+ "board": [
+  {
+   "location": "l1",
+   "items": []
+  },
+  {
+   "location": "l3",
+   "items": [
+    "i0"
+   ]
+  }
+ ],
+ "goals": [
+  {
+   "id": "g0",
+   "owner": "c0"
+  },
+  {
+   "id": "g1",
+   "owner": "c1"
+  },
+  {
+   "id": "g2",
+   "owner": "c2"
+  }
+ ],
+ "choices": [
+  {
+   "id": "v0",
+   "owner": "c2",
+   "values": [
+    "p",
+    "q",
+    "r"
+   ]
+  },
+  {
+   "id": "v1",
+   "owner": "c2",
+   "values": [
+    "p",
+    "q",
+    "r"
+   ]
+  },
+  {
+   "id": "v2",
+   "owner": "c2",
+   "values": [
+    "p",
+    "q",
+    "r"
+   ]
+  }
+ ],
+ "endings": [
+  {
+   "id": "end_p",
+   "condition": {
+    "plurality": {
+     "votes": [
+      "v0",
+      "v1",
+      "v2"
+     ],
+     "value": "p"
+    }
+   }
+  },
+  {
+   "id": "end_q",
+   "condition": {
+    "plurality": {
+     "votes": [
+      "v0",
+      "v1",
+      "v2"
+     ],
+     "value": "q"
+    }
+   }
+  },
+  {
+   "id": "end_r",
+   "condition": {
+    "plurality": {
+     "votes": [
+      "v0",
+      "v1",
+      "v2"
+     ],
+     "value": "r"
+    }
+   }
+  }
+ ],
+ "constraints": [
+  {
+   "or": [
+    {
+     "var": "g0"
+    },
+    {
+     "var": "g1"
+    },
+    {
+     "var": "g2"
+    }
+   ]
+  }
+ ]
+}

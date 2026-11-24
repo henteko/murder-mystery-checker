@@ -1,59 +1,23 @@
-{
-  "spec_version": "0.5.0",
-  "diagnostics": [
-    {
-      "severity": "warning",
-      "code": "H003",
-      "args": [
-        "shimeji",
-        "sleeping_pill"
-      ]
-    },
-    {
-      "severity": "warning",
-      "code": "H003",
-      "args": [
-        "ushirokawada",
-        "lip_cream"
-      ]
-    },
-    {
-      "severity": "error",
-      "code": "H006",
-      "args": [
-        "room_shimeji",
-        "sleeping_pill",
-        "character:shimeji"
-      ]
-    },
-    {
-      "severity": "error",
-      "code": "H006",
-      "args": [
-        "room_ushirokawada",
-        "lip_cream",
-        "character:ushirokawada"
-      ]
-    },
-    {
-      "severity": "error",
-      "code": "K005",
-      "args": [
-        "x_shimeji_room",
-        "sleeping_pill",
-        "room_shimeji",
-        "character:shimeji"
-      ]
-    },
-    {
-      "severity": "error",
-      "code": "K005",
-      "args": [
-        "x_ushiro_room",
-        "lip_cream",
-        "room_ushirokawada",
-        "character:ushirokawada"
-      ]
-    }
-  ]
-}
+{"spec_version": "0.5.0",
+ "diagnostics":
+ [{"severity": "warning", "code": "H003", "args": ["shimeji", "sleeping_pill"]},
+  {"severity": "warning",
+   "code": "H003",
+   "args": ["ushirokawada", "lip_cream"]},
+  {"severity": "error",
+   "code": "H006",
+   "args": ["room_shimeji", "sleeping_pill", "character:shimeji"]},
+  {"severity": "error",
+   "code": "H006",
+   "args": ["room_ushirokawada", "lip_cream", "character:ushirokawada"]},
+  {"severity": "error",
+   "code": "K005",
+   "args":
+   ["x_shimeji_room", "sleeping_pill", "room_shimeji", "character:shimeji"]},
+  {"severity": "error",
+   "code": "K005",
+   "args":
+   ["x_ushiro_room",
+    "lip_cream",
+    "room_ushirokawada",
+    "character:ushirokawada"]}]}

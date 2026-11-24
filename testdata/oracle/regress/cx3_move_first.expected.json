@@ -1,0 +1,10 @@
+{"spec_version": "0.5.0",
+ "diagnostics":
+ [{"severity": "error",
+   "event": "z_look",
+   "code": "T007",
+   "args": ["bob", "hall", "transit"]},
+  {"severity": "warning",
+   "event": "z_look",
+   "code": "T012",
+   "args": ["bob", "m_leave"]}]}

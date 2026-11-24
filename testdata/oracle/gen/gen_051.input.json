@@ -1,0 +1,204 @@
+{
+ "spec_version": "0.5.0",
+ "_case": {
+  "doc": "ランダム生成 (seed 20261124, #51)"
+ },
+ "start_time": 1068,
+ "end_time": 1127,
+ "claim_tolerance": 5,
+ "characters": [
+  {
+   "id": "c0",
+   "npc": true
+  },
+  {
+   "id": "c1"
+  }
+ ],
+ "areas": [
+  {
+   "id": "a0"
+  }
+ ],
+ "locations": [
+  {
+   "id": "l0",
+   "area": "a0"
+  },
+  {
+   "id": "l1"
+  },
+  {
+   "id": "l2"
+  },
+  {
+   "id": "l3"
+  },
+  {
+   "id": "l4",
+   "area": "a0"
+  }
+ ],
+ "travel": [],
+ "perception": [],
+ "placements": [
+  {
+   "character": "c0",
+   "location": "l3"
+  },
+  {
+   "character": "c1",
+   "location": "l2"
+  }
+ ],
+ "items": [
+  {
+   "id": "i0",
+   "initial": {
+    "location": "l2"
+   }
+  }
+ ],
+ "facts": [
+  {
+   "id": "f0"
+  },
+  {
+   "id": "f1"
+  },
+  {
+   "id": "f2"
+  },
+  {
+   "id": "f_claim",
+   "about": {
+    "event": "e04",
+    "point": "at"
+   },
+   "claimed_at": 1091
+  }
+ ],
+ "initial_knowledge": [],
+ "events": [
+  {
+   "id": "e01",
+   "at": 1076,
+   "kind": "drop",
+   "character": "c1",
+   "item": "i0"
+  },
+  {
+   "id": "e04",
+   "at": 1088,
+   "kind": "scene",
+   "location": "l2",
+   "participants": [
+    "c1"
+   ]
+  },
+  {
+   "id": "e00",
+   "at": 1076,
+   "kind": "scene",
+   "location": "l3",
+   "participants": [
+    "c0"
+   ],
+   "reveals": [
+    "f1"
+   ]
+  },
+  {
+   "id": "e03",
+   "at": 1087,
+   "kind": "consume",
+   "character": "c1",
+   "item": "i0"
+  },
+  {
+   "id": "e02",
+   "at": 1084,
+   "kind": "drop",
+   "character": "c1",
+   "item": "i0"
+  }
+ ],
+ "clues": [
+  {
+   "id": "cl0",
+   "reveals": [
+    "f2"
+   ],
+   "location": "l4"
+  },
+  {
+   "id": "cl1",
+   "reveals": [
+    "f0"
+   ],
+   "location": "l2"
+  }
+ ],
+ "solution_facts": [
+  "f0"
+ ],
+ "assertions": [
+  {
+   "id": "as0",
+   "kind": "present",
+   "location": "l3",
+   "at": 1120,
+   "characters": [
+    "c1"
+   ]
+  },
+  {
+   "id": "as1",
+   "kind": "absent",
+   "location": "l3",
+   "at": 1096,
+   "characters": [
+    "c1"
+   ]
+  }
+ ],
+ "handouts": [],
+ "board": [
+  {
+   "location": "l1",
+   "items": []
+  }
+ ],
+ "goals": [],
+ "choices": [
+  {
+   "id": "v0",
+   "owner": "c1",
+   "values": [
+    "p",
+    "q"
+   ]
+  }
+ ],
+ "endings": [
+  {
+   "id": "end_p",
+   "condition": {
+    "eq": {
+     "var": "v0",
+     "value": "p"
+    }
+   }
+  },
+  {
+   "id": "end_q",
+   "condition": {
+    "eq": {
+     "var": "v0",
+     "value": "q"
+    }
+   }
+  }
+ ],
+ "constraints": []
+}

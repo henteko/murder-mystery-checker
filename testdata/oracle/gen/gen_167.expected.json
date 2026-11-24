@@ -1,0 +1,18 @@
+{"spec_version": "0.5.0",
+ "diagnostics":
+ [{"severity": "error", "code": "A001", "args": ["as0", "c2", "present", "l2"]},
+  {"severity": "error", "code": "H004", "args": ["c2", "f1"]},
+  {"severity": "error",
+   "event": "e03",
+   "code": "I001",
+   "args": ["c0", "i0", "character:c1"]},
+  {"severity": "error", "event": "e05", "code": "I002", "args": ["c0", "i0"]},
+  {"severity": "error",
+   "event": "e02",
+   "code": "I003",
+   "args": ["c2", "i1", "location:l0"]},
+  {"severity": "error", "event": "e02", "code": "K002", "args": ["c2", "f2"]},
+  {"severity": "error", "code": "K008", "args": ["f_claim", "1142", "1139"]},
+  {"severity": "warning",
+   "code": "T009",
+   "args": ["c0", "c1", "l3", "1127", "1161"]}]}

@@ -1,0 +1,11 @@
+{"spec_version": "0.5.0",
+ "diagnostics":
+ [{"severity": "error", "code": "G004", "args": ["g0"]},
+  {"severity": "error", "code": "K008", "args": ["f_claim", "1219", "1209"]},
+  {"severity": "error",
+   "event": "e02",
+   "code": "T003",
+   "args": ["c0", "l1", "l4", "5"]},
+  {"severity": "warning",
+   "code": "T009",
+   "args": ["c0", "c2", "l4", "1205", "1264"]}]}

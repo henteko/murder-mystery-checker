@@ -1,0 +1,6 @@
+{"spec_version": "0.5.0",
+ "diagnostics":
+ [{"severity": "error",
+   "event": "e3",
+   "code": "R006",
+   "args": ["self_transfer"]}]}

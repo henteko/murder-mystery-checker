@@ -1,0 +1,6 @@
+{
+  "doc": "JSON として不正",
+  "expect": [
+    "input_error"
+  ]
+}

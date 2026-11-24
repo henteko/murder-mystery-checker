@@ -1,0 +1,13 @@
+{"spec_version": "0.5.0",
+ "diagnostics":
+ [{"severity": "error", "code": "G004", "args": ["g0"]},
+  {"severity": "warning", "code": "G008", "args": ["c2"]},
+  {"severity": "error",
+   "event": "e02",
+   "code": "I001",
+   "args": ["c1", "i0", "location:l0"]},
+  {"severity": "error", "code": "K003", "args": ["f3"]},
+  {"severity": "error", "code": "K008", "args": ["f_claim", "768", "767"]},
+  {"severity": "warning",
+   "code": "T009",
+   "args": ["c0", "c2", "l2", "753", "768"]}]}

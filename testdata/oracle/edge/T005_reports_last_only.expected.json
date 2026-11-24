@@ -1,0 +1,7 @@
+{"spec_version": "0.5.0",
+ "diagnostics":
+ [{"severity": "error", "event": "e4", "code": "T005", "args": ["alice", "e3"]},
+  {"severity": "error",
+   "event": "e5",
+   "code": "T005",
+   "args": ["alice", "e4"]}]}

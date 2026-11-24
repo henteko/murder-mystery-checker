@@ -506,21 +506,21 @@ svg .area-all { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1
     <div class="item-head"><span class="num bad">反例4</span><h3>「その時刻の居場所」の意味が2通りあった(定理8の言い直し)</h3></div>
     <figure>
       <div class="fig-scroll">
-      <svg viewBox="0 0 640 220" role="img" aria-label="10時に場面とXの移動が同時にあるとき、場面の処理前の状態ではXは部屋にいるが、10時の居場所は移動中になる">
+      <svg viewBox="0 0 640 220" role="img" aria-label="10時にAとBの場面と、場面に参加しないXの移動が同時にあるとき、場面の処理前の状態ではXは部屋にいるが、10時の居場所は移動中になる">
         <defs><marker id="a7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="fill-fg"/></marker></defs>
         <line class="ln" x1="40" y1="70" x2="610" y2="70"/>
         <line class="ln" x1="320" y1="58" x2="320" y2="82"/>
         <text class="tb" x="320" y="46" text-anchor="middle">10:00</text>
         <text class="t" x="40" y="94">X は広間にいる</text>
         <text class="ts" x="460" y="94">移動中 → 書斎へ</text>
-        <rect class="box" x="160" y="110" width="150" height="40" rx="6"/><text class="t" x="235" y="135" text-anchor="middle">① 場面(X が参加)</text>
+        <rect class="box" x="160" y="110" width="150" height="40" rx="6"/><text class="t" x="235" y="135" text-anchor="middle">① A と B の場面</text>
         <rect class="box" x="330" y="110" width="150" height="40" rx="6"/><text class="t" x="405" y="135" text-anchor="middle">② X が移動を始める</text>
         <line class="ln" x1="312" y1="130" x2="326" y2="130" marker-end="url(#a7)"/>
         <rect class="box-ac" x="40" y="168" width="270" height="36" rx="6"/><text class="tac" x="175" y="191" text-anchor="middle">場面を処理する直前: X は広間</text>
         <rect class="box-bad" x="330" y="168" width="290" height="36" rx="6"/><text class="tbad" x="475" y="191" text-anchor="middle">「10:00 の居場所」: 移動中</text>
       </svg>
       </div>
-      <figcaption>元の定理は「各イベントの時点の居場所と、その時刻の居場所が一致する」と言っていましたが、同じ時刻にあとから移動するとずれます。判定器の不具合ではなく、定理の言い方の問題でした。</figcaption>
+      <figcaption>元の定理は「各イベントの時点の居場所と、その時刻の居場所が一致する」と言っていましたが、そのイベントに参加していない人が同じ時刻にあとから移動するとずれます(X が場面にも参加していれば T005 になるので、反例にはなりません)。判定器の不具合ではなく、定理の言い方の問題でした。</figcaption>
     </figure>
     <p class="fix"><b>直し方:</b> 「時刻 t までの出来事をすべて処理した後の居場所と一致する」と言い直して証明しました。判定器の動きは変えていません。</p>
   </article>

@@ -1,0 +1,137 @@
+{
+  "_case": {
+    "doc": "行動に必要な知識を持っていない",
+    "expect": [
+      "K002"
+    ]
+  },
+  "spec_version": "0.5.0",
+  "start_time": 1260,
+  "end_time": 1320,
+  "characters": [
+    {
+      "id": "alice"
+    },
+    {
+      "id": "bob"
+    }
+  ],
+  "areas": [
+    {
+      "id": "house",
+      "internal_minutes": 5
+    }
+  ],
+  "locations": [
+    {
+      "id": "hall",
+      "area": "house"
+    },
+    {
+      "id": "study",
+      "area": "house"
+    }
+  ],
+  "placements": [
+    {
+      "character": "alice",
+      "location": "hall"
+    },
+    {
+      "character": "bob",
+      "location": "study"
+    }
+  ],
+  "items": [
+    {
+      "id": "knife",
+      "initial": {
+        "character": "alice"
+      }
+    }
+  ],
+  "facts": [
+    {
+      "id": "f_secret"
+    },
+    {
+      "id": "f_meeting"
+    }
+  ],
+  "initial_knowledge": [],
+  "events": [
+    {
+      "id": "e1",
+      "at": 1270,
+      "kind": "move",
+      "character": "bob",
+      "to": "hall",
+      "arrive": 1275
+    },
+    {
+      "id": "e2",
+      "at": 1280,
+      "kind": "scene",
+      "location": "hall",
+      "participants": [
+        "alice",
+        "bob"
+      ],
+      "reveals": [
+        "f_meeting"
+      ]
+    },
+    {
+      "id": "e3",
+      "at": 1285,
+      "kind": "transfer",
+      "from": "alice",
+      "to": "bob",
+      "item": "knife",
+      "requires": [
+        "f_secret"
+      ]
+    }
+  ],
+  "solution_facts": [],
+  "goals": [
+    {
+      "id": "g_alice",
+      "owner": "alice"
+    },
+    {
+      "id": "g_bob",
+      "owner": "bob"
+    }
+  ],
+  "choices": [
+    {
+      "id": "c_vote",
+      "owner": "bob",
+      "values": [
+        "alice",
+        "bob"
+      ]
+    }
+  ],
+  "endings": [
+    {
+      "id": "end_a",
+      "condition": {
+        "eq": {
+          "var": "c_vote",
+          "value": "alice"
+        }
+      }
+    },
+    {
+      "id": "end_b",
+      "condition": {
+        "eq": {
+          "var": "c_vote",
+          "value": "bob"
+        }
+      }
+    }
+  ]
+}
