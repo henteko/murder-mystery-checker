@@ -30,6 +30,10 @@ const usage = `usage:
   mmcheck convert <scenario.yaml>     YAML を正規化 JSON に変換して出力する
   mmcheck explain [-o out.html] <scenario.yaml|scenario.json>
                                       判定器の解釈を、原作と読み合わせるための HTML にする
+  mmcheck stats [--format text|json|agent] [--require '<条件>']... <scenario.yaml|scenario.json|->
+                                      複雑度の指標と水増しの候補。--require は 'score>=50'、
+                                      'axis.branching>=60'、'count(padding.idle_moves)==0' など。
+                                      条件をすべて満たせば 0、満たさなければ 1(docs/stats.md)
   mmcheck version
 
 終了コード: 0 = error なし / 1 = error あり(--strict なら warning も)/ 2 = 入力エラー`
@@ -86,6 +90,17 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		}
 		fmt.Fprint(stdout, guide)
 		return 0
+	case "stats":
+		fs := flag.NewFlagSet("stats", flag.ContinueOnError)
+		fs.SetOutput(stderr)
+		format := fs.String("format", "text", "output format: text, json or agent")
+		var requires stringList
+		fs.Var(&requires, "require", "condition such as 'score>=50' (repeatable)")
+		if err := fs.Parse(args[1:]); err != nil || fs.NArg() != 1 || (*format != "text" && *format != "json" && *format != "agent") {
+			fmt.Fprintln(stderr, usage)
+			return 2
+		}
+		return runStats(fs.Arg(0), *format, requires, stdin, stdout, stderr)
 	case "check":
 		fs := flag.NewFlagSet("check", flag.ContinueOnError)
 		fs.SetOutput(stderr)

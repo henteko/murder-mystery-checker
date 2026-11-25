@@ -14,6 +14,7 @@ bin/mmcheck check --format json scenario.yaml  # 検出結果を JSON で(docs/s
 bin/mmcheck check --strict scenario.yaml       # warning も失敗扱い
 bin/mmcheck convert scenario.yaml              # YAML を正規化 JSON に変換
 bin/mmcheck explain -o reading.html scenario.yaml  # 判定器の解釈を、原作と読み合わせるための HTML に(docs/explain.md)
+bin/mmcheck stats scenario.yaml                # 複雑度の指標: 規模・タイムライン・情報の流れ・探索・分岐(docs/stats.md)
 ```
 
 ### AI のループから使う

@@ -15,6 +15,11 @@ mmcheck はマーダーミステリーのシナリオの矛盾を検出する。
 注意: 矛盾がないことは、良いシナリオであることを意味しない。中身を削れば検出結果は減る。
 キャラクター数・死亡・真相・エンディングなどの最低条件は、検査とは別に決めること。
 
+複雑さの条件は `mmcheck stats --format agent --require '<条件>' ... scenario.yaml` で確かめる
+(例: `'check.errors==0'`、`'padding.total==0'`、`'score>=50'`、`'min(branching.players.pivotal)>0'`)。
+終了コード 0 ならすべて満たす。1 なら `requirements` のうち `ok: false` の `message` を見て直す。
+使われない場所・何もしない往復・結末に関係しない選択などの水増しは複雑度に数えず、`padding` に出る。
+
 ## 基本
 
 - ID は英数字の文字列。種類ごとに一意(ゴールと選択は同じ名前空間)

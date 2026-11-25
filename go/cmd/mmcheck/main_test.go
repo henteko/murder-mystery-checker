@@ -38,6 +38,16 @@ func TestExitCodes(t *testing.T) {
 		{[]string{"version"}, 0},
 		{[]string{"explain", "-o", filepath.Join(os.TempDir(), "mmcheck-explain-test.html"), withErr}, 0},
 		{[]string{"explain", bad}, 2},
+		{[]string{"stats", withErr}, 0},
+		{[]string{"stats", "--format", "json", withErr}, 0},
+		{[]string{"stats", filepath.Join(root, "testdata", "oracle", "rules", "R003_missing_placement.input.json")}, 1},
+		{[]string{"stats", bad}, 2},
+		{[]string{"stats", "--format", "agent", withErr}, 0},
+		{[]string{"stats", "--format", "xml", withErr}, 2},
+		{[]string{"stats", "--require", "score>=0", withErr}, 0},
+		{[]string{"stats", "--require", "score>=0", "--require", "check.errors==0", withErr}, 1},
+		{[]string{"stats", "--require", "score>>0", withErr}, 2},
+		{[]string{"stats", "--format", "agent", "--require", "no.such>0", withErr}, 1},
 	}
 	for _, c := range cases {
 		if got, _, _ := cli(c.args...); got != c.want {
@@ -140,5 +150,46 @@ func TestGuideExample(t *testing.T) {
 	}
 	if code, out, errOut := cli("check", "--strict", "--format", "agent", p); code != 0 {
 		t.Fatalf("最小の例が合格しない: code=%d\n%s\n%s", code, out, errOut)
+	}
+}
+
+func TestStatsAgentFormat(t *testing.T) {
+	scen := filepath.Join(root, "examples", "yaml-demo", "scenario.yaml")
+	code, out, _ := cli("stats", "--format", "agent", "--require", "score>=0", "--require", "check.errors==0", scen)
+	if code != 1 {
+		t.Fatalf("exit %d", code)
+	}
+	var v struct {
+		OK                bool `json:"ok"`
+		ComplexityVersion int  `json:"complexity_version"`
+		Failed            int  `json:"failed"`
+		Requirements      []struct {
+			Expr    string   `json:"expr"`
+			OK      bool     `json:"ok"`
+			Value   *float64 `json:"value"`
+			Message string   `json:"message"`
+		} `json:"requirements"`
+		Stats struct {
+			Complexity struct {
+				Score float64 `json:"score"`
+			} `json:"complexity"`
+		} `json:"stats"`
+	}
+	if err := json.Unmarshal([]byte(out), &v); err != nil {
+		t.Fatal(err)
+	}
+	if v.OK || v.Failed != 1 || len(v.Requirements) != 2 || v.ComplexityVersion != check.ComplexityVersion {
+		t.Errorf("agent output: %+v", v)
+	}
+	if r := v.Requirements[1]; r.OK || r.Value == nil || *r.Value == 0 || r.Message == "" {
+		t.Errorf("check.errors requirement: %+v", r)
+	}
+	if v.Stats.Complexity.Score <= 0 {
+		t.Errorf("stats missing: %+v", v.Stats)
+	}
+	// 条件式の誤りは入力エラーとして JSON で返す
+	code, out, _ = cli("stats", "--format", "agent", "--require", "score", scen)
+	if code != 2 || !strings.Contains(out, `"error"`) {
+		t.Errorf("bad expr: exit %d, %s", code, out)
 	}
 }
