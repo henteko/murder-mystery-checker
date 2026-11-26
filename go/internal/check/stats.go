@@ -125,8 +125,22 @@ type ExplorationStats struct {
 	MinCards int `json:"min_cards"`
 	// Slack は Draws − MinCards
 	Slack *int `json:"slack,omitempty"`
-	// RandomCover は D 枚を無作為に引いたときに真相のカードが揃う確率(計算しなかったら nil)
+	// RandomCover は D 枚を無作為に引いたときに真相のカードが揃う確率(計算しなかったら nil)。
+	// 回ごとの制限は考えない
 	RandomCover *float64 `json:"random_cover,omitempty"`
+	// Rounds は探索の回ごとの指標(exploration がなければ空)
+	Rounds []RoundStats `json:"rounds,omitempty"`
+}
+
+// RoundStats は探索の 1 回の指標。
+type RoundStats struct {
+	// Draws はこの回に引ける枚数(1人の枚数 × プレイヤー数)
+	Draws int `json:"draws"`
+	// Cards はこの回に引ける探索カードの枚数
+	Cards int `json:"cards"`
+	// Truth はこの回の終わりまでに明かせる、手がかりからしか手に入らない真相の知識の最大数
+	// (知識が多すぎて求めなかったら nil)。条件ではなく、どの議論で何に届きうるかの目安
+	Truth *int `json:"truth,omitempty"`
 }
 
 // BranchingStats は分岐。
@@ -380,6 +394,35 @@ func minCover(cl []m.Clue, ns []string) int {
 	return -1
 }
 
+// maxTruthFacts は回ごとの「明かせる真相の数」を求める知識の数の上限(部分集合を数え上げるため)。
+const maxTruthFacts = 12
+
+// maxReachable は、回 pools / caps の探索で同時に明かせる ns の知識の最大数。
+func maxReachable(pools [][]m.Clue, caps []int, ns []string) int {
+	total := 0
+	for _, c := range caps {
+		total += c
+	}
+	best := 0
+	for mask := 1; mask < 1<<len(ns); mask++ {
+		n := popcount(mask)
+		if n <= best {
+			continue
+		}
+		var sub []string
+		for k, f := range ns {
+			if mask&(1<<k) != 0 {
+				sub = append(sub, f)
+			}
+		}
+		cp := append([]int(nil), caps...)
+		if coverR(pools, cp, sub, total) {
+			best = n
+		}
+	}
+	return best
+}
+
 // randomCover は n 枚から d 枚を無作為に引いて ns がすべて明かされる確率(包除原理)。
 func randomCover(cl []m.Clue, ns []string, d int) float64 {
 	n := len(cl)
@@ -433,8 +476,15 @@ func (w *world) explorationStats() *ExplorationStats {
 	ns := dedup(w.clueOnly())
 	es := &ExplorationStats{Cards: len(s.Clues), ClueOnly: len(ns), MinCards: minCover(s.Clues, ns)}
 	if s.Exploration != nil {
-		d := *s.Exploration * w.playerCount()
+		pools, caps, d := w.rounds(s.Exploration)
 		es.Draws = &d
+		for i := range s.Exploration {
+			rs := RoundStats{Draws: caps[i], Cards: len(pools[i])}
+			if len(ns) <= maxTruthFacts {
+				rs.Truth = ptr(maxReachable(pools[:i+1], caps[:i+1], ns))
+			}
+			es.Rounds = append(es.Rounds, rs)
+		}
 		if es.MinCards >= 0 {
 			es.Slack = ptr(d - es.MinCards)
 		}

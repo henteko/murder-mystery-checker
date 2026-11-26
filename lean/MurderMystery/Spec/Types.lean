@@ -226,6 +226,14 @@ structure Ending where
   condition : Formula
   deriving Repr, Inhabited
 
+/-- 探索フェイズの 1 回(§1.10)。 -/
+structure Round where
+  /-- この回に1人が引く探索カードの枚数 -/
+  draws : Nat
+  /-- この回に引ける探索カードの ID。`none` ならすべて -/
+  clues : Option (List Id) := none
+  deriving Repr, DecidableEq, Inhabited
+
 structure Scenario where
   startTime : Time
   endTime : Time
@@ -250,8 +258,8 @@ structure Scenario where
   choices : List Choice := []
   constraints : List Formula := []
   endings : List Ending := []
-  /-- 探索フェイズで1人が引ける探索カードの枚数(§1.10) -/
-  exploration : Option Nat := none
+  /-- 探索フェイズの回(§1.10)。`draws_per_player: n` は `[{draws := n}]` -/
+  exploration : Option (List Round) := none
   deriving Repr, Inhabited
 
 end MurderMystery

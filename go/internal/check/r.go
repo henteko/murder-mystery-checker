@@ -2,6 +2,7 @@ package check
 
 import (
 	"sort"
+	"strconv"
 
 	m "github.com/henteko/murder-mystery-checker/internal/model"
 )
@@ -297,6 +298,14 @@ func allRefs(s *m.Scenario) []ref {
 	for _, e := range s.Endings {
 		out = append(out, formulaRefRefs("ending:"+e.ID, e.Condition)...)
 	}
+	// 探索の回の clues(R.lean の roundRefs)
+	for i, r := range s.Exploration {
+		if r.Clues != nil {
+			for _, c := range *r.Clues {
+				add("round:"+strconv.Itoa(i+1), "clue", c)
+			}
+		}
+	}
 	return out
 }
 
@@ -316,6 +325,8 @@ func idsOfKind(s *m.Scenario, k string) []string {
 		return eventIds(s)
 	case "variable":
 		return variableIds(s)
+	case "clue":
+		return ids(s.Clues, func(c m.Clue) string { return c.ID })
 	}
 	return nil
 }

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
+	"sort"
 	"strings"
 )
 
@@ -343,10 +345,38 @@ func strsOpt(j *node, k string) (*[]string, error) {
 	return &l, err
 }
 
+// freeKeys はどこにでも置けるキー(メモと説明。検査に使わない)。
+var freeKeys = []string{"note", "name", "text"}
+
+// only は知らないキーを入力エラーにする (§6.4)。freeKeys と _ で始まるキーはどこにでも置ける。
+func only(j *node, ks ...string) error {
+	if j == nil || j.kind != nObj {
+		return nil
+	}
+	keys := make([]string, 0, len(j.obj))
+	for k := range j.obj {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		if slices.Contains(freeKeys, k) || strings.HasPrefix(k, "_") || slices.Contains(ks, k) {
+			continue
+		}
+		return inErr("unknown field '%s'", k)
+	}
+	return nil
+}
+
 // ---------------------------------------------------------------- 要素ごとの読み取り
 
 // p は最初のエラーを覚えて、以降の読み取りを飛ばすための小さな補助。
 type p struct{ err error }
+
+func (r *p) only(j *node, ks ...string) {
+	if r.err == nil {
+		r.err = only(j, ks...)
+	}
+}
 
 func (r *p) str(j *node, k string) string {
 	if r.err != nil {
@@ -446,6 +476,11 @@ func list[T any](j *node, k string, required bool, f func(*node) (T, error)) ([]
 func parseEdge(withMinutes bool) func(*node) (Edge, error) {
 	return func(j *node) (Edge, error) {
 		var r p
+		if withMinutes {
+			r.only(j, "from", "to", "bidirectional", "minutes")
+		} else {
+			r.only(j, "from", "to", "bidirectional")
+		}
 		e := Edge{Src: r.str(j, "from"), Dst: r.str(j, "to")}
 		if withMinutes {
 			e.Minutes = r.nat(j, "minutes")
@@ -456,6 +491,9 @@ func parseEdge(withMinutes bool) func(*node) (Edge, error) {
 }
 
 func parseHolder(j *node) (Holder, error) {
+	if err := only(j, "character", "location"); err != nil {
+		return Holder{}, err
+	}
 	c, l := field(j, "character"), field(j, "location")
 	switch {
 	case c != nil && l == nil:
@@ -470,8 +508,10 @@ func parseHolder(j *node) (Holder, error) {
 
 func parseFact(j *node) (Fact, error) {
 	var r p
+	r.only(j, "id", "truth", "contradicted_by", "about", "claimed_at", "tolerance")
 	f := Fact{AboutPoint: "at"}
 	if a := field(j, "about"); a != nil {
+		r.only(a, "event", "point")
 		ev := r.str(a, "event")
 		f.AboutEvent = &ev
 		if pt := r.strOpt(a, "point"); pt != nil {
@@ -494,8 +534,10 @@ func parseEvent(j *node) (Event, error) {
 		return e, r.err
 	}
 	k := &e.Kind
+	only := func(ks ...string) { r.only(j, append([]string{"id", "at", "kind", "requires"}, ks...)...) }
 	switch kind {
 	case "move":
+		only("character", "to", "arrive", "mode", "fatal")
 		k.Kind, k.Character, k.To, k.Arrive = Move, r.str(j, "character"), r.str(j, "to"), r.nat(j, "arrive")
 		k.Mode = "walk"
 		if m := r.strOpt(j, "mode"); m != nil {
@@ -503,8 +545,10 @@ func parseEvent(j *node) (Event, error) {
 		}
 		k.Fatal = r.boolD(j, "fatal", false)
 	case "scene":
+		only("location", "participants", "reveals")
 		k.Kind, k.Location, k.Participants, k.Reveals = Scene, r.str(j, "location"), r.strsReq(j, "participants"), r.strs(j, "reveals")
 	case "observe":
+		only("character", "location", "target_location", "targets", "facts")
 		k.Kind, k.Character, k.Location = Observe, r.str(j, "character"), r.str(j, "location")
 		k.TargetLocation = k.Location
 		if tl := r.strOpt(j, "target_location"); tl != nil {
@@ -512,15 +556,20 @@ func parseEvent(j *node) (Event, error) {
 		}
 		k.Targets, k.Facts = r.strs(j, "targets"), r.strsReq(j, "facts")
 	case "transfer":
+		only("from", "to", "item")
 		k.Kind, k.Src, k.Dst, k.Item = Transfer, r.str(j, "from"), r.str(j, "to"), r.str(j, "item")
 	case "pickup", "drop", "use", "consume":
+		only("character", "item")
 		k.Kind = map[string]Kind{"pickup": Pickup, "drop": Drop, "use": Use, "consume": Consume}[kind]
 		k.Character, k.Item = r.str(j, "character"), r.str(j, "item")
 	case "learn":
+		only("character", "facts")
 		k.Kind, k.Character, k.Facts = Learn, r.str(j, "character"), r.strsReq(j, "facts")
 	case "tell":
+		only("from", "to", "facts")
 		k.Kind, k.Src, k.Dst, k.Facts = Tell, r.str(j, "from"), r.str(j, "to"), r.strsReq(j, "facts")
 	case "die":
+		only("character")
 		k.Kind, k.Character = Die, r.str(j, "character")
 	default:
 		return e, inErr("unknown event kind '%s'", kind)
@@ -545,14 +594,17 @@ func parseFormula(j *node) (Formula, error) {
 		return Formula{Kind: FVar, Var: s}, err
 	}
 	if v := field(j, "eq"); v != nil {
+		r.only(v, "var", "value")
 		f := Formula{Kind: FEq, Var: r.str(v, "var"), Value: r.str(v, "value")}
 		return f, r.err
 	}
 	if v := field(j, "plurality"); v != nil {
+		r.only(v, "votes", "value")
 		f := Formula{Kind: FPlurality, Votes: r.strsReq(v, "votes"), Value: r.str(v, "value")}
 		return f, r.err
 	}
 	if v := field(j, "tie"); v != nil {
+		r.only(v, "votes")
 		f := Formula{Kind: FTie, Votes: r.strsReq(v, "votes")}
 		return f, r.err
 	}
@@ -590,6 +642,34 @@ func parseFormula(j *node) (Formula, error) {
 	return Formula{}, inErr("unknown formula")
 }
 
+var topKeys = []string{"spec_version", "start_time", "end_time", "claim_tolerance", "characters", "areas", "locations",
+	"travel", "area_travel", "perception", "placements", "items", "facts", "initial_knowledge", "events", "clues",
+	"solution_facts", "assertions", "handouts", "board", "goals", "choices", "constraints", "endings", "exploration"}
+
+// parseExploration は探索フェイズ (§1.10) を読む。draws_per_player か rounds のどちらか一方。
+func parseExploration(x *node) ([]Round, error) {
+	if err := only(x, "draws_per_player", "rounds"); err != nil {
+		return nil, err
+	}
+	n, rs := field(x, "draws_per_player"), field(x, "rounds")
+	switch {
+	case n != nil && rs == nil:
+		d, err := asNat("draws_per_player", n)
+		return []Round{{Draws: d}}, err
+	case n == nil && rs != nil:
+		if rs.kind == nArr && len(rs.arr) == 0 {
+			return nil, inErr("'rounds' must be non-empty")
+		}
+		return list(x, "rounds", true, func(r *node) (Round, error) {
+			var p p
+			p.only(r, "draws_per_player", "clues")
+			x := Round{Draws: p.nat(r, "draws_per_player"), Clues: p.strsOpt(r, "clues")}
+			return x, p.err
+		})
+	}
+	return nil, inErr("'exploration' must have exactly one of 'draws_per_player' or 'rounds'")
+}
+
 // ParseScenario は正規化 JSON を読む。形式の誤りは *InputError を返す。
 func ParseScenario(data []byte) (*Scenario, error) {
 	j, err := parseTree(data)
@@ -597,6 +677,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		return nil, err
 	}
 	var r p
+	r.only(j, topKeys...)
 	s := &Scenario{StartTime: r.nat(j, "start_time"), EndTime: r.nat(j, "end_time")}
 	if ct := r.natOpt(j, "claim_tolerance"); ct != nil {
 		s.ClaimTolerance = *ct
@@ -609,6 +690,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Characters, err = list(j, "characters", true, func(c *node) (Character, error) {
 				var r p
+				r.only(c, "id", "npc")
 				x := Character{ID: r.str(c, "id"), NPC: r.boolD(c, "npc", false)}
 				return x, r.err
 			})
@@ -617,6 +699,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Areas, err = list(j, "areas", false, func(a *node) (Area, error) {
 				var r p
+				r.only(a, "id", "internal_minutes")
 				x := Area{ID: r.str(a, "id"), InternalMinutes: r.natOpt(a, "internal_minutes")}
 				return x, r.err
 			})
@@ -625,6 +708,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Locations, err = list(j, "locations", true, func(l *node) (Location, error) {
 				var r p
+				r.only(l, "id", "area", "public")
 				x := Location{ID: r.str(l, "id"), Area: r.strOpt(l, "area"), Public: r.boolD(l, "public", false)}
 				return x, r.err
 			})
@@ -636,6 +720,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Placements, err = list(j, "placements", true, func(pl *node) (Placement, error) {
 				var r p
+				r.only(pl, "character", "location")
 				x := Placement{Character: r.str(pl, "character"), Location: r.str(pl, "location")}
 				return x, r.err
 			})
@@ -644,6 +729,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Items, err = list(j, "items", false, func(i *node) (Item, error) {
 				var r p
+				r.only(i, "id", "initial", "tags")
 				x := Item{ID: r.str(i, "id")}
 				if r.err != nil {
 					return x, r.err
@@ -664,6 +750,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.InitialKnowledge, err = list(j, "initial_knowledge", false, func(k *node) (Pair, error) {
 				var r p
+				r.only(k, "character", "fact")
 				x := Pair{Character: r.str(k, "character"), Fact: r.str(k, "fact")}
 				return x, r.err
 			})
@@ -673,6 +760,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Clues, err = list(j, "clues", false, func(c *node) (Clue, error) {
 				var r p
+				r.only(c, "id", "location", "item", "deck", "reveals")
 				x := Clue{ID: r.str(c, "id"), Location: r.strOpt(c, "location"), Item: r.strOpt(c, "item"),
 					Deck: r.strOpt(c, "deck"), Reveals: r.strs(c, "reveals")}
 				return x, r.err
@@ -682,6 +770,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Assertions, err = list(j, "assertions", false, func(a *node) (Assertion, error) {
 				var r p
+				r.only(a, "id", "kind", "location", "at", "characters")
 				kind := r.str(a, "kind")
 				x := Assertion{}
 				switch {
@@ -702,6 +791,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Handouts, err = list(j, "handouts", false, func(h *node) (Handout, error) {
 				var r p
+				r.only(h, "character", "location", "items", "knows")
 				x := Handout{Character: r.str(h, "character"), Location: r.strOpt(h, "location"),
 					Items: r.strsOpt(h, "items"), Knows: r.strsOpt(h, "knows")}
 				return x, r.err
@@ -711,6 +801,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Board, err = list(j, "board", false, func(b *node) (Board, error) {
 				var r p
+				r.only(b, "location", "items")
 				x := Board{Location: r.str(b, "location"), Items: r.strsReq(b, "items")}
 				return x, r.err
 			})
@@ -719,6 +810,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Goals, err = list(j, "goals", false, func(g *node) (Goal, error) {
 				var r p
+				r.only(g, "id", "owner", "requires_items", "requires_knowledge", "requires_tagged", "conceals", "condition")
 				x := Goal{ID: r.str(g, "id"), Owner: r.str(g, "owner"), RequiresItems: r.strs(g, "requires_items"),
 					RequiresKnowledge: r.strs(g, "requires_knowledge")}
 				if r.err != nil {
@@ -726,6 +818,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 				}
 				tr, err := list(g, "requires_tagged", false, func(t *node) (TagReq, error) {
 					var r p
+					r.only(t, "tag", "count")
 					x := TagReq{Tag: r.str(t, "tag"), Count: r.nat(t, "count")}
 					return x, r.err
 				})
@@ -750,6 +843,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Choices, err = list(j, "choices", false, func(c *node) (Choice, error) {
 				var r p
+				r.only(c, "id", "owner", "values")
 				x := Choice{ID: r.str(c, "id"), Owner: r.str(c, "owner"), Values: r.strsOpt(c, "values")}
 				return x, r.err
 			})
@@ -759,6 +853,7 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		func() (err error) {
 			s.Endings, err = list(j, "endings", false, func(e *node) (Ending, error) {
 				var r p
+				r.only(e, "id", "condition")
 				x := Ending{ID: r.str(e, "id")}
 				if r.err != nil {
 					return x, r.err
@@ -781,12 +876,11 @@ func ParseScenario(data []byte) (*Scenario, error) {
 		}
 	}
 	if x := field(j, "exploration"); x != nil {
-		var r p
-		n := r.nat(x, "draws_per_player")
-		if r.err != nil {
-			return nil, r.err
+		rs, err := parseExploration(x)
+		if err != nil {
+			return nil, withPath(err, "exploration")
 		}
-		s.Exploration = &n
+		s.Exploration = rs
 	}
 	resolveTruth(s)
 	return s, nil

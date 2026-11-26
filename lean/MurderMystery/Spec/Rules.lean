@@ -87,7 +87,7 @@ def PostViolates (c : String) : Prop :=
   | "H004" => ∃ h ∈ s.handouts, ∃ ks, h.knows = some ks ∧ ∃ f ∈ ks, E.knows h.character f = false
   | "H006" => ∃ b ∈ s.board, ∃ i ∈ b.items, E.holder i ≠ .place b.location
   | "A001" => ∃ a ∈ s.assertions, ∃ c ∈ a.characters, a.kind.violated (s.whereAt c a.time) a.location = true
-  | "K010" => ∃ n, s.exploration = some n ∧ ¬ s.CanDraw n
+  | "K010" => ∃ rs, s.exploration = some rs ∧ ¬ s.CanDraw rs
   | _ => False
 
 /-! ## G 群 (§4.7) -/

@@ -1,4 +1,4 @@
-{"spec_version": "0.7.0",
+{"spec_version": "0.8.0",
  "diagnostics":
  [{"severity": "error",
    "code": "A001",
@@ -16,6 +16,7 @@
   {"severity": "error",
    "code": "K005",
    "args": ["cl2", "i0", "l3", "character:c0"]},
+  {"severity": "warning", "code": "K009", "args": ["3", "2"]},
   {"severity": "error",
    "event": "e01",
    "code": "T002",

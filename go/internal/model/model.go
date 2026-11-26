@@ -260,6 +260,15 @@ type Scenario struct {
 	Choices          []Choice
 	Constraints      []Formula
 	Endings          []Ending
-	// Exploration は探索フェイズで1人が引ける枚数。nil なら探索の検査をしない
-	Exploration *int
+	// Exploration は探索フェイズの回 (§1.10)。nil なら探索の検査をしない。
+	// draws_per_player: n は [{Draws: n}] になる
+	Exploration []Round
+}
+
+// Round は探索フェイズの 1 回 (§1.10)。
+type Round struct {
+	// Draws はこの回に1人が引く探索カードの枚数
+	Draws int
+	// Clues はこの回に引ける探索カードの ID。nil ならすべて
+	Clues *[]string
 }

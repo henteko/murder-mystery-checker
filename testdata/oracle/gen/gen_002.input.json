@@ -1,5 +1,5 @@
 {
- "spec_version": "0.7.0",
+ "spec_version": "0.8.0",
  "_case": {
   "doc": "ランダム生成 (seed 20261124, #2)"
  },
@@ -352,7 +352,19 @@
   }
  ],
  "exploration": {
-  "draws_per_player": 2
+  "rounds": [
+   {
+    "draws_per_player": 0
+   },
+   {
+    "draws_per_player": 0,
+    "clues": []
+   },
+   {
+    "draws_per_player": 0,
+    "clues": []
+   }
+  ]
  },
  "constraints": [
   {

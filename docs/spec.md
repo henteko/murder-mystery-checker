@@ -1,6 +1,6 @@
 # mmcheck 仕様書
 
-- 仕様バージョン: **0.7.0**
+- 仕様バージョン: **0.8.0**
 - 本書が唯一の正(single source of truth)。Lean モデル (`lean/`) は本書を形式化し、Go 実装 (`go/`) は Lean モデルと差分テストで一致させる。
 - 本書を変更した場合は仕様バージョンを上げ、Lean → オラクル → Go の順に追従させる。
 - 変更履歴は §10。
@@ -48,13 +48,15 @@ Lean オラクルと Go 実装が共通に受け付ける入力形式。作者�
 - **時刻 (Time)**: 0 以上 10,000,000 以下の整数。単位は分。絶対時刻(例: 1日目 21:00 = 1260)。
 - **分 (Minutes)**: 0 以上 10,000,000 以下の整数。
 - 配列の順序は意味を持たない(検出結果は §6.3 の正規順序で出力される)。
-- 未知のフィールドは無視する。`note` フィールドはどこにでも置けて、検査に使わない。
+- 知らないフィールドは入力エラー(§6.4)。オブジェクトごとに置けるフィールドは、本章の各節に書いたものだけ。例外として、`note`・`name`・`text`(メモと説明)と、`_` で始まるフィールド(ツールの情報)は、論理式のオブジェクト以外のどこにでも置けて、検査に使わない。
+- イベント(§1.3)に置けるのは、その `kind` のフィールドと共通のフィールド(`id`, `at`, `kind`, `requires`)だけ。たとえば scene に `to` があれば入力エラー。
+- 論理式(§1.9)のオブジェクトはキーをちょうど1つ持つ。`eq` / `plurality` / `tie` の中身のオブジェクトには、§1.9 に書いたキー(と上の例外)だけを置ける。
 
 ### 1.2 トップレベル
 
 ```jsonc
 {
-  "spec_version": "0.7.0",
+  "spec_version": "0.8.0",
   "start_time": 1080,            // Time
   "end_time": 1440,              // Time
   "claim_tolerance": 5,          // Minutes。証言の時刻の許容誤差の既定値(省略時 0)
@@ -96,7 +98,7 @@ Lean オラクルと Go 実装が共通に受け付ける入力形式。作者�
   "choices": [ /* §1.8 */ ],
   "constraints": [ /* Formula */ ],
   "endings": [{"id": "end_true", "condition": /* Formula */ {"var": "c_confess"}}],
-  "exploration": {"draws_per_player": 3}   // 省略可: 探索フェイズで1人が引く探索カードの枚数
+  "exploration": {"draws_per_player": 3}   // 省略可: 探索フェイズ(§1.10)
 }
 ```
 
@@ -198,7 +200,7 @@ Lean オラクルと Go 実装が共通に受け付ける入力形式。作者�
 - `location`、`item`、`deck` のうち少なくとも1つが必要。
 - `item` を指定すると、そのアイテムから分かる手がかりになる。`location` も指定した場合は「ゲーム開始時にそのアイテムがその場所にある」ことの宣言を兼ねる(K005)。
 - `deck` は場所に結び付かない探索カードの山札の名前(自由な文字列。参照ではない)。
-- `clues` の各要素を **探索カード** 1枚とみなす。`exploration` があれば、探索フェイズでプレイヤー(NPC 以外)が1人 `draws_per_player` 枚ずつ引く。引けるのは合計 `draws_per_player × プレイヤー数` 枚で、どのカードを引くかはプレイヤーが選べる(K009 / K010)。
+- `clues` の各要素を **探索カード** 1枚とみなす。探索フェイズ(§1.10)で引く。
 
 ### 1.7 断言
 
@@ -251,6 +253,23 @@ Formula := {"const": true|false}
 - `tie`: `count(w) = M` となる値 w が2つ以上(最多が同数)。
 
 votes が1つ以上あれば、各値の `plurality` と `tie` のうち、ちょうど1つが真になる(§7 の定理 10)。
+
+### 1.10 探索フェイズ
+
+```jsonc
+"exploration": {"draws_per_player": 3}                     // 探索は 1 回。1人 3 枚
+"exploration": {"rounds": [                                // 探索を回に分ける(間に議論がある)
+  {"draws_per_player": 1, "clues": ["x_body", "x_clock"]}, //   1 回目: 1人 1 枚。引けるのはこの 2 枚だけ(例: 現場だけ)
+  {"draws_per_player": 1},                                 //   2 回目: 1人 1 枚。clues を省略すると、すべてのカード
+  {"draws_per_player": 1}
+]}
+```
+
+- `exploration` は `draws_per_player` か `rounds` のどちらか一方を持つ(両方・どちらもないは入力エラー)。`{"draws_per_player": n}` は `{"rounds": [{"draws_per_player": n}]}` と同じ意味。
+- `rounds` は空でない配列で、**並び順に意味がある**(1 回目、2 回目、…)。各回の `draws_per_player` は 0 以上の整数、`clues`(省略可)はその回に引ける探索カードの ID のリスト。省略すると、すべての探索カードを引ける。存在しない ID は R002(referrer は `round:<1 から数えた番号>`、kind は `clue`)。
+- 回 i では、プレイヤー(NPC 以外)が1人 `draws_per_player` 枚ずつ、その回に引けるカードから引く。回 i で引ける枚数は `caps_i = draws_per_player_i × プレイヤー数`、合計 D = Σ caps_i。どのカードを引くかはプレイヤーが選べるものとする(引いたカードは場から消えるが、検査は「引ける組があるか」を見るので、同じカードを2回引く組を考えても結果は変わらない)。
+- 議論のフェイズは書かない。回の区切りが議論にあたる。どの議論で何に届くべきかは検査しない(`mmcheck stats` の `exploration.rounds[].truth` で目安を見られる。docs/stats.md)。
+- 回ごとの制限のうち、ここに書けないもの(「1 回に同じ場所から 1 人 1 枚まで」「自分の部屋は引けない」「無作為に引く」など)は検査しない。
 
 ## 2. 状態と操作的意味論
 
@@ -352,7 +371,7 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
 | R012 | error | 集計の形の誤り(下記 reason) | — | [referrer, reason] |
 | R013 | error | 断言の時刻が `start_time ≤ at < end_time` を満たさない | — | [assertion] |
 
-- R002 の `referrer` は参照元を `"<kind>:<id>"` で表したもの: `event:e1`, `item:knife`(initial), `location:hall`(area), `placement:alice`, `initial_knowledge:alice`, `fact:f1`(contradicted_by, about), `clue:c1`, `solution`, `assertion:a1`, `handout:alice`, `board:study`, `goal:g1`, `choice:c1`, `constraint`, `ending:end1`, `travel`, `area_travel`, `perception`。R002 は (referrer, kind, id) の組ごとに1件出す。
+- R002 の `referrer` は参照元を `"<kind>:<id>"` で表したもの: `event:e1`, `item:knife`(initial), `location:hall`(area), `placement:alice`, `initial_knowledge:alice`, `fact:f1`(contradicted_by, about), `clue:c1`, `solution`, `assertion:a1`, `handout:alice`, `board:study`, `goal:g1`, `choice:c1`, `constraint`, `ending:end1`, `travel`, `area_travel`, `perception`, `round:1`(探索の回。1 から数える)。R002 は (referrer, kind, id) の組ごとに1件出す。
 - R005 の `table` は `"travel"`、`"area_travel"`、`"perception"` のいずれか。
 - R009 / R012 の `referrer` は `constraint`、`ending:<id>` または `goal:<id>`(condition)。R009 の `value` は `var` の誤りなら `""`。R010 の `refuter` は、truth: true なのに contradicted_by を持つ場合 `""`。
 - R006 の reason:
@@ -427,8 +446,9 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
 | K005 | error | `item` と `location` を両方持つ clue について `E.holder(item) ≠ Place(location)` かつ `≠ Consumed` | — | [clue, item, location, holder の表記] |
 | K006 | error | 偽の知識 f が、終了状態で NPC ではないキャラクターに知られている、またはいずれかのハンドアウトの `knows` にあるのに、`contradicted_by` の知識がどれも入手可能ではない(嘘・思い込みを見破れない) | — | [f] |
 | K007 | error | `solution_facts` に偽の知識が含まれる(真相が偽の情報に依存している) | — | [f] |
-| K009 | warning | `exploration` があり、探索カードの枚数(`clues` の要素数)が、引ける合計 D = `draws_per_player × プレイヤー数` を超える(引かれずに残るカードがある) | — | [枚数, D] |
-| K010 | error | `exploration` があり、D 枚以内の手がかりの組で、**手がかりからしか手に入らない真相の知識** をすべて明かせない(真相に必要なカードを引き切れない)。手がかりからしか手に入らない真相の知識とは、`solution_facts` のうち、終了状態でどのプレイヤーも知らず、どれかの手がかりの `reveals` にあるもの(どの手がかりにもないものは K003) | — | [D] |
+| K009 | warning | `exploration` があり、探索カードの枚数(`clues` の要素数)が、引ける合計 D(§1.10)を超える(引かれずに残るカードがある) | — | [枚数, D] |
+| K010 | error | `exploration` があり、各回でその回に引けるカードから caps_i 枚以内を選ぶどの選び方でも、**手がかりからしか手に入らない真相の知識** をすべて明かせない(真相に必要なカードを引き切れない)。手がかりからしか手に入らない真相の知識とは、`solution_facts` のうち、終了状態でどのプレイヤーも知らず、どれかの手がかりの `reveals` にあるもの(どの手がかりにもないものは K003) | — | [D] |
+| K011 | warning | `exploration` があり、どの回でも引けない探索カードがある: `draws_per_player` が 1 以上で、そのカードを引ける(`clues` を省略しているか、`clues` にそのカードがある)回がない | — | [clue] |
 | K008 | error | 真の証言 f について、`|f.claimed_at − actual| > tol(f)`。actual は `about.event` の `at`(point が `"arrive"` なら `arrive`)、tol(f) は `f.tolerance`、なければ `claim_tolerance` | — | [f, claimed_at, actual] |
 
 - 偽の証言は嘘や記憶違いを表すので、K008 の対象外とする。
@@ -517,7 +537,7 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
 
 ```jsonc
 {
-  "spec_version": "0.7.0",
+  "spec_version": "0.8.0",
   "diagnostics": [
     {
       "code": "T003",
@@ -552,11 +572,11 @@ ID と値の昇順は **Unicode コードポイントの辞書式順序** で比
 
 ### 6.4 スキーマエラー
 
-JSON として不正な入力、必須フィールドの欠落、型の不一致、範囲外の数値、`initial` の形が不正な入力は **入力エラー** とし、エラー検出結果を出さない。
+JSON として不正な入力、必須フィールドの欠落、型の不一致、範囲外の数値、`initial` の形が不正な入力、知らないフィールド(§1.1)、`exploration` の形が不正な入力(§1.10)は **入力エラー** とし、エラー検出結果を出さない。
 
 - 数値(時刻・分・許容誤差)は、値が整数で 0 以上 10,000,000 以下のもの。表記は問わない(`1260`、`1260.0`、`1.26e3` はどれも 1260)。`1260.5` や負の数は入力エラー。指数部が 100,000 を超える数(`1e100001` など)も入力エラー(Lean の JSON パーサの制限。値が 0 でも同じ)。
 - 同じオブジェクトに同じキーが2回以上ある入力は入力エラー。
-- ID などの文字列は空文字列を許さない。値が `null` のフィールドは省略と同じ。知らないフィールドは読み飛ばす。Lean オラクルと Go はどちらも入力エラーを返す(終了コード 2)。差分テストでは「どちらも入力エラーになること」だけを比べる。
+- ID などの文字列は空文字列を許さない。値が `null` のフィールドは省略と同じ。知らないフィールドは入力エラー(`note`・`name`・`text` と `_` で始まるものを除く。§1.1)。Lean オラクルと Go はどちらも入力エラーを返す(終了コード 2)。差分テストでは「どちらも入力エラーになること」だけを比べる。
 
 ### 6.5 終了コード(CLI)
 
@@ -592,6 +612,7 @@ Go CLI の `--strict` を付けると warning も 1 として扱う(Go の表示
 9. **移動時間の決定性**: R005 の違反がなければ、どの (from, to) についても一致するエントリは高々1つで、移動時間・知覚はその唯一のエントリで決まり、表の並び順によらない。
 10. **集計の分割**: votes が空でなければ、任意の σ について、`{plurality(v) | v ∈ 値の集合} ∪ {tie}` のうちちょうど1つが真になる。
 11. **死亡の一意性**: 各キャラクターの死亡イベントは高々1つに定まり、死亡時刻以降の区間はない。
+12. **探索の判定の正しさ**: K010 の判定(最初の知識を明かすカードを、引ける回とともに選ぶ探索)が、「(回の番号, カード) の組の列で、各カードはその回に引けるもの、回 i の組は caps_i 個以内、合計 D 個以内で、手がかりからしか手に入らない真相の知識をすべて明かすものがある」と同値(`coverR_iff`)。
 
 ## 8. 作者向け YAML(Go 側のみ。参考)
 
@@ -607,7 +628,7 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 
 ```jsonc
 {
-  "spec_version": "0.7.0",
+  "spec_version": "0.8.0",
   "start_time": 1260, "end_time": 1320,
   "characters": [{"id": "alice"}, {"id": "bob"}],
   "areas": [{"id": "house", "internal_minutes": 5}],
@@ -634,7 +655,7 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 
 ```json
 {
-  "spec_version": "0.7.0",
+  "spec_version": "0.8.0",
   "diagnostics": [
     {"code": "A001", "severity": "error", "args": ["a1", "alice", "absent", "study"]},
     {"code": "G001", "severity": "error", "args": [], "witness": {"c_vote": "alice", "g_alice": false, "g_bob": false}},
@@ -655,6 +676,11 @@ YAML の具体的なスキーマは Phase 4 で別紙(docs/yaml.md)として定�
 - T009 は出ない: alice と bob は 1272〜1320 に study に一緒にいるが、その間の e2(transfer)が2人を参加者に含むので、遭遇は認知されている。
 
 ## 10. 変更履歴
+
+- **0.8.0**
+  - §1.1 / §6.4: 知らないフィールドを入力エラーにした(0.7.0 までは読み飛ばしていた)。`note`・`name`・`text` と `_` で始まるフィールドはどこにでも置ける。書き間違えたフィールドや、仕様にないフィールド(回の区切りなど)が、検査されないまま合格していたため
+  - §1.10: 探索フェイズを回に分けられるようにした(`exploration.rounds`)。回ごとに1人が引く枚数と、引けるカードを書ける。K010 は回ごとの枚数と引けるカードのもとで判定する。K011(warning: どの回でも引けないカード)。R002 に `round:<n>` の参照
+  - §7 定理 12: K010 の判定の正しさを回に広げた(`coverR_iff`。0.7.0 の `coverable_iff` に代わる)
 
 - **0.7.0**
   - §1.2 / §1.6: `exploration.draws_per_player`(探索フェイズで1人が引く枚数)。K009(warning: 引かれずに残るカードがある)、K010(error: 真相に必要なカードを引き切れない)

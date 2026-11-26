@@ -98,24 +98,53 @@ theorem find?_id_perm {f : α → String} {l l' : List α} (hp : l.Perm l') (hn 
     simp only [beq_iff_eq] at hpa hpb
     exact eq_of_mem_of_nodup_map hn ha hb (hpa.trans hpb.symm)
 
-theorem coverable_congr {cl cl' : List Clue} {N N' : List Id} (hc : ∀ c, c ∈ cl' ↔ c ∈ cl)
-    (hn : ∀ f, f ∈ N' ↔ f ∈ N) (d : Nat) : coverable cl' N' d = coverable cl N d := by
+theorem coverR_congr {P P' : List (List Clue)} {N N' : List Id}
+    (hc : ∀ i c, c ∈ P'.getD i [] ↔ c ∈ P.getD i []) (hn : ∀ f, f ∈ N' ↔ f ∈ N) (caps : List Nat) (k : Nat) :
+    coverR P' caps N' k = coverR P caps N k := by
   apply Bool.eq_iff_iff.mpr
-  rw [coverable_iff, coverable_iff]
+  rw [coverR_iff, coverR_iff]
   simp only [hc, hn]
+
+theorem mem_pools_congr (s s' : Scenario) (hc : ∀ c, c ∈ s'.clues ↔ c ∈ s.clues) (rs : List Round) (i : Nat)
+    (c : Clue) : c ∈ (s'.pools rs).getD i [] ↔ c ∈ (s.pools rs).getD i [] := by
+  simp only [Scenario.pools, List.getD_eq_getElem?_getD, List.getElem?_map]
+  cases rs[i]? with
+  | none => simp
+  | some r =>
+    simp only [Option.map_some, Option.getD_some, Scenario.pool]
+    cases r.clues <;> simp [List.mem_filter, hc]
 
 theorem issuesK010_congr (s s' : Scenario) (he : s'.exploration = s.exploration)
     (hd : s'.playerCount = s.playerCount) (hc : ∀ c, c ∈ s'.clues ↔ c ∈ s.clues)
     (hn : ∀ f, f ∈ s'.clueOnly ↔ f ∈ s.clueOnly) : issuesK010 s' = issuesK010 s := by
-  unfold issuesK010 Scenario.draws
-  rw [he, hd]
-  simp only [coverable_congr hc hn]
+  unfold issuesK010
+  rw [he]
+  cases s.exploration with
+  | none => rfl
+  | some rs =>
+    have hcaps : s'.caps rs = s.caps rs := by simp only [Scenario.caps, hd]
+    have hdr : s'.draws rs = s.draws rs := by simp only [Scenario.draws, hcaps]
+    simp only [hcaps, hdr, coverR_congr (mem_pools_congr s s' hc rs) hn]
 
 theorem warningsK009_congr (s s' : Scenario) (he : s'.exploration = s.exploration)
     (hd : s'.playerCount = s.playerCount) (hl : s'.clues.length = s.clues.length) :
     warningsK009 s' = warningsK009 s := by
-  unfold warningsK009 Scenario.draws
-  rw [he, hd, hl]
+  unfold warningsK009
+  rw [he]
+  cases s.exploration with
+  | none => rfl
+  | some rs =>
+    have h1 : s'.draws rs = s.draws rs := by simp only [Scenario.draws, Scenario.caps, hd]
+    dsimp only
+    rw [h1, hl]
+
+theorem warningsK011_congr (s s' : Scenario) (he : s'.exploration = s.exploration)
+    (hc : ∀ c, c ∈ s'.clues ↔ c ∈ s.clues) (x : Issue) : x ∈ warningsK011 s' ↔ x ∈ warningsK011 s := by
+  unfold warningsK011
+  rw [he]
+  cases s.exploration with
+  | none => exact Iff.rfl
+  | some rs => simp only [List.mem_filterMap, hc]
 
 theorem checkR002_of (s s' : Scenario) (h : ∀ r, r ∈ allRefs s' ↔ r ∈ allRefs s)
     (hk : ∀ k i, (s'.idsOfKind k).contains i = (s.idsOfKind k).contains i) :
@@ -131,7 +160,7 @@ theorem check_perm_solutionFacts (s : Scenario) (l : List Id) (hp : s.solutionFa
   · intro x; exact Iff.rfl
   · intro _ x
     have h2 := checkR002_of s { s with solutionFacts := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => rfl)
     simp only [rIssues, List.mem_append, h2]
     exact Iff.rfl
@@ -159,7 +188,7 @@ theorem check_perm_assertions (s : Scenario) (l : List Assertion) (hp : s.assert
   apply check_eq_of_parts _ _ h1
   · intro _ x
     have h2 := checkR002_of s { s with assertions := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => rfl)
     have h13 : x ∈ checkR013 { s with assertions := l } ↔ x ∈ checkR013 s := by
       simp only [checkR013, List.mem_filterMap, hp.mem_iff]
@@ -186,7 +215,7 @@ theorem check_perm_board (s : Scenario) (l : List Board) (hp : s.board.Perm l) :
   apply check_eq_of_parts _ _ h1
   · intro _ x
     have h2 := checkR002_of s { s with board := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => rfl)
     simp only [rIssues, List.mem_append, h1, h2]
     exact Iff.rfl
@@ -215,8 +244,12 @@ theorem check_perm_clues (s : Scenario) (l : List Clue) (hp : s.clues.Perm l) :
   apply check_eq_of_parts _ _ h1
   · intro _ x
     have h2 := checkR002_of s { s with clues := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
-      (fun k i => rfl)
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun k i => by
+        unfold Scenario.idsOfKind
+        split <;> try rfl
+        apply Bool.eq_iff_iff.mpr
+        simp only [List.contains_iff_mem, (hp.map (·.id)).mem_iff])
     have h7 : x ∈ checkR007 { s with clues := l } ↔ x ∈ checkR007 s := by
       simp only [checkR007, List.mem_filterMap, hp.mem_iff]
     simp only [rIssues, List.mem_append, h1, h2, h7]
@@ -244,8 +277,11 @@ theorem check_perm_clues (s : Scenario) (l : List Clue) (hp : s.clues.Perm l) :
       rw [Scenario.gctx_eq, Scenario.gctx_eq, hsat]; rfl
     have hG : checkG { s with clues := l } = checkG s := by
       unfold checkG; rw [hctx]; rfl
-    have hW : postWarnings { s with clues := l } = postWarnings s := by
-      unfold postWarnings; rw [hW9]; rfl
+    have hW : ∀ x, x ∈ postWarnings { s with clues := l } ↔ x ∈ postWarnings s := by
+      intro x
+      unfold postWarnings; rw [hW9]
+      simp only [List.mem_append, warningsK011_congr s { s with clues := l } rfl (fun _ => hp.mem_iff.symm) x]
+      exact Iff.rfl
     simp only [checkPost, List.mem_append, List.mem_map, hP, hG, hW]
     exact Iff.rfl
 
@@ -262,7 +298,7 @@ theorem check_perm_handouts (s : Scenario) (l : List Handout) (hp : s.handouts.P
   apply check_eq_of_parts _ _ h1
   · intro _ x
     have h2 := checkR002_of s { s with handouts := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => rfl)
     simp only [rIssues, List.mem_append, h1, h2]
     exact Iff.rfl
@@ -376,7 +412,7 @@ theorem check_perm_travel (s : Scenario) (l : List Edge) (hp : s.travel.Perm l) 
   · intro x; exact Iff.rfl
   · intro _ x
     have h2 := checkR002_of s { s with travel := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => rfl)
     have h5 : x ∈ checkR005 { s with travel := l } ↔ x ∈ checkR005 s := by
       simp only [checkR005, List.mem_append, checkEdges_perm "travel" hp]
@@ -398,7 +434,7 @@ theorem check_perm_areaTravel (s : Scenario) (l : List Edge) (hp : s.areaTravel.
   · intro x; exact Iff.rfl
   · intro _ x
     have h2 := checkR002_of s { s with areaTravel := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => rfl)
     have h5 : x ∈ checkR005 { s with areaTravel := l } ↔ x ∈ checkR005 s := by
       simp only [checkR005, List.mem_append, checkEdges_perm "area_travel" hp]
@@ -420,7 +456,7 @@ theorem check_perm_perception (s : Scenario) (l : List Edge) (hp : s.perception.
   · intro x; exact Iff.rfl
   · intro _ x
     have h2 := checkR002_of s { s with perception := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => rfl)
     have h5 : x ∈ checkR005 { s with perception := l } ↔ x ∈ checkR005 s := by
       simp only [checkR005, List.mem_append, checkEdges_perm "perception" hp]
@@ -476,7 +512,7 @@ theorem check_perm_locations (s : Scenario) (l : List Location) (hp : s.location
   apply check_eq_of_parts _ _ h1
   · intro _ x
     have h2 := checkR002_of s { s with locations := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => by
         unfold Scenario.idsOfKind
         split <;> try rfl
@@ -523,10 +559,10 @@ theorem placement_unique (s : Scenario) (hR : rIssues s = []) :
   obtain ⟨_, h2, h3, _⟩ := rIssues_nil_parts s hR
   intro p hp q hq hpq
   have href : (⟨s!"placement:{p.character}", "character", p.character, none⟩ : Ref) ∈ allRefs s := by
-    unfold allRefs
+    unfold allRefs baseRefs
     dsimp only
     simp only [List.mem_append]
-    iterate 13 apply Or.inl
+    iterate 14 apply Or.inl
     apply Or.inr
     exact List.mem_flatMap.mpr ⟨p, hp, by simp⟩
   have hc := refs_ok_of_R002 s h2 _ href
@@ -545,7 +581,7 @@ theorem check_perm_initialKnowledge (s : Scenario) (l : List (Id × Id)) (hp : s
   · intro x; exact Iff.rfl
   · intro _ x
     have h2 := checkR002_of s { s with initialKnowledge := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => rfl)
     simp only [rIssues, List.mem_append, h2]
     exact Iff.rfl
@@ -582,7 +618,7 @@ theorem check_perm_initialKnowledge (s : Scenario) (l : List (Id × Id)) (hp : s
       intro x
       simp only [checkPost, postErrors, postWarnings, warningsT009, issuesK003, issuesK004K005, issuesK006,
         issuesK007, issuesK008, issuesH, warningsH, issuesA, checkT012, issuesK010, warningsK009,
-      Scenario.clueOnly, Scenario.draws, Scenario.playerCount, hfinal, hseg, hwhere, hobt, hobtF, hheld,
+      Scenario.clueOnly, Scenario.draws, hfinal, hseg, hwhere, hobt, hobtF, hheld,
         List.mem_append, List.mem_map]
       exact Iff.rfl
     simp only [List.mem_append, hE, hG, hP]
@@ -593,7 +629,7 @@ theorem check_perm_placements (s : Scenario) (l : List Placement) (hp : s.placem
   · intro x; exact Iff.rfl
   · intro _ x
     have h2 := checkR002_of s { s with placements := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => rfl)
     have h3 : x ∈ checkR003 { s with placements := l } ↔ x ∈ checkR003 s := by
       simp only [checkR003, List.mem_filterMap, (hp.filter _).length_eq]
@@ -636,7 +672,7 @@ theorem check_perm_placements (s : Scenario) (l : List Placement) (hp : s.placem
       intro x
       simp only [checkPost, postErrors, postWarnings, warningsT009, issuesK003, issuesK004K005, issuesK006,
         issuesK007, issuesK008, issuesH, warningsH, issuesA, checkT012, issuesK010, warningsK009,
-      Scenario.clueOnly, Scenario.draws, Scenario.playerCount, hfinal, hseg, hwhere, hobt, hobtF, hheld,
+      Scenario.clueOnly, Scenario.draws, hfinal, hseg, hwhere, hobt, hobtF, hheld,
         List.mem_append, List.mem_map]
       exact Iff.rfl
     simp only [List.mem_append, hE, hG, hP]
@@ -669,7 +705,7 @@ theorem check_perm_items (s : Scenario) (l : List Item) (hp : s.items.Perm l) :
   apply check_eq_of_parts _ _ h1
   · intro _ x
     have h2 := checkR002_of s { s with items := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => by
         unfold Scenario.idsOfKind
         split <;> try rfl
@@ -716,7 +752,7 @@ theorem check_perm_items (s : Scenario) (l : List Item) (hp : s.items.Perm l) :
       intro x
       simp only [checkPost, postErrors, postWarnings, warningsT009, issuesK003, issuesK004K005, issuesK006,
         issuesK007, issuesK008, issuesH, issuesA, checkT012, issuesK010, warningsK009,
-        Scenario.clueOnly, Scenario.draws, Scenario.playerCount, hfinal, hseg, hwhere, hobt, hobtF, hheld,
+        Scenario.clueOnly, Scenario.draws, hfinal, hseg, hwhere, hobt, hobtF, hheld,
         List.mem_append, List.mem_map, hW]
       exact Iff.rfl
     simp only [List.mem_append, hE, hG, hP]
@@ -735,7 +771,7 @@ theorem check_perm_facts (s : Scenario) (l : List Fact) (hp : s.facts.Perm l) :
     have hff : ∀ f, Scenario.findFact? { s with facts := l } f = s.findFact? f :=
       fun f => (find?_id_perm (f := fun a : Fact => a.id) hp hn f).symm
     have h2 := checkR002_of s { s with facts := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => by
         unfold Scenario.idsOfKind
         split <;> try rfl
@@ -777,7 +813,7 @@ theorem check_perm_endings (s : Scenario) (l : List Ending) (hp : s.endings.Perm
   apply check_eq_of_parts _ _ h1
   · intro _ x
     have h2 := checkR002_of s { s with endings := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => rfl)
     have hform : ∀ y, y ∈ formulas { s with endings := l } ↔ y ∈ formulas s := by
       intro y; simp only [formulas, List.mem_append, List.mem_map, hp.mem_iff]
@@ -803,7 +839,7 @@ theorem check_perm_constraints (s : Scenario) (l : List Formula) (hp : s.constra
   · intro x; exact Iff.rfl
   · intro _ x
     have h2 := checkR002_of s { s with constraints := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => rfl)
     have hform : ∀ y, y ∈ formulas { s with constraints := l } ↔ y ∈ formulas s := by
       intro y; simp only [formulas, List.mem_append, List.mem_map, hp.mem_iff]
@@ -892,7 +928,7 @@ theorem check_perm_goals (s : Scenario) (l : List Goal) (hp : s.goals.Perm l) :
       fun v => (contains_perm hvp v).symm
     have hvcF : (Scenario.variableIds { s with goals := l }).contains = s.variableIds.contains := funext hvc
     have h2 := checkR002_of s { s with goals := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => by
         unfold Scenario.idsOfKind
         split <;> try rfl
@@ -965,7 +1001,7 @@ theorem check_perm_choices (s : Scenario) (l : List Choice) (hp : s.choices.Perm
       fun v => (contains_perm hvp v).symm
     have hvcF : (Scenario.variableIds { s with choices := l }).contains = s.variableIds.contains := funext hvc
     have h2 := checkR002_of s { s with choices := l }
-      (fun r => by simp only [allRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
+      (fun r => by simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, List.mem_map, hp.mem_iff])
       (fun k i => by
         unfold Scenario.idsOfKind
         split <;> try rfl

@@ -1,4 +1,4 @@
-{"spec_version": "0.7.0",
+{"spec_version": "0.8.0",
  "diagnostics":
  [{"severity": "error", "code": "A001", "args": ["as0", "c1", "present", "l2"]},
   {"severity": "error", "code": "A001", "args": ["as1", "c1", "present", "l2"]},
@@ -16,6 +16,7 @@
   {"severity": "error", "event": "e01", "code": "K002", "args": ["c0", "f0"]},
   {"severity": "error", "event": "e02", "code": "K002", "args": ["c2", "f4"]},
   {"severity": "warning", "code": "K009", "args": ["1", "0"]},
+  {"severity": "warning", "code": "K011", "args": ["cl0"]},
   {"severity": "error",
    "event": "e00",
    "code": "T002",

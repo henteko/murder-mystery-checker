@@ -11,7 +11,7 @@ import (
 )
 
 const statsScenario = `{
-  "spec_version": "0.7.0", "start_time": 0, "end_time": 120,
+  "spec_version": "0.8.0", "start_time": 0, "end_time": 120,
   "characters": [{"id": "a"}, {"id": "b"}, {"id": "c"}, {"id": "v", "npc": true}],
   "areas": [{"id": "house", "internal_minutes": 1}],
   "locations": [{"id": "hall", "area": "house", "public": true}, {"id": "room", "area": "house"}],
@@ -115,7 +115,7 @@ func TestComplexity(t *testing.T) {
 		t.Errorf("exploration axis should not apply: %+v", st2.Complexity.Axes[3])
 	}
 	// 使われている場所を増やすとスコアは上がる(盤面に載せた場所は使われている)
-	s.Exploration = ptr(1)
+	s.Exploration = []m.Round{{Draws: 1}}
 	for i := 0; i < 20; i++ {
 		id := "extra" + strconv.Itoa(i)
 		s.Locations = append(s.Locations, m.Location{ID: id})
@@ -127,7 +127,7 @@ func TestComplexity(t *testing.T) {
 }
 
 func TestStatsStructureError(t *testing.T) {
-	s, err := m.ParseScenario([]byte(`{"spec_version": "0.7.0", "start_time": 0, "end_time": 10,
+	s, err := m.ParseScenario([]byte(`{"spec_version": "0.8.0", "start_time": 0, "end_time": 10,
 	  "characters": [{"id": "a"}], "locations": [{"id": "l"}], "placements": []}`))
 	if err != nil {
 		t.Fatal(err)
@@ -182,5 +182,33 @@ func TestPaddingDoesNotRaiseScore(t *testing.T) {
 		if b := st0.Complexity.Axes[i]; a.Score > b.Score+1e-9 {
 			t.Errorf("axis %s rose: %v -> %v (%+v)", a.Name, b.Score, a.Score, a.Terms)
 		}
+	}
+}
+
+func TestExplorationRounds(t *testing.T) {
+	s, err := m.ParseScenario([]byte(statsScenario))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 1 回目は真相に関係のない x3 だけ、2 回目に x1・x2(手がかりからしか得られない真相は f2, f3)
+	x3, x12 := []string{"x3"}, []string{"x1", "x2"}
+	s.Exploration = []m.Round{{Draws: 1, Clues: &x3}, {Draws: 1, Clues: &x12}}
+	st, err := ComputeStats(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := st.Exploration
+	if e.Draws == nil || *e.Draws != 6 {
+		t.Fatalf("draws = %v, want 6", e.Draws)
+	}
+	want := []RoundStats{{Draws: 3, Cards: 1, Truth: ptr(0)}, {Draws: 3, Cards: 2, Truth: ptr(2)}}
+	if !reflect.DeepEqual(e.Rounds, want) {
+		t.Errorf("rounds = %+v, want %+v", e.Rounds, want)
+	}
+	// 1 回の探索(draws_per_player)は回が 1 つ
+	s.Exploration = []m.Round{{Draws: 1}}
+	st, _ = ComputeStats(s)
+	if want := []RoundStats{{Draws: 3, Cards: 4, Truth: ptr(2)}}; !reflect.DeepEqual(st.Exploration.Rounds, want) {
+		t.Errorf("rounds = %+v, want %+v", st.Exploration.Rounds, want)
 	}
 }

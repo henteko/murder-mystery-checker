@@ -63,3 +63,7 @@ make diff-check  # 入力と期待出力が最新か(CI)
 | `go/` | Go 実装(`internal/model` 入力、`internal/check` 判定器、`internal/yamlio` YAML、`cmd/mmcheck` CLI) |
 | `testdata/oracle/` | Lean オラクルを正解とするテストケース |
 | `examples/` | サンプルシナリオと期待出力 |
+
+## ライセンス
+
+[Apache License 2.0](LICENSE)

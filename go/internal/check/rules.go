@@ -33,6 +33,7 @@ var argNames = map[string][]string{
 	"K001": {"from", "fact"}, "K002": {"actor", "fact"}, "K003": {"fact"}, "K004": {"clue", "item"},
 	"K005": {"clue", "item", "location", "actual_holder"}, "K006": {"fact"}, "K007": {"fact"},
 	"K008": {"fact", "claimed_at", "actual"}, "K009": {"cards", "draws"}, "K010": {"draws"},
+	"K011": {"clue"},
 	"H001": {"character", "handout_location", "actual_location"}, "H002": {"character", "item", "actual_holder"},
 	"H003": {"character", "item"}, "H004": {"character", "fact"}, "H005": {"character", "fact"},
 	"H006": {"location", "item", "actual_holder"}, "H007": {"location", "item"},
@@ -83,7 +84,8 @@ var hints = map[string]string{
 	"K007": "solution_facts から偽の知識を外す",
 	"K008": "証言の claimed_at を実際の時刻(args の actual)に合わせるか、tolerance を広げる",
 	"K009": "探索カードを減らすか、draws_per_player を増やす(警告)",
-	"K010": "真相の知識をまとめて明かす手がかりにするか、draws_per_player を増やす",
+	"K010": "真相の知識をまとめて明かす手がかりにするか、draws_per_player を増やすか、真相のカードを引ける回を増やす",
+	"K011": "そのカードを exploration.rounds のどれかの clues に入れるか、カードを消す(警告)",
 	"H001": "ハンドアウトの location を終了時の居場所に直す",
 	"H002": "ハンドアウトの items を終了時の持ち物に直す",
 	"H003": "ハンドアウトの items に持ち物を足す(警告)",
@@ -103,7 +105,7 @@ var hints = map[string]string{
 	"G009": "その値が選ばれうるよう制約を見直すか、values から外す(警告)",
 }
 
-var warningRules = map[string]bool{"T009": true, "T012": true, "K009": true, "H003": true, "H005": true,
+var warningRules = map[string]bool{"T009": true, "T012": true, "K009": true, "K011": true, "H003": true, "H005": true,
 	"H007": true, "G006": true, "G008": true, "G009": true}
 
 // Rules は全規則の説明を、コード順に返す。

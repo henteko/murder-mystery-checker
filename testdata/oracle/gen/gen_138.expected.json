@@ -1,4 +1,4 @@
-{"spec_version": "0.7.0",
+{"spec_version": "0.8.0",
  "diagnostics":
  [{"severity": "error", "code": "A001", "args": ["as0", "c1", "absent", "l0"]},
   {"witness": {"v1": "p", "v0": "q", "flag": false},
@@ -29,6 +29,9 @@
   {"severity": "error", "event": "e04", "code": "K001", "args": ["c0", "f0"]},
   {"severity": "error", "event": "e01", "code": "K002", "args": ["c0", "f1"]},
   {"severity": "error", "event": "e06", "code": "K002", "args": ["c0", "f2"]},
-  {"severity": "warning", "code": "K009", "args": ["4", "2"]},
+  {"severity": "warning", "code": "K009", "args": ["4", "1"]},
+  {"severity": "warning", "code": "K011", "args": ["cl0"]},
+  {"severity": "warning", "code": "K011", "args": ["cl1"]},
+  {"severity": "warning", "code": "K011", "args": ["cl2"]},
   {"severity": "error", "event": "e04", "code": "T005", "args": ["c0", "e03"]},
   {"severity": "error", "event": "e04", "code": "T005", "args": ["c1", "e03"]}]}

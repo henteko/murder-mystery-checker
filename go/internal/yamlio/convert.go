@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"slices"
+	"sort"
 	"strconv"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 
@@ -111,6 +114,25 @@ func ownerField(kind string) string {
 	return "character"
 }
 
+// handoutRowKeys はハンドアウトの時系列の行に置けるキー(docs/yaml.md)。
+var handoutRowKeys = []string{"at", "event", "point", "fact", "truth", "tolerance", "contradicted_by", "text"}
+
+// rowKeys はハンドアウトの時系列の行の知らないキーを入力エラーにする(変換で捨てられて検査されないため)。
+func rowKeys(r obj) error {
+	keys := make([]string, 0, len(r))
+	for k := range r {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		if k == "note" || k == "name" || strings.HasPrefix(k, "_") || slices.Contains(handoutRowKeys, k) {
+			continue
+		}
+		return inErr("handouts[].timeline: unknown field '%s'", k)
+	}
+	return nil
+}
+
 func convert(root obj) error {
 	for _, k := range []string{"start_time", "end_time"} {
 		if err := timeField(root, k); err != nil {
@@ -186,6 +208,9 @@ func convert(root obj) error {
 		}
 		id, _ := h["character"].(string)
 		for n, r := range rows {
+			if err := rowKeys(r); err != nil {
+				return err
+			}
 			if err := timeField(r, "at"); err != nil {
 				return err
 			}

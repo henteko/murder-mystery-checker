@@ -1,4 +1,4 @@
-{"spec_version": "0.7.0",
+{"spec_version": "0.8.0",
  "diagnostics":
  [{"severity": "error", "code": "A001", "args": ["as0", "c1", "absent", "l2"]},
   {"severity": "error", "code": "G004", "args": ["g0"]},

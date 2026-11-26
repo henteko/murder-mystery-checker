@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.7.0",
+  "spec_version": "0.8.0",
   "note": "荒木コノミの真相 (araki-konomi-no-shinsou) のモデル化サンプル。移動時間は推定値。",
   "start_time": 960,
   "end_time": 1110,

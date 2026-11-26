@@ -1,4 +1,4 @@
-{"spec_version": "0.7.0",
+{"spec_version": "0.8.0",
  "diagnostics":
  [{"severity": "error", "code": "G003", "args": ["end_win"]},
   {"severity": "error", "code": "G004", "args": ["g1"]},
@@ -20,8 +20,6 @@
    "code": "I003",
    "args": ["c0", "i1", "character:c1"]},
   {"severity": "error", "event": "e02", "code": "K002", "args": ["c3", "f3"]},
-  {"severity": "warning", "code": "K009", "args": ["3", "0"]},
-  {"severity": "error", "code": "K010", "args": ["0"]},
   {"severity": "error",
    "event": "e03",
    "code": "T002",

@@ -124,61 +124,107 @@ theorem issuesA_nil (s : Scenario) :
   apply forall_congr'; intro c; apply forall_congr'; intro _
   cases a.kind.violated (s.whereAt c a.time) a.location <;> simp
 
-/-- 探索の被覆の判定は、宣言的な条件と同値。 -/
-theorem coverable_iff (cl : List Clue) : ∀ (d : Nat) (N : List Id),
-    coverable cl N d = true ↔
-      ∃ cs : List Clue, (∀ c ∈ cs, c ∈ cl) ∧ cs.length ≤ d ∧ ∀ f ∈ N, ∃ c ∈ cs, f ∈ c.reveals := by
-  intro d
-  induction d with
+theorem getD_set_nat (l : List Nat) (i j v : Nat) :
+    (l.set i v).getD j 0 = if i = j ∧ i < l.length then v else l.getD j 0 := by
+  simp only [List.getD_eq_getElem?_getD, List.getElem?_set]
+  by_cases h : i = j
+  · subst h; by_cases h' : i < l.length
+    · simp [h']
+    · simp [h']
+  · simp [h]
+
+theorem lt_of_getD_pos {l : List Nat} {i : Nat} (h : 0 < l.getD i 0) : i < l.length := by
+  apply Nat.lt_of_not_le; intro hn
+  simp [List.getD_eq_getElem?_getD, List.getElem?_eq_none (hn)] at h
+
+theorem lt_of_mem_getD {pools : List (List Clue)} {i : Nat} {c : Clue} (h : c ∈ pools.getD i []) :
+    i < pools.length := by
+  apply Nat.lt_of_not_le; intro hn
+  simp [List.getD_eq_getElem?_getD, List.getElem?_eq_none (hn)] at h
+
+/-- 探索の被覆の判定は、宣言的な条件と同値: 回 i で引くカードは pools[i] から caps[i] 枚以内、合計 k 枚以内。 -/
+theorem coverR_iff (pools : List (List Clue)) : ∀ (k : Nat) (caps : List Nat) (N : List Id),
+    coverR pools caps N k = true ↔
+      ∃ ps : List (Nat × Clue), (∀ p ∈ ps, p.2 ∈ pools.getD p.1 []) ∧ ps.length ≤ k ∧
+        (∀ i, ps.countP (·.1 == i) ≤ caps.getD i 0) ∧ ∀ f ∈ N, ∃ p ∈ ps, f ∈ p.2.reveals := by
+  intro k
+  induction k with
   | zero =>
-    intro N
+    intro caps N
     cases N with
-    | nil => simp only [coverable, true_iff]; exact ⟨[], by simp, by simp, by simp⟩
+    | nil => simp only [coverR, true_iff]; exact ⟨[], by simp, by simp, by simp, by simp⟩
     | cons f rest =>
-      simp only [coverable, Bool.false_eq_true, false_iff, not_exists, not_and]
-      intro cs _ hl hc
-      obtain ⟨c, hc, _⟩ := hc f (by simp)
-      have : cs = [] := List.eq_nil_of_length_eq_zero (Nat.le_zero.mp hl)
-      subst this; simp at hc
-  | succ d ih =>
-    intro N
+      simp only [coverR, Bool.false_eq_true, false_iff, not_exists, not_and]
+      intro ps _ hl _ hc
+      obtain ⟨p, hp, _⟩ := hc f (by simp)
+      have : ps = [] := List.eq_nil_of_length_eq_zero (Nat.le_zero.mp hl)
+      subst this; simp at hp
+  | succ k ih =>
+    intro caps N
     cases N with
-    | nil => simp only [coverable, true_iff]; exact ⟨[], by simp, by simp, by simp⟩
+    | nil => simp only [coverR, true_iff]; exact ⟨[], by simp, by simp, by simp, by simp⟩
     | cons f rest =>
-      simp only [coverable, List.any_eq_true, List.mem_filter, List.contains_iff_mem]
+      simp only [coverR, List.any_eq_true, List.mem_range, Bool.and_eq_true, decide_eq_true_eq,
+        List.mem_filter, List.contains_iff_mem]
       constructor
-      · rintro ⟨c, ⟨hcl, hf⟩, hcov⟩
-        obtain ⟨cs, hm, hl, hcs⟩ := (ih _).mp hcov
-        refine ⟨c :: cs, ?_, by simp; omega, ?_⟩
-        · intro x hx; simp only [List.mem_cons] at hx; rcases hx with rfl | hx
-          · exact hcl
-          · exact hm x hx
+      · rintro ⟨i, _, hcap, c, ⟨hcp, hf⟩, hcov⟩
+        obtain ⟨ps, hm, hl, hcnt, hcs⟩ := (ih _ _).mp hcov
+        have hi := lt_of_getD_pos hcap
+        refine ⟨(i, c) :: ps, ?_, by simp; omega, ?_, ?_⟩
+        · intro p hp; simp only [List.mem_cons] at hp; rcases hp with rfl | hp
+          · exact hcp
+          · exact hm p hp
+        · intro j
+          have := hcnt j
+          rw [getD_set_nat] at this
+          by_cases hij : i = j
+          · subst hij
+            rw [ite_eq_left ⟨rfl, hi⟩] at this
+            rw [List.countP_cons, ite_eq_left (by simp)]; omega
+          · rw [ite_eq_right (fun h => hij h.1)] at this
+            rw [List.countP_cons, ite_eq_right (by simp [hij])]; omega
         · intro x hx
           by_cases hr : x ∈ c.reveals
-          · exact ⟨c, by simp, hr⟩
-          · obtain ⟨c', hc', hx'⟩ := hcs x (by simp [List.mem_filter, hx, hr])
-            exact ⟨c', by simp [hc'], hx'⟩
-      · rintro ⟨cs, hm, hl, hcs⟩
-        obtain ⟨c, hc, hf⟩ := hcs f (by simp)
-        refine ⟨c, ⟨hm c hc, hf⟩, (ih _).mpr ⟨cs.erase c, fun x hx => hm x (List.mem_of_mem_erase hx), ?_, ?_⟩⟩
-        · rw [List.length_erase_of_mem hc]; omega
+          · exact ⟨(i, c), by simp, hr⟩
+          · obtain ⟨p, hp, hx'⟩ := hcs x (by simp [List.mem_filter, hx, hr])
+            exact ⟨p, by simp [hp], hx'⟩
+      · rintro ⟨ps, hm, hl, hcnt, hcs⟩
+        obtain ⟨⟨i, c⟩, hp, hf⟩ := hcs f (by simp)
+        have hcp := hm _ hp
+        have hperm := List.perm_cons_erase hp
+        have hci : 0 < ps.countP (·.1 == i) := List.countP_pos_iff.mpr ⟨(i, c), hp, by simp⟩
+        have hcap : 0 < caps.getD i 0 := Nat.lt_of_lt_of_le hci (hcnt i)
+        refine ⟨i, lt_of_mem_getD hcp, hcap, c, ⟨hcp, hf⟩, (ih _ _).mpr ⟨ps.erase (i, c), ?_, ?_, ?_, ?_⟩⟩
+        · intro p hp'; exact hm p (List.mem_of_mem_erase hp')
+        · rw [List.length_erase_of_mem hp]; omega
+        · intro j
+          have hc := hperm.countP_eq (·.1 == j)
+          rw [List.countP_cons] at hc
+          have := hcnt j
+          rw [getD_set_nat]
+          by_cases hij : i = j
+          · subst hij
+            rw [ite_eq_left ⟨rfl, lt_of_getD_pos hcap⟩]
+            rw [ite_eq_left (by simp)] at hc; omega
+          · rw [ite_eq_right (fun h => hij h.1)]
+            rw [ite_eq_right (by simp [hij])] at hc; omega
         · intro x hx
           simp only [List.mem_filter, Bool.not_eq_eq_eq_not, Bool.not_true, List.contains_iff_mem,
             decide_eq_false_iff_not] at hx
           obtain ⟨hx, hr⟩ := hx
-          obtain ⟨c', hc', hx'⟩ := hcs x hx
-          have hne : c' ≠ c := fun h => by subst h; simp [hx'] at hr
-          exact ⟨c', (List.mem_erase_of_ne hne).mpr hc', hx'⟩
+          obtain ⟨p, hp', hx'⟩ := hcs x hx
+          have hne : p ≠ (i, c) := fun h => by subst h; simp [hx'] at hr
+          exact ⟨p, (List.mem_erase_of_ne hne).mpr hp', hx'⟩
 
 theorem issuesK010_nil (s : Scenario) :
-    issuesK010 s = [] ↔ ∀ n, s.exploration = some n → s.CanDraw n := by
+    issuesK010 s = [] ↔ ∀ rs, s.exploration = some rs → s.CanDraw rs := by
   unfold issuesK010 Scenario.CanDraw
   cases s.exploration with
   | none => simp
-  | some n =>
+  | some rs =>
     simp only [Option.some.injEq, forall_eq']
-    rw [← coverable_iff]
-    cases coverable s.clues s.clueOnly (s.draws n) <;> simp
+    rw [← coverR_iff]
+    cases coverR (s.pools rs) (s.caps rs) s.clueOnly (s.draws rs) <;> simp
 
 theorem postErrors_nil (s : Scenario) : postErrors s = [] ↔ PostValid s := by
   unfold postErrors PostValid

@@ -229,7 +229,17 @@ func printStats(w io.Writer, st *check.Stats) {
 		}
 		fmt.Fprintf(w, "  カード %d / 引ける枚数 %s / 手がかりからしか得られない真相 %d / 必要な最小枚数 %s / 余裕 %s\n",
 			e.Cards, draws, e.ClueOnly, minc, slack)
-		fmt.Fprintf(w, "  無作為に引いて真相のカードが揃う確率 %s\n", cover)
+		fmt.Fprintf(w, "  無作為に引いて真相のカードが揃う確率 %s(回ごとの制限は考えない)\n", cover)
+		if len(e.Rounds) > 1 {
+			for i, r := range e.Rounds {
+				truth := "—"
+				if r.Truth != nil {
+					truth = fmt.Sprintf("%d / %d", *r.Truth, e.ClueOnly)
+				}
+				fmt.Fprintf(w, "  %d 回目: 引ける枚数 %d / 引けるカード %d / この回までに明かせる真相 %s\n",
+					i+1, r.Draws, r.Cards, truth)
+			}
+		}
 	}
 
 	b := st.Branching

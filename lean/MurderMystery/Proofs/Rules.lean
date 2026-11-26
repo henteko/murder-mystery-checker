@@ -367,16 +367,25 @@ theorem hasCode_warningsTH (h : hasCode c (warningsT009 s ++ warningsH s)) :
 
 
 theorem hasCode_postWarnings (h : hasCode c (postWarnings s)) :
-    c = "T009" ∨ c = "H003" ∨ c = "H005" ∨ c = "H007" ∨ c = "K009" := by
+    c = "T009" ∨ c = "H003" ∨ c = "H005" ∨ c = "H007" ∨ c = "K009" ∨ c = "K011" := by
   unfold postWarnings at h
   rcases (hasCode_append c _ _).mp h with h | h
-  · rcases hasCode_warningsTH s c h with h | h | h | h <;> simp [h]
-  · obtain ⟨x, hx, rfl⟩ := h
-    unfold warningsK009 at hx
-    split at hx
-    · split at hx
-      · simp at hx; subst hx; simp
+  · rcases (hasCode_append c _ _).mp h with h | h
+    · rcases hasCode_warningsTH s c h with h | h | h | h <;> simp [h]
+    · obtain ⟨x, hx, rfl⟩ := h
+      unfold warningsK009 at hx
+      split at hx
+      · split at hx
+        · simp at hx; subst hx; simp
+        · cases hx
       · cases hx
+  · obtain ⟨x, hx, rfl⟩ := h
+    unfold warningsK011 at hx
+    split at hx
+    · obtain ⟨cl, _, hx⟩ := List.mem_filterMap.mp hx
+      split at hx
+      · cases hx
+      · simp only [Option.some.injEq] at hx; subst hx; simp
     · cases hx
 end
 
@@ -425,7 +434,7 @@ theorem hasCodeD_checkEvents (s : Scenario) (c : String) :
     exact ⟨_, ⟨st, hst, List.mem_map.mpr ⟨x, hx, rfl⟩⟩, hc⟩
 
 /-- 警告のコード。 -/
-def warningCodes : List String := ["T009", "T012", "H003", "H005", "H007", "K009", "G006", "G008", "G009"]
+def warningCodes : List String := ["T009", "T012", "H003", "H005", "H007", "K009", "K011", "G006", "G008", "G009"]
 
 theorem errorCode_not_warning {c : String} (hc : c ∈ errorCodes) : c ∉ warningCodes := by
   simp only [errorCodes, List.mem_cons, List.not_mem_nil, or_false] at hc
@@ -439,7 +448,7 @@ theorem hasCodeD_checkPost (s : Scenario) (c : String) (hc : c ∈ errorCodes) :
   simp only [hasCodeD_append, hasCodeD_map c _ (fun x => err x.1 x.2) (fun _ => rfl),
     hasCodeD_map c _ (fun x => warn x.1 x.2) (fun _ => rfl), hasCode_postErrors]
   have h1 : ¬ hasCode c (postWarnings s) := fun h => by
-    rcases hasCode_postWarnings s c h with rfl | rfl | rfl | rfl | rfl <;> simp [warningCodes] at hw
+    rcases hasCode_postWarnings s c h with rfl | rfl | rfl | rfl | rfl | rfl <;> simp [warningCodes] at hw
   have h2 : ¬ hasCodeD c (checkT012 s) := fun h => by
     rw [hasCodeD_single (X := "T012") (fun d hd => by
       simp only [checkT012, List.mem_flatMap, List.mem_map] at hd

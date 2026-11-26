@@ -288,12 +288,81 @@ func coverable(cl []m.Clue, ns []string, d int) bool {
 	return false
 }
 
-// warningsK009 / issuesK010 は探索フェイズの検査 (§4.4)。
+// coverR は、回 i で引けるカード pools[i] と回ごとの残りの枚数 caps のもとで、k 枚以内で ns の知識を
+// すべて明かせるか(Post.lean の coverR と同じ探索。caps は探索の途中で書き換えて戻す)。
+func coverR(pools [][]m.Clue, caps []int, ns []string, k int) bool {
+	if len(ns) == 0 {
+		return true
+	}
+	if k == 0 {
+		return false
+	}
+	f := ns[0]
+	for i := range pools {
+		if caps[i] <= 0 {
+			continue
+		}
+		for _, c := range pools[i] {
+			if !contains(c.Reveals, f) {
+				continue
+			}
+			var rest []string
+			for _, x := range ns {
+				if !contains(c.Reveals, x) {
+					rest = append(rest, x)
+				}
+			}
+			caps[i]--
+			ok := coverR(pools, caps, rest, k-1)
+			caps[i]++
+			if ok {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// pool は回 r で引ける探索カード(Post.lean の Scenario.pool)。
+func (w *world) pool(r m.Round) []m.Clue {
+	if r.Clues == nil {
+		return w.s.Clues
+	}
+	var out []m.Clue
+	for _, c := range w.s.Clues {
+		if contains(*r.Clues, c.ID) {
+			out = append(out, c)
+		}
+	}
+	return out
+}
+
+// rounds は回ごとに引けるカード、回ごとに引ける枚数、その合計 D。
+func (w *world) rounds(rs []m.Round) (pools [][]m.Clue, caps []int, total int) {
+	for _, r := range rs {
+		pools = append(pools, w.pool(r))
+		caps = append(caps, r.Draws*w.playerCount())
+		total += r.Draws * w.playerCount()
+	}
+	return
+}
+
+// drawable は探索カード c をどれかの回で引けるか(1人の枚数が 1 以上で、c がその回のカードに含まれる)。
+func drawable(rs []m.Round, c m.Clue) bool {
+	for _, r := range rs {
+		if r.Draws > 0 && (r.Clues == nil || contains(*r.Clues, c.ID)) {
+			return true
+		}
+	}
+	return false
+}
+
+// warningsK009 / issuesK010 / warningsK011 は探索フェイズの検査 (§4.4)。
 func (w *world) warningsK009() []issue {
 	if w.s.Exploration == nil {
 		return nil
 	}
-	d := *w.s.Exploration * w.playerCount()
+	_, _, d := w.rounds(w.s.Exploration)
 	if d < len(w.s.Clues) {
 		return []issue{iss("K009", strconv.Itoa(len(w.s.Clues)), strconv.Itoa(d))}
 	}
@@ -304,11 +373,24 @@ func (w *world) issuesK010() []issue {
 	if w.s.Exploration == nil {
 		return nil
 	}
-	d := *w.s.Exploration * w.playerCount()
-	if coverable(w.s.Clues, w.clueOnly(), d) {
+	pools, caps, d := w.rounds(w.s.Exploration)
+	if coverR(pools, caps, w.clueOnly(), d) {
 		return nil
 	}
 	return []issue{iss("K010", strconv.Itoa(d))}
+}
+
+func (w *world) warningsK011() []issue {
+	if w.s.Exploration == nil {
+		return nil
+	}
+	var out []issue
+	for _, c := range w.s.Clues {
+		if !drawable(w.s.Exploration, c) {
+			out = append(out, iss("K011", c.ID))
+		}
+	}
+	return out
 }
 
 func (w *world) checkPost() []Diag {
@@ -316,7 +398,7 @@ func (w *world) checkPost() []Diag {
 	for _, x := range append(w.postErrors(), w.issuesK010()...) {
 		out = append(out, errD(x.code, x.args, nil))
 	}
-	for _, x := range append(append(w.warningsT009(), w.warningsH()...), w.warningsK009()...) {
+	for _, x := range append(append(append(w.warningsT009(), w.warningsH()...), w.warningsK009()...), w.warningsK011()...) {
 		out = append(out, warnD(x.code, x.args, nil))
 	}
 	return append(out, w.checkT012()...)

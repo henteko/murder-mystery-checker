@@ -3,7 +3,7 @@
     "doc": "真相によって分かれる条件: f_secret が真なので alice への投票で達成",
     "expect": []
   },
-  "spec_version": "0.7.0",
+  "spec_version": "0.8.0",
   "start_time": 1260,
   "end_time": 1320,
   "characters": [

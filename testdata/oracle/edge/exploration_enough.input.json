@@ -3,7 +3,7 @@
     "doc": "探索で引ける枚数で真相の手がかりを引き切れる(1枚に2つの知識)",
     "expect": []
   },
-  "spec_version": "0.7.0",
+  "spec_version": "0.8.0",
   "start_time": 1260,
   "end_time": 1320,
   "characters": [

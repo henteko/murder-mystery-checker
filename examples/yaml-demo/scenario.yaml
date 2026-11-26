@@ -1,5 +1,5 @@
 # 古書店の閉店後(YAML の書き方の見本。docs/yaml.md)
-spec_version: "0.7.0"
+spec_version: "0.8.0"
 start_time: "21:00"
 end_time: "22:00"
 claim_tolerance: 2

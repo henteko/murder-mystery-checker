@@ -69,9 +69,12 @@ def StepValid (s : Scenario) (st : Step) : Prop :=
 
 /-! ## 終了状態・区間に対する規則 (§4.4〜§4.6) -/
 
-/-- 1人 n 枚の探索で、手がかりからしか手に入らない真相の知識をすべて明かす手がかりの組を引ける。 -/
-def Scenario.CanDraw (s : Scenario) (n : Nat) : Prop :=
-  ∃ cs : List Clue, (∀ c ∈ cs, c ∈ s.clues) ∧ cs.length ≤ s.draws n ∧ ∀ f ∈ s.clueOnly, ∃ c ∈ cs, f ∈ c.reveals
+/-- 探索の回 rs で、手がかりからしか手に入らない真相の知識をすべて明かす手がかりを引ける:
+    (回の番号, カード) の組の列 ps で、各カードはその回で引けるもの、回 i で引くのは caps[i] 枚以内、
+    合計は D 枚以内、真相の知識はどれも ps のどれかのカードが明かす。 -/
+def Scenario.CanDraw (s : Scenario) (rs : List Round) : Prop :=
+  ∃ ps : List (Nat × Clue), (∀ p ∈ ps, p.2 ∈ (s.pools rs).getD p.1 []) ∧ ps.length ≤ s.draws rs ∧
+    (∀ i, ps.countP (·.1 == i) ≤ (s.caps rs).getD i 0) ∧ ∀ f ∈ s.clueOnly, ∃ p ∈ ps, f ∈ p.2.reveals
 
 def PostValid (s : Scenario) : Prop :=
   let E := s.final
@@ -98,7 +101,7 @@ def PostValid (s : Scenario) : Prop :=
   -- A001: 真相の断言はタイムラインと一致する
   (∀ a ∈ s.assertions, ∀ c ∈ a.characters, a.kind.violated (s.whereAt c a.time) a.location = false) ∧
   -- K010: 探索で引ける枚数の手がかりで、手がかりからしか手に入らない真相の知識をすべて明かせる
-  (∀ n, s.exploration = some n → s.CanDraw n)
+  (∀ rs, s.exploration = some rs → s.CanDraw rs)
 
 /-! ## G 群 (§4.7) -/
 

@@ -103,10 +103,11 @@ handouts:
 
 func TestInputErrors(t *testing.T) {
 	for name, src := range map[string]string{
-		"duplicate key": "start_time: 1\nstart_time: 2\n",
-		"bad time":      "start_time: \"21:75\"\n",
-		"not a mapping": "- 1\n- 2\n",
-		"bad timeline":  "characters:\n  - id: a\n    timeline: 3\n",
+		"duplicate key":             "start_time: 1\nstart_time: 2\n",
+		"bad time":                  "start_time: \"21:75\"\n",
+		"not a mapping":             "- 1\n- 2\n",
+		"bad timeline":              "characters:\n  - id: a\n    timeline: 3\n",
+		"unknown handout row field": "handouts:\n  - character: a\n    timeline:\n      - {at: \"21:00\", event: e1, txt: x}\n",
 	} {
 		_, err := Load([]byte(src))
 		var ie *m.InputError

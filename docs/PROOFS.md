@@ -25,11 +25,11 @@
 | 5 | 知識の単調性 | **証明済み** | `step_knows_mono`, `final_knows_of_initial`, `trace_knows_final` |
 | 6 | 仕様の無矛盾性(正しいシナリオが存在) | **証明済み**(`native_decide` 使用) | `exists_valid` |
 | 7 | 導出制約の正しさ(requires_items / requires_knowledge / condition / conceals は同値、requires_tagged は健全性のみ) | **証明済み**(requires_tagged は健全性のみ) | `realizable_iff`, `items_iff`, `knowledge_iff`, `condition_iff`, `conceal_iff`, `tags_sound`, `derived_iff` |
-| — | K010 の判定(探索の被覆)が宣言的な条件と同値 | **証明済み** | `coverable_iff` |
 | 8 | 区間の整合 | **証明済み**(主張を正確化) | `segments_consistent`, `segments_ordered`, `whereAt_eq_stateAt` |
 | 9 | 移動時間の決定性 | **証明済み** | `edge_unique`, `edgeLookup_eq_some_iff`, `edgeLookup_perm` |
 | 10 | 集計の分割 | **証明済み** | `tally_partition` |
 | 11 | 死亡の一意性 | **証明済み** | `step_dead_stable`, `runAux_dead_stable` |
+| 12 | 探索の判定の正しさ: K010 の判定(回ごとの枚数と引けるカードのもとでの被覆の探索)が宣言的な条件 `CanDraw` と同値 | **証明済み** | `coverR_iff`, `issuesK010_nil` |
 
 `check_valid`、`check_perm_events`、`reorder_same_time`、`segments_consistent` ほか主要な定理が依存する公理は `propext`, `Classical.choice`, `Quot.sound` のみ(`sorry` なし)。
 `exists_valid` のみ、具体例の評価に `native_decide` を使うため `Lean.ofReduceBool` 由来の公理にも依存する。

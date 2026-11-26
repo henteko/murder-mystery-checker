@@ -156,7 +156,7 @@ theorem idsOfKind_contains_perm (k i : Id) :
   simp only [Scenario.eventIds, List.contains_iff_mem, (hp.map (·.id)).mem_iff]
 
 theorem allRefs_perm (r : Ref) : r ∈ allRefs { s with events := l' } ↔ r ∈ allRefs s := by
-  simp only [allRefs, List.mem_append, List.mem_flatMap, hp.mem_iff]
+  simp only [allRefs, baseRefs, List.mem_append, List.mem_flatMap, hp.mem_iff]
 
 theorem checkR002_perm (x : RIssue) : x ∈ checkR002 { s with events := l' } ↔ x ∈ checkR002 s := by
   simp only [checkR002, List.mem_map, mem_dedup, List.mem_filter, allRefs_perm s l' hp,
@@ -242,7 +242,7 @@ theorem checkRaw_perm_of_R (hR : checkR s = []) :
   have hP : checkPost { s with events := l' } = checkPost s := by
     simp only [checkPost, postErrors, postWarnings, warningsT009, issuesK003, issuesK004K005, issuesK006,
       issuesK007, issuesK008, issuesH, warningsH, issuesA, checkT012, issuesK010, warningsK009,
-      Scenario.clueOnly, Scenario.draws, Scenario.playerCount, hfinal, hfind, hseg, hwhere, hobt, hobtF, hheld, hack, hsorted]
+      Scenario.clueOnly, Scenario.draws, hfinal, hfind, hseg, hwhere, hobt, hobtF, hheld, hack, hsorted]
     rfl
   have hG : checkG { s with events := l' } = checkG s := by
     have hd : Scenario.derivedConstraints { s with events := l' } = s.derivedConstraints := by

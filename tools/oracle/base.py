@@ -2,7 +2,7 @@
 import copy
 
 BASE = {
-    "spec_version": "0.7.0",
+    "spec_version": "0.8.0",
     "start_time": 1260, "end_time": 1320,
     "characters": [{"id": "alice"}, {"id": "bob"}],
     "areas": [{"id": "house", "internal_minutes": 5}],

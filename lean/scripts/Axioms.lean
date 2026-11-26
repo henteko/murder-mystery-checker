@@ -32,7 +32,7 @@ open MurderMystery
 #print axioms derived_iff
 #print axioms tags_sound
 -- K010: 探索の被覆の判定
-#print axioms coverable_iff
+#print axioms coverR_iff
 -- 定理 8: 区間の整合
 #print axioms segments_consistent
 -- 定理 9: 移動時間の決定性

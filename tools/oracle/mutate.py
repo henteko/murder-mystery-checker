@@ -5,6 +5,8 @@
 import copy
 import json
 
+from gen import random_exploration
+
 
 def _events(s):
     return s.setdefault("events", [])
@@ -21,7 +23,7 @@ def _locs(s):
 def mutate(rng, s, steps=None):
     s = copy.deepcopy(s)
     for _ in range(steps or rng.randint(1, 4)):
-        op = rng.randrange(16)
+        op = rng.randrange(18)
         evs = _events(s)
         if op == 0 and evs:  # 時刻をずらす
             e = rng.choice(evs)
@@ -93,6 +95,13 @@ def mutate(rng, s, steps=None):
         elif op == 15 and evs:  # 死亡を足す
             evs.append({"id": f"zz_die{rng.randrange(1000)}", "at": rng.choice(evs)["at"], "kind": "die",
                         "character": rng.choice(_chars(s))})
+        elif op == 16:  # 探索を回に分ける
+            s["exploration"] = random_exploration(rng, s)
+        elif op == 17:  # 探索を 1 回に戻す、またはなくす
+            if rng.random() < 0.5:
+                s["exploration"] = {"draws_per_player": rng.randint(0, 3)}
+            else:
+                s.pop("exploration", None)
     return s
 
 
@@ -108,7 +117,7 @@ def shuffle_arrays(rng, s):
 def corrupt(rng, s):
     """入力エラーになりうる形に壊す(壊れていない場合もある)。結果は JSON の文字列。"""
     s = copy.deepcopy(s)
-    op = rng.randrange(8)
+    op = rng.randrange(10)
     if op == 0:
         k = rng.choice(["characters", "locations", "placements", "start_time", "end_time"])
         s.pop(k, None)
@@ -122,6 +131,19 @@ def corrupt(rng, s):
         rng.choice(s["endings"])["condition"] = rng.choice([{}, {"var": "x", "const": True}, [], {"const": None}])
     elif op == 5 and s.get("items"):
         rng.choice(s["items"])["initial"] = rng.choice([{}, {"character": "a", "location": "b"}, "x"])
+    elif op == 8:  # 知らないキー(note と _ で始まるキー、説明の name / text は読み飛ばす)
+        targets = [s] + [x for k in ("characters", "events", "clues", "facts", "goals", "items", "locations")
+                         for x in s.get(k, []) if isinstance(x, dict)]
+        if isinstance(s.get("exploration"), dict):
+            targets.append(s["exploration"])
+            targets += [r for r in s["exploration"].get("rounds", []) if isinstance(r, dict)]
+        k = rng.choice(["phases", "foo", "note", "_meta", "name", "text", "draws", "rounds", "to", "facts"])
+        rng.choice(targets)[k] = rng.choice(["x", 1, [], {"a": 1}])
+    elif op == 9:  # 探索の形を壊す
+        s["exploration"] = rng.choice([
+            {}, {"draws_per_player": 1, "rounds": [{"draws_per_player": 1}]}, {"rounds": []},
+            {"rounds": [{}]}, {"rounds": [{"draws_per_player": 1, "clues": "c0"}]}, {"rounds": "x"},
+            {"rounds": [{"draws_per_player": 1, "clues": None}]}, {"rounds": [{"draws_per_player": -1}]}])
     text = json.dumps(s, ensure_ascii=False)
     if op == 6:  # 末尾を切る
         text = text[: rng.randrange(1, len(text))]

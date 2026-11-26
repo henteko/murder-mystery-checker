@@ -153,42 +153,66 @@ def checkT012 (s : Scenario) : List Diag :=
       (s.sortedEvents.filter fun m => m.time == o.time && m.kind.moved.contains x).map fun m =>
         warn "T012" [x, m.id] (some o.id)
 
-/-! ## 探索フェイズ: K009 (warning) / K010 (error) (§4.4) -/
+/-! ## 探索フェイズ: K009 / K011 (warning)、K010 (error) (§4.4) -/
 
 /-- プレイヤー(NPC 以外)の数。 -/
 def Scenario.playerCount (s : Scenario) : Nat := (s.characters.filter (!·.npc)).length
 
-/-- 探索フェイズで引ける探索カードの総数。 -/
-def Scenario.draws (s : Scenario) (n : Nat) : Nat := n * s.playerCount
+/-- 回 r で引ける探索カード。 -/
+def Scenario.pool (s : Scenario) (r : Round) : List Clue :=
+  match r.clues with
+  | none => s.clues
+  | some ids => s.clues.filter (fun c => ids.contains c.id)
+
+/-- 回ごとに引ける探索カード。 -/
+def Scenario.pools (s : Scenario) (rs : List Round) : List (List Clue) := rs.map s.pool
+
+/-- 回ごとに引ける枚数(1人の枚数 × プレイヤー数)。 -/
+def Scenario.caps (s : Scenario) (rs : List Round) : List Nat := rs.map (·.draws * s.playerCount)
+
+/-- 探索フェイズで引ける探索カードの総数 D。 -/
+def Scenario.draws (s : Scenario) (rs : List Round) : Nat := (s.caps rs).sum
 
 /-- 手がかりからしか手に入らない真相の知識: どのプレイヤーも終了時に知らず、どれかの手がかりが明かす。 -/
 def Scenario.clueOnly (s : Scenario) : List Id :=
   s.solutionFacts.filter fun f =>
     !s.characters.any (fun c => !c.npc && s.final.knows c.id f) && s.clues.any (·.reveals.contains f)
 
-/-- d 枚以内の手がかりで、N の知識をすべて明かせるか。 -/
-def coverable (cl : List Clue) : List Id → Nat → Bool
-  | [], _ => true
-  | _ :: _, 0 => false
-  | f :: rest, d + 1 =>
-    (cl.filter (·.reveals.contains f)).any fun c =>
-      coverable cl ((f :: rest).filter (fun x => !c.reveals.contains x)) d
+/-- 回 i で引けるカード pools[i] と、回ごとの残りの枚数 caps のもとで、k 枚以内で N をすべて明かせるか。
+    最初の知識 f を明かすカードを、引ける回とともに選ぶ。 -/
+def coverR (pools : List (List Clue)) : List Nat → List Id → Nat → Bool
+  | _, [], _ => true
+  | _, _ :: _, 0 => false
+  | caps, f :: rest, k + 1 =>
+    (List.range pools.length).any fun i =>
+      decide (0 < caps.getD i 0) &&
+        ((pools.getD i []).filter (·.reveals.contains f)).any fun c =>
+          coverR pools (caps.set i (caps.getD i 0 - 1)) ((f :: rest).filter (fun x => !c.reveals.contains x)) k
 
 def warningsK009 (s : Scenario) : List Issue :=
   match s.exploration with
-  | some n => if s.draws n < s.clues.length then [("K009", [toString s.clues.length, toString (s.draws n)])] else []
+  | some rs => if s.draws rs < s.clues.length then [("K009", [toString s.clues.length, toString (s.draws rs)])] else []
   | none => []
 
 def issuesK010 (s : Scenario) : List Issue :=
   match s.exploration with
-  | some n => if coverable s.clues s.clueOnly (s.draws n) then [] else [("K010", [toString (s.draws n)])]
+  | some rs => if coverR (s.pools rs) (s.caps rs) s.clueOnly (s.draws rs) then [] else [("K010", [toString (s.draws rs)])]
+  | none => []
+
+/-- 探索カード c を、どれかの回で引ける(1人の枚数が 1 以上で、c がその回のカードに含まれる)。 -/
+def drawable (rs : List Round) (c : Clue) : Bool :=
+  rs.any fun r => decide (0 < r.draws) && (r.clues.all (·.contains c.id))
+
+def warningsK011 (s : Scenario) : List Issue :=
+  match s.exploration with
+  | some rs => s.clues.filterMap fun c => if drawable rs c then none else some ("K011", [c.id])
   | none => []
 
 def postErrors (s : Scenario) : List Issue :=
   issuesK003 s ++ issuesK004K005 s ++ issuesK006 s ++ issuesK007 s ++ issuesK008 s ++ issuesH s ++ issuesA s
     ++ issuesK010 s
 
-def postWarnings (s : Scenario) : List Issue := warningsT009 s ++ warningsH s ++ warningsK009 s
+def postWarnings (s : Scenario) : List Issue := warningsT009 s ++ warningsH s ++ warningsK009 s ++ warningsK011 s
 
 def checkPost (s : Scenario) : List Diag :=
   (postErrors s).map (fun (c, a) => err c a) ++ (postWarnings s).map (fun (c, a) => warn c a) ++ checkT012 s

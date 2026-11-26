@@ -5,7 +5,7 @@ import (
 )
 
 // SpecVersion は実装している仕様のバージョン。
-const SpecVersion = "0.7.0"
+const SpecVersion = "0.8.0"
 
 // Check は判定器の入口 (§3)。R の違反があれば R のみ。結果は正規順序で、重複なし。
 func Check(s *m.Scenario) []Diag {

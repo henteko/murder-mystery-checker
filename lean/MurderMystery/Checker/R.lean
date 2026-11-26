@@ -87,7 +87,13 @@ def formulaRefs (referrer : String) (f : Formula) : List Ref :=
     | .inTally vs _ => vs.map fun v => ⟨referrer, "variable", v, none⟩
     | .asFact f => [⟨referrer, "fact", f, none⟩]
 
-def allRefs (s : Scenario) : List Ref :=
+/-- 探索の回の `clues` からの参照(referrer は `round:<1 から数えた番号>`)。 -/
+def roundRefs (ex : Option (List Round)) : List Ref :=
+  (ex.getD []).zipIdx.flatMap fun (r, i) =>
+    (r.clues.getD []).map fun c => ⟨s!"round:{i + 1}", "clue", c, none⟩
+
+/-- 探索の回以外からの参照。 -/
+def baseRefs (s : Scenario) : List Ref :=
   let edgeRefs (tbl kind : String) (es : List Edge) : List Ref :=
     es.flatMap fun e => [⟨tbl, kind, e.src, none⟩, ⟨tbl, kind, e.dst, none⟩]
   s.locations.flatMap (fun l => l.area.toList.map fun a => ⟨s!"location:{l.id}", "area", a, none⟩)
@@ -134,6 +140,9 @@ def allRefs (s : Scenario) : List Ref :=
   ++ s.constraints.flatMap (formulaRefs "constraint")
   ++ s.endings.flatMap (fun e => formulaRefs s!"ending:{e.id}" e.condition)
 
+/-- すべての参照(R002 の対象)。 -/
+def allRefs (s : Scenario) : List Ref := baseRefs s ++ roundRefs s.exploration
+
 def Scenario.idsOfKind (s : Scenario) : String → List Id
   | "character" => s.characterIds
   | "area" => s.areaIds
@@ -142,6 +151,7 @@ def Scenario.idsOfKind (s : Scenario) : String → List Id
   | "fact" => s.factIds
   | "event" => s.eventIds
   | "variable" => s.variableIds
+  | "clue" => s.clues.map (·.id)
   | _ => []
 
 def checkR002 (s : Scenario) : List RIssue :=

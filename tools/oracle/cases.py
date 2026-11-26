@@ -282,6 +282,37 @@ def _(s):
     s["choices"][0]["owner"] = "alice"
 
 
+@case("rules", "K010_round_capacity",
+      "真相のカード2枚は1回目にしか引けないが、1回目は1枚しか引けない(合計の枚数は足りる)", ["K010"])
+def _(s):
+    s["facts"] += [{"id": "f_motive"}, {"id": "f_extra"}]
+    s["solution_facts"] = ["f_secret", "f_motive"]
+    s["clues"] = [{"id": "x_secret", "deck": "d", "reveals": ["f_secret"]},
+                  {"id": "x_motive", "deck": "d", "reveals": ["f_motive"]},
+                  {"id": "x_other", "deck": "d", "reveals": ["f_extra"]}]
+    s["characters"] = [{"id": "alice"}, {"id": "bob", "npc": True}]
+    s["initial_knowledge"] = []
+    s["goals"] = [{"id": "g_alice", "owner": "alice"}]
+    s["choices"][0]["owner"] = "alice"
+    s["exploration"] = {"rounds": [{"draws_per_player": 1, "clues": ["x_secret", "x_motive"]},
+                                   {"draws_per_player": 2, "clues": ["x_other"]}]}
+
+
+@case("rules", "K011_card_never_drawable", "どの回でも引けない探索カードがある(警告)", ["K011"])
+def _(s):
+    s["facts"].append({"id": "f_extra"})
+    s["clues"] = [{"id": "x0", "deck": "d", "reveals": ["f_extra"]},
+                  {"id": "x1", "deck": "d", "reveals": ["f_extra"]}]
+    s["exploration"] = {"rounds": [{"draws_per_player": 1, "clues": ["x0"]}]}
+
+
+@case("rules", "R002_round_unknown_clue", "探索の回の clues が存在しない探索カードを参照している", ["R002"])
+def _(s):
+    s["facts"].append({"id": "f_extra"})
+    s["clues"] = [{"id": "x0", "deck": "d", "reveals": ["f_extra"]}]
+    s["exploration"] = {"rounds": [{"draws_per_player": 1, "clues": ["x0", "ghost"]}]}
+
+
 @case("rules", "K008_claim_time_off", "証言は 1260 と言うが、実際の移動は 1270", ["K008"])
 def _(s):
     s["facts"].append({"id": "f_claim", "about": {"event": "e1"}, "claimed_at": 1260})
@@ -564,10 +595,47 @@ def _(s):
 
 
 @case("edge", "exploration_known_by_player",
-      "プレイヤーが知っている真相の知識はカードを引かなくてよい(K010 なし。0枚しか引けないので K009 は出る)", ["K009"])
+      "プレイヤーが知っている真相の知識はカードを引かなくてよい(K010 なし。0枚しか引けないので K009 と K011 は出る)", ["K009", "K011"])
 def _(s):
     s["clues"] = [{"id": "x_secret", "deck": "d", "reveals": ["f_secret"]}]
     s["exploration"] = {"draws_per_player": 0}
+
+
+@case("edge", "exploration_rounds_enough",
+      "真相のカードを1回目と2回目に1枚ずつ引ける(K010 なし)")
+def _(s):
+    s["facts"] += [{"id": "f_motive"}, {"id": "f_extra"}]
+    s["solution_facts"] = ["f_secret", "f_motive"]
+    s["clues"] = [{"id": "x_secret", "deck": "d", "reveals": ["f_secret"]},
+                  {"id": "x_motive", "deck": "d", "reveals": ["f_motive"]},
+                  {"id": "x_other", "deck": "d", "reveals": ["f_extra"]}]
+    s["characters"] = [{"id": "alice"}, {"id": "bob", "npc": True}]
+    s["initial_knowledge"] = []
+    s["goals"] = [{"id": "g_alice", "owner": "alice"}]
+    s["choices"][0]["owner"] = "alice"
+    s["exploration"] = {"rounds": [{"draws_per_player": 1, "clues": ["x_secret", "x_motive"]},
+                                   {"draws_per_player": 2, "clues": ["x_motive", "x_other"]}]}
+
+
+@case("edge", "exploration_round_zero_draws",
+      "カードを引けるのが、1人0枚の回だけ(K011。真相はプレイヤーが知っているので K010 なし)", ["K011"])
+def _(s):
+    s["clues"] = [{"id": "x_a", "deck": "d", "reveals": ["f_meeting"]}]
+    s["exploration"] = {"rounds": [{"draws_per_player": 0, "clues": ["x_a"]}, {"draws_per_player": 1, "clues": []}]}
+
+
+@case("edge", "extra_fields_allowed", "note、_ で始まるキー、説明の name / text はどこにでも置ける(検出なし)")
+def _(s):
+    s["note"] = "メモ"
+    s["_meta"] = {"anything": [1, 2]}
+    s["characters"][0]["name"] = "アリス"
+    s["characters"][1]["note"] = "x"
+    s["facts"][0]["text"] = "秘密"
+    s["events"][0]["name"] = "移動"
+    s["events"][0]["_src"] = 3
+    s["endings"][0]["name"] = "A"
+    s["clues"] = [{"id": "x0", "deck": "d", "reveals": ["f_meeting"], "name": "カード", "text": "本文"}]
+    s["exploration"] = {"rounds": [{"draws_per_player": 1, "name": "調査 1", "note": "現場のみ"}]}
 
 
 @case("edge", "tagged_items", "タグのアイテムを2つ持つゴール。使えるアイテムが1つしかないと達成できない", ["G004"])
@@ -740,6 +808,13 @@ SCHEMA = [
     ("initial_both", "initial が character と location の両方を持つ", None),
     ("formula_two_keys", "論理式のオブジェクトにキーが2つある", None),
     ("unknown_assertion_kind", "未知の断言の種類", None),
+    ("unknown_field_top", "トップレベルに知らないキーがある (0.8.0)", None),
+    ("unknown_field_typo", "move に知らないキー(targets のつもりの target)がある", None),
+    ("field_of_other_kind", "scene に move のキー to がある", None),
+    ("exploration_both", "exploration に draws_per_player と rounds の両方がある", None),
+    ("exploration_neither", "exploration に draws_per_player も rounds もない", None),
+    ("exploration_rounds_empty", "rounds が空", None),
+    ("exploration_round_unknown_field", "回に知らないキー(draws_per_player のつもりの draws)がある", None),
 ]
 
 
@@ -765,6 +840,20 @@ def schema_case(name):
         s["endings"][0]["condition"] = {"var": "g_alice", "const": True}
     elif name == "unknown_assertion_kind":
         s["assertions"] = [{"id": "a1", "kind": "maybe", "location": "hall", "at": 1270, "characters": ["alice"]}]
+    elif name == "unknown_field_top":
+        s["phases"] = [{"kind": "discussion"}, {"kind": "exploration", "draws": 1}]
+    elif name == "unknown_field_typo":
+        s["events"][0]["target"] = "x"
+    elif name == "field_of_other_kind":
+        s["events"][1]["to"] = "study"
+    elif name == "exploration_both":
+        s["exploration"] = {"draws_per_player": 1, "rounds": [{"draws_per_player": 1}]}
+    elif name == "exploration_neither":
+        s["exploration"] = {}
+    elif name == "exploration_rounds_empty":
+        s["exploration"] = {"rounds": []}
+    elif name == "exploration_round_unknown_field":
+        s["exploration"] = {"rounds": [{"draws_per_player": 1}, {"draws": 1}]}
     return s
 
 

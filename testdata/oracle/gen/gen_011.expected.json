@@ -1,4 +1,4 @@
-{"spec_version": "0.7.0",
+{"spec_version": "0.8.0",
  "diagnostics":
  [{"witness": {"v1": "p", "v0": "q", "g1": false, "g0": true, "flag": false},
    "severity": "error",

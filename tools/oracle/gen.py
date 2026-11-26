@@ -16,6 +16,20 @@ OUT = os.path.join(ROOT, "testdata", "oracle", "gen")
 SEED = 20261124
 
 
+def random_exploration(rng: random.Random, s):
+    """探索の回をランダムに作る。回ごとに引けるカードを絞ることがある(まれに存在しない ID: R002)。"""
+    ids = [c["id"] for c in s.get("clues", []) if isinstance(c, dict) and isinstance(c.get("id"), str)]
+    rounds = []
+    for _ in range(rng.randint(1, 3)):
+        r = {"draws_per_player": rng.randint(0, 2)}
+        if ids and rng.random() < 0.6:
+            r["clues"] = rng.sample(ids, k=rng.randint(0, len(ids)))
+            if rng.random() < 0.05:
+                r["clues"].append("ghost")
+        rounds.append(r)
+    return {"rounds": rounds}
+
+
 def gen(rng: random.Random, n: int):
     start = 600 + rng.randrange(0, 600)
     end = start + rng.randrange(30, 120)
@@ -25,7 +39,7 @@ def gen(rng: random.Random, n: int):
     locs = [f"l{i}" for i in range(rng.randint(2, 5))]
     loc_area = {l: rng.choice(areas + [None]) for l in locs}
     s = {
-        "spec_version": "0.7.0",
+        "spec_version": "0.8.0",
         "_case": {"doc": f"ランダム生成 (seed {SEED}, #{n})"},
         "start_time": start, "end_time": end,
         "claim_tolerance": rng.choice([0, 0, 2, 5]),
@@ -124,7 +138,12 @@ def gen(rng: random.Random, n: int):
         events.append(e)
     if events and rng.random() < 0.04:  # R002
         e = rng.choice(events)
-        e["character" if "character" in e else "to"] = "ghost"
+        if "character" in e:
+            e["character"] = "ghost"
+        elif "to" in e:
+            e["to"] = "ghost"
+        else:  # scene
+            e["participants"] = e["participants"] + ["ghost"]
     rng.shuffle(events)  # 入力の順番は意味を持たない
     s["events"] = events
     # 証言
@@ -221,6 +240,10 @@ def gen(rng: random.Random, n: int):
         s["endings"].pop(rng.randrange(len(s["endings"])))
     if rng.random() < 0.5:  # 探索フェイズ (0.7.0)
         s["exploration"] = {"draws_per_player": rng.randint(0, 2)}
+    # 探索の回 (0.8.0)。0.7.0 までのケースが変わらないよう、別の乱数列を使う
+    r2 = random.Random(f"{SEED}-rounds-{n}")
+    if r2.random() < 0.4:
+        s["exploration"] = random_exploration(r2, s)
     s["constraints"] = []
     if rng.random() < 0.3 and s["goals"]:
         s["constraints"].append(rng.choice([{"var": s["goals"][0]["id"]},
